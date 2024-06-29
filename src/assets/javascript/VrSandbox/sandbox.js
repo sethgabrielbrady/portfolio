@@ -1,12 +1,15 @@
 import * as THREE from 'three';
-
 import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { OculusHandModel } from 'three/examples/jsm/webxr/OculusHandModel.js';
 import { OculusHandPointerModel } from 'three/examples/jsm/webxr/OculusHandPointerModel.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { World, System, Component, TagComponent, Types } from 'three/examples/jsm//libs/ecsy.module.js';
-import { floor, menuMesh, exitButton, instructionText, exitText, dataScreenMesh, wall, textureCube } from './worldMesh.js';
+import { floor, menuMesh, exitButton, instructionText, exitText, dataScreenMesh, textureCube } from './worldMesh.js';
+import html2canvas from 'html2canvas';
+
+
+let scene;
 
 function sandbox() {
 
@@ -19,7 +22,6 @@ function sandbox() {
   class Button extends Component { }
 
   Button.schema = {
-    // button states: [none, hovered, pressed]
     currState: { type: Types.String, default: 'none' },
     prevState: { type: Types.String, default: 'none' },
     action: { type: Types.Ref, default: () => { } }
@@ -249,7 +251,7 @@ function sandbox() {
 
   const world = new World();
   const clock = new THREE.Clock();
-  let camera, scene, renderer;
+  let camera, renderer;
 
   // let seaBlue = 0xa6f2f5;
 
@@ -272,7 +274,13 @@ function sandbox() {
     scene.add( new THREE.HemisphereLight( 0xcccccc, 0x999999, 3 ) );
 
 
-    renderer = new THREE.WebGLRenderer( { antialias: false, alpha: true} );
+
+    renderer = new THREE.WebGLRenderer( {
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: true
+    } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.shadowMap.enabled = true;
@@ -340,15 +348,48 @@ function sandbox() {
 
     // menu
     scene.add(menuMesh);
-
     // menuMesh.add(exitButton);
-    // instruction text
-    // scene.add(instructionText);
+
     // exit text
     scene.add(exitText);
 
     // data screen
-    scene.add(dataScreenMesh);
+
+    console.log(html2canvas)
+    const htmlElement = document.getElementById('capture');
+    // const font = new FontFace('16bitpaint', 'url(@/assets/fonts/16bitpaint.ttf)');
+
+    async function loadFonts() {
+      const font = new FontFace("font-family 16bitpaint", "url('@/assets/fonts/16bitpaint.ttf')", {
+        style: "normal",
+        weight: "400",
+      });
+      // wait for font to be loaded
+      await font.load();
+      // add font to document
+      document.fonts.add(font);
+
+      // callback: do something, render a font to canvas etc
+      document.body.classList.add("fonts-loaded");
+    }
+
+    loadFonts();
+
+
+    html2canvas(htmlElement).then(canvas => {
+      // Now you have a canvas with your HTML content
+      const texture = new THREE.Texture(canvas);
+      texture.needsUpdate = true; // Ensure the texture is updated
+      // dataScreenMesh.material.color = 0x000000;
+      // Create a material with this texture
+      dataScreenMesh.material.map = texture;
+
+      // Add the mesh to your scene
+      scene.add(dataScreenMesh);
+      scene.background = texture;
+    });
+
+
 
     // world components and systems
     world

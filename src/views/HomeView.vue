@@ -1,9 +1,10 @@
 <script>
   import { ref } from 'vue'
-  import { RouterView, RouterLink } from 'vue-router'
+  // import { RouterView, RouterLink } from 'vue-router'
 
   export default {
-    omponents: {
+    name: 'HomeView',
+    components: {
     },
     setup() {
       return {

@@ -106,16 +106,19 @@ exitText.position.set( 0, 1.5, - 0.6 );
 exitText.visible = false;
 
 // data screen
-const screen_loader = new THREE.TextureLoader();
-const screen_texture = screen_loader.load("generatedIcon.jpg");
+
+
+// const screen_loader = new THREE.TextureLoader();
+// const screen_texture = screen_loader.load("generatedIcon.jpg");
+
 // const dataScreenColor = 0x000cccc;
 const dataScreenGeomtery = new THREE.PlaneGeometry( 2, 1 );
 const dataScreenMaterial = new THREE.MeshPhongMaterial({
-  opacity: 0.5,
+  // opacity: 0.5,
   // color: dataScreenColor,
-  transparent: false,
-  bumpMap: screen_texture,
-  map: screen_texture,
+  // transparent: false,
+  // bumpMap: screen_texture,
+  // map: screen_texture,
 });
 
 const dataScreenMesh = new THREE.Mesh( dataScreenGeomtery, dataScreenMaterial );
