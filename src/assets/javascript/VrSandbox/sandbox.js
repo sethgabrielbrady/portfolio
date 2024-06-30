@@ -8,18 +8,14 @@ import { World, System, Component, TagComponent, Types } from 'three/examples/js
 import { floor, menuMesh, exitButton, instructionText, exitText, dataScreenMesh, textureCube } from './worldMesh.js';
 import html2canvas from 'html2canvas';
 
-
-let scene;
-
 function sandbox() {
 
-  class Object3D extends Component { }
-
+  class Object3D extends Component {}
   Object3D.schema = {
     object: { type: Types.Ref }
   };
 
-  class Button extends Component { }
+  class Button extends Component {}
 
   Button.schema = {
     currState: { type: Types.String, default: 'none' },
@@ -251,8 +247,7 @@ function sandbox() {
 
   const world = new World();
   const clock = new THREE.Clock();
-  let camera, renderer;
-
+  let camera, renderer, scene;
   // let seaBlue = 0xa6f2f5;
 
   init();
@@ -261,7 +256,7 @@ function sandbox() {
   function init() {
     scene = new THREE.Scene();
     scene.background = textureCube;
-    // scene.background = new THREE.Color( 0x000000 );
+    // scene.background = new THREE.Color( seaBlue );
 
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
     camera.position.set( 0, 1.2, 0.3 );

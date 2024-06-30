@@ -1,6 +1,5 @@
 <script>
   import { ref } from 'vue'
-  // import { RouterView, RouterLink } from 'vue-router'
 
   export default {
     name: 'HomeView',
