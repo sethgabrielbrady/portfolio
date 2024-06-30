@@ -2,23 +2,18 @@ import * as THREE from 'three';
 
 function breakout() {
 
-  var container;
-  var camera, scene, renderer;
-  var frustumSize = 1000;
-  var ball;
-  var shot;
-  var paddle;
-  var canvas = document.getElementById("3dBreakout");
-  var gridHelper;
-  var dx = 10;
-  var dy =-10;
-  var ballRadius = 12.5;
-  var rightPressed, leftPressed, upPressed;
-  var binary = (Math.random() * 2) + 1;
-  var zRND = Math.random() * 500;
-  var test;
-  var sc = 0; //score
-  var target;
+  let container, camera, scene, renderer, gridHelper;
+  let test, target;
+  let ball, shot, paddle
+  let frustumSize = 1000;
+  let canvas = document.getElementById("3dBreakout");
+  let ballRadius = 12.5;
+  let rightPressed, leftPressed, upPressed;
+  let binary = (Math.random() * 2) + 1;
+  let zRND = Math.random() * 500;
+  let dx = 10;
+  let dy =-10;
+  let score = 0; //score
 
 
   init();
@@ -30,8 +25,8 @@ function breakout() {
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    var aspect = canvas.width / canvas.height;
-
+    let aspect = canvas.width / canvas.height;
+    console.log(canvas)
     // var aspect = window.innerWidth / window.innerHeight;
     camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 2000 );
     camera.position.y = 400;
@@ -109,9 +104,9 @@ function breakout() {
     render();
   }
 
-  function animate() {
-    renderer.setAnimationLoop( render );
-  }
+  // function animate() {
+  //   renderer.setAnimationLoop( render );
+  // }
 
   // function render() {
   //   const delta = clock.getDelta();
@@ -139,8 +134,8 @@ function breakout() {
     if( ball.position.x > shot.position.x &&
       ball.position.z <= shot.position.z + 20 &&
       ball.position.z >= shot.position.z - 20 ) {
-      sc += 1;
-      console.log(sc);
+      score += 1;
+      console.log(score);
       dx = -dx;
       dy = dy + (Math.random() * 10);
     }
