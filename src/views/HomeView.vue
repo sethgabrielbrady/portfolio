@@ -20,10 +20,10 @@
         this.playing = !this.playing;
         if (this.playing) {
           this.$refs.music.play()
-          this.audioControlUrl = "/sound/mute.svg"
+          this.audioControlUrl = "/sound/play.svg"
         } else {
           this.$refs.music.pause()
-          this.audioControlUrl = "/sound/play.svg"
+          this.audioControlUrl = "/sound/mute.svg"
         }
       }
     }
