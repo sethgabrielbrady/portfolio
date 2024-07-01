@@ -4,7 +4,7 @@ function breakout() {
   const frustumSize: number = 1000;
   // adding the canvas
 
-  const canvas: HTMLCanvasElement = document.getElementById("3dBreakout") as  HTMLCanvasElement;
+  const canvas: HTMLElement = document.getElementById("3dBreakout")!;
   let aspect: number = 0;
 
   if (canvas) {
@@ -41,6 +41,16 @@ function breakout() {
   camera.position.y = 400;
   scene.add(camera);
 
+  //ball
+  const zRND: number = Math.random() * 500;
+  const ballGeo: THREE.BoxGeometry = new THREE.BoxGeometry( 50, 25, 50 );
+  const ballMatr: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+  const ball: THREE.Mesh = new THREE.Mesh( ballGeo, ballMatr );
+  ball.position.x = -500;
+  ball.position.y = 50;
+  ball.position.z = zRND;
+  scene.add(ball);
+
   // renderer
   const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true});
   renderer.setPixelRatio( window.devicePixelRatio );
@@ -62,9 +72,28 @@ function breakout() {
   onWindowResize();
 
 
+  let dx: number = 10;
+  let dy: number =-10;
+  const ballRadius: number = 12.5;
+
+  function wallCfollision(){
+    // I want this function to handle the collision of the ball with  ALL  ofthe walls
+
+    ball.position.x += dx;
+    ball.position.z += dy;
+    if(ball.position.x + dx <= ballRadius -500) {
+      dx = -dx;
+    }
+    if (ball.position.z <= -500 + ballRadius || ball.position.z >= 500 - ballRadius){
+      dy = -dy;
+    }
+  }
+
+
   function render() {
     renderer.render( scene, camera );
     camera.lookAt( scene.position );
+    wallCfollision();
   }
 
   (function animate() {

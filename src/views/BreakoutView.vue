@@ -16,5 +16,5 @@
 </script>
 
 <template>
-  <canvas id="3dBreakout"  style="width:100vw; height:100vh;" />
+  <div id="3dBreakout"  style="width:100vw; height:100vh;" />
 </template>
