@@ -8,9 +8,7 @@ function breakout() {
   let aspect: number = 0;
 
   if (canvas) {
-    console.log("can", canvas.width);
     aspect = canvas.width / canvas.height;
-    console.log("aspect", aspect);
   }
 
   //scene
@@ -43,9 +41,10 @@ function breakout() {
 
   //ball
   const zRND: number = Math.random() * 500;
-  const ballGeo: THREE.BoxGeometry = new THREE.BoxGeometry( 50, 25, 50 );
+  const ballGeo: THREE.SphereGeometry = new THREE.SphereGeometry( 25, 25, 50 );
   const ballMatr: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
   const ball: THREE.Mesh = new THREE.Mesh( ballGeo, ballMatr );
+
   ball.position.x = -500;
   ball.position.y = 50;
   ball.position.z = zRND;
@@ -71,14 +70,12 @@ function breakout() {
   }
   onWindowResize();
 
-
   let dx: number = 10;
   let dy: number =-10;
   const ballRadius: number = 12.5;
 
   function wallCfollision(){
     // I want this function to handle the collision of the ball with  ALL  ofthe walls
-
     ball.position.x += dx;
     ball.position.z += dy;
     if(ball.position.x + dx <= ballRadius -500) {
@@ -89,19 +86,17 @@ function breakout() {
     }
   }
 
-
-  function render() {
-    renderer.render( scene, camera );
-    camera.lookAt( scene.position );
-    wallCfollision();
-  }
-
   (function animate() {
     requestAnimationFrame( animate );
     renderer.setAnimationLoop( render );
     render();
   })();
 
+  function render() {
+    renderer.render( scene, camera );
+    camera.lookAt( scene.position );
+    wallCfollision();
+  }
 }
 
 export { breakout };

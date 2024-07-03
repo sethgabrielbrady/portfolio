@@ -1,6 +1,13 @@
 import * as THREE from 'three';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
+
+//neon pallette
+// const orange = 0xff8500;
+const red = 0xff3f3f;
+// #39ff14 green
+// #dfff00 chartreuse
+
 const cube_loader = new THREE.CubeTextureLoader();
 
 const textureCube = cube_loader.load( [
@@ -39,10 +46,12 @@ function addFloorTextures(textures) {
   }
 }
 
-addFloorTextures(floorTextures);
+// addFloorTextures(floorTextures);
+
+
 
 //floor
-const floorColor = 0xffffff;
+const floorColor = 0x111111;
 const floorGeometry = new THREE.PlaneGeometry( 10, 10);
 const floorMaterial = new THREE.MeshPhongMaterial({
                                                     color: floorColor,
@@ -106,16 +115,17 @@ exitText.position.set( 0, 1.5, - 0.6 );
 exitText.visible = false;
 
 // data screen
-
-
 // const screen_loader = new THREE.TextureLoader();
 // const screen_texture = screen_loader.load("generatedIcon.jpg");
 
 // const dataScreenColor = 0x000cccc;
 const dataScreenGeomtery = new THREE.PlaneGeometry( 2, 1 );
 const dataScreenMaterial = new THREE.MeshPhongMaterial({
-  // opacity: 0.5,
-  // color: dataScreenColor,
+  opacity: 0,
+  color: 0xfffc02,
+  emissive: 0xfffc02,
+  shininess: 100,
+  clearcoat: 1,
   // transparent: false,
   // bumpMap: screen_texture,
   // map: screen_texture,
@@ -131,4 +141,31 @@ function makeButtonMesh( x, y, z, color ) {
   return buttonMesh;
 }
 
-export { floor, menuMesh, exitButton, exitText, dataScreenMesh, wall, textureCube , instructionText}
+//heart
+const heartShape = new THREE.Shape();
+heartShape.moveTo( 25, 25 );
+heartShape.bezierCurveTo( 25, 25, 20, 0, 0, 0 );
+heartShape.bezierCurveTo( - 30, 0, - 30, 35, - 30, 35 );
+heartShape.bezierCurveTo( - 30, 55, - 10, 77, 25, 95 );
+heartShape.bezierCurveTo( 60, 77, 80, 55, 80, 35 );
+heartShape.bezierCurveTo( 80, 35, 80, 0, 50, 0 );
+heartShape.bezierCurveTo( 35, 0, 25, 25, 25, 25 );
+
+const extrudeSettings = {
+	depth: 8,
+	bevelEnabled: true,
+	bevelSegments: 2,
+	steps: 2,
+	bevelSize: 1,
+	bevelThickness: 1
+};
+
+const heartScale = 0.005;
+const geometry = new THREE.ExtrudeGeometry( heartShape, extrudeSettings );
+const heartMaterial = new THREE.MeshPhongMaterial( { color: red } );
+const heartMesh = new THREE.Mesh( geometry, heartMaterial );
+heartMesh.position.set( 0, 2, -.5);
+heartMesh.rotation.z = Math.PI / 1
+heartMesh.scale.set( heartScale, heartScale, heartScale);
+
+export { floor, menuMesh, exitButton, exitText, dataScreenMesh, wall, textureCube , instructionText, heartMesh}

@@ -5,8 +5,9 @@ import { OculusHandModel } from 'three/examples/jsm/webxr/OculusHandModel.js';
 import { OculusHandPointerModel } from 'three/examples/jsm/webxr/OculusHandPointerModel.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { World, System, Component, TagComponent, Types } from 'three/examples/jsm//libs/ecsy.module.js';
-import { floor, menuMesh, exitButton, instructionText, exitText, dataScreenMesh, textureCube } from './worldMesh.js';
-import html2canvas from 'html2canvas';
+import { floor, menuMesh, exitButton, instructionText, exitText, dataScreenMesh, textureCube, heartMesh } from './worldMesh.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
 
 function sandbox() {
 
@@ -248,7 +249,7 @@ function sandbox() {
   const world = new World();
   const clock = new THREE.Clock();
   let camera, renderer, scene;
-  // let seaBlue = 0xa6f2f5;
+  let backgroundColor = 0x000000;
 
   init();
   animate();
@@ -256,9 +257,10 @@ function sandbox() {
   function init() {
     scene = new THREE.Scene();
     scene.background = textureCube;
-    // scene.background = new THREE.Color( seaBlue );
+    scene.background = new THREE.Color( backgroundColor );
 
-    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
+    const distance = 100;
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, distance );
     camera.position.set( 0, 1.2, 0.3 );
 
 
@@ -266,16 +268,15 @@ function sandbox() {
     light.position.set( 0, 6, 0 );
     light.castShadow = true;
     scene.add( light );
-    scene.add( new THREE.HemisphereLight( 0xcccccc, 0x999999, 3 ) );
-
-
+    // scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 3 ) );
+    scene.add( new THREE.AmbientLight(0xffffff, 0.5));
 
     renderer = new THREE.WebGLRenderer( {
       antialias: false,
       alpha: true,
-      powerPreference: "high-performance",
-      preserveDrawingBuffer: true
+      powerPreference: "high-performance"
     } );
+
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.shadowMap.enabled = true;
@@ -289,6 +290,49 @@ function sandbox() {
 
     renderer.xr.enabled = true;
     renderer.xr.cameraAutoUpdate = false;
+
+     // Grid
+     const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
+     scene.add( gridHelper );
+
+
+    // models
+    function loadModel (modelObj) {
+      let gltfLoader = new GLTFLoader();
+
+      gltfLoader.load(modelObj.path,
+        (gltf) => {
+         let model = gltf.scene
+          model.scale.x = modelObj.scale;
+          model.scale.y = modelObj.scale;
+          model.scale.z = modelObj.scale;
+          model.position.x = modelObj.position.x;
+          model.position.y = modelObj.position.y;
+          model.position.z = modelObj.position.z;
+          model.castShadow = true;
+          scene.add(model);
+        }
+      )
+    }
+
+
+
+    const palm = {
+      scale: 0.045,
+      path: 'models/palmshiny.glb',
+      position: { x: 1, y: 0, z: 0 }
+    }
+    loadModel(palm);
+
+    const human = {
+      scale: 0.0035,
+      path: 'models/human.glb',
+      position: { x: 0, y: .98, z: 0 }
+    }
+    loadModel(human);
+
+    scene.add(heartMesh);
+
 
     const sessionInit = {
       // requiredFeatures: [ 'hand-tracking' ]
@@ -349,42 +393,7 @@ function sandbox() {
     scene.add(exitText);
 
     // data screen
-
-    console.log(html2canvas)
-    const htmlElement = document.getElementById('capture');
-    // const font = new FontFace('16bitpaint', 'url(@/assets/fonts/16bitpaint.ttf)');
-
-    async function loadFonts() {
-      const font = new FontFace("font-family 16bitpaint", "url('@/assets/fonts/16bitpaint.ttf')", {
-        style: "normal",
-        weight: "400",
-      });
-      // wait for font to be loaded
-      await font.load();
-      // add font to document
-      document.fonts.add(font);
-
-      // callback: do something, render a font to canvas etc
-      document.body.classList.add("fonts-loaded");
-    }
-
-    loadFonts();
-
-
-    html2canvas(htmlElement).then(canvas => {
-      // Now you have a canvas with your HTML content
-      const texture = new THREE.Texture(canvas);
-      texture.needsUpdate = true; // Ensure the texture is updated
-      // dataScreenMesh.material.color = 0x000000;
-      // Create a material with this texture
-      dataScreenMesh.material.map = texture;
-
-      // Add the mesh to your scene
-      scene.add(dataScreenMesh);
-      scene.background = texture;
-    });
-
-
+    scene.add(dataScreenMesh);
 
     // world components and systems
     world
