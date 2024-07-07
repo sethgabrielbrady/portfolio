@@ -274,8 +274,10 @@ function sandbox() {
     renderer = new THREE.WebGLRenderer( {
       antialias: false,
       alpha: true,
-      powerPreference: "high-performance"
+      // powerPreference: "high-performance"
+      // powerPreference: "low-performance"
     } );
+
 
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -315,8 +317,6 @@ function sandbox() {
       )
     }
 
-
-
     const palm = {
       scale: 0.045,
       path: 'models/palmshiny.glb',
@@ -327,10 +327,11 @@ function sandbox() {
     const human = {
       scale: 0.0035,
       path: 'models/human.glb',
-      position: { x: 0, y: .98, z: 0 }
+      position: { x: 1.75, y: .98, z: 0 }
     }
     loadModel(human);
 
+    // heart
     scene.add(heartMesh);
 
 
@@ -450,6 +451,7 @@ function sandbox() {
 
   function animate() {
     renderer.setAnimationLoop( render );
+
   }
 
   function render() {
@@ -458,6 +460,8 @@ function sandbox() {
     renderer.xr.updateCamera( camera );
     world.execute( delta, elapsedTime );
     renderer.render( scene, camera );
+    console.log( "current poly count", renderer.info.render.triangles );
+
   }
 }
 

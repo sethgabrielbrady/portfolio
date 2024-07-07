@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+let orbitControls = null;
 
 function breakout() {
   const frustumSize: number = 1000;
@@ -59,6 +62,13 @@ function breakout() {
   window.addEventListener( 'resize', onWindowResize, false );
   canvas.appendChild(renderer.domElement);
 
+  // orbit controls
+  orbitControls = new OrbitControls(camera, renderer.domElement);
+  orbitControls.enabled = true;
+  orbitControls.enableRotate = true;
+  orbitControls.keyPanSpeed = 60.0; // magic number
+  orbitControls.enableZoom = true;
+
   function onWindowResize() {
     const aspect = window.innerWidth / window.innerHeight;
     camera.left   = - frustumSize * aspect / 2;
@@ -70,20 +80,36 @@ function breakout() {
   }
   onWindowResize();
 
-  let dx: number = 10;
-  let dy: number =-10;
+
+  let xAxis: number = 10;
+  let yAxis: number = -10;
   const ballRadius: number = 12.5;
 
-  function wallCfollision(){
-    // I want this function to handle the collision of the ball with  ALL  ofthe walls
-    ball.position.x += dx;
-    ball.position.z += dy;
-    if(ball.position.x + dx <= ballRadius -500) {
-      dx = -dx;
+  const wallAxis: number = 500;
+  function wallCollision(){
+    ball.position.x += xAxis;
+    ball.position.z += yAxis;
+
+    if(ball.position.x + xAxis <= ballRadius - wallAxis) {
+      xAxis = -xAxis + getRandomArbitrary();
     }
-    if (ball.position.z <= -500 + ballRadius || ball.position.z >= 500 - ballRadius){
-      dy = -dy;
+
+    if(ball.position.x + xAxis >= wallAxis - ballRadius) {
+      xAxis = -xAxis + getRandomArbitrary();
     }
+
+    if(ball.position.z + yAxis <= ballRadius - wallAxis) {
+      yAxis = -yAxis + getRandomArbitrary();
+    }
+
+    if(ball.position.z + yAxis >= wallAxis - ballRadius) {
+      yAxis = -yAxis + getRandomArbitrary();
+    }
+  }
+
+  function getRandomArbitrary() {
+    const random = Math.random() * (6 - 0) + 1;
+    return random;
   }
 
   (function animate() {
@@ -95,7 +121,7 @@ function breakout() {
   function render() {
     renderer.render( scene, camera );
     camera.lookAt( scene.position );
-    wallCfollision();
+    wallCollision();
   }
 }
 
