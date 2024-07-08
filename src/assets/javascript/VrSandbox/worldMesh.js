@@ -49,7 +49,6 @@ function addFloorTextures(textures) {
 // addFloorTextures(floorTextures);
 
 
-
 //floor
 const floorColor = 0x111111;
 const floorGeometry = new THREE.PlaneGeometry( 10, 10);
@@ -64,6 +63,10 @@ const floorMaterial = new THREE.MeshPhongMaterial({
 const floor = new THREE.Mesh( floorGeometry, floorMaterial );
 floor.rotation.x = - Math.PI / 2;
 floor.receiveShadow = false;
+
+const floorText = createText( 'Hello!', 1 );
+floorText.position.set( 0, 2, .1 );
+floor.add( floorText );
 
 //walls
 const wall_loader = new THREE.TextureLoader();

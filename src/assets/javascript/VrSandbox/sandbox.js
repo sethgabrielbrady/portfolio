@@ -249,7 +249,7 @@ function sandbox() {
   const world = new World();
   const clock = new THREE.Clock();
   let camera, renderer, scene;
-  let backgroundColor = 0x000000;
+  let backgroundColor = 0x222222;
 
   init();
   animate();
@@ -259,9 +259,16 @@ function sandbox() {
     scene.background = textureCube;
     scene.background = new THREE.Color( backgroundColor );
 
-    const distance = 100;
-    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, distance );
-    camera.position.set( 0, 1.2, 0.3 );
+    // const distance = 100;
+    // camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, distance );
+    // camera.position.set( 0, 1.2, 0.3 );
+
+
+  const aspect = (window.innerWidth / window.innerHeight);
+  const d = 7;
+  camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
+  camera.position.set( 20, 20, 20 ); // all components equal
+  camera.lookAt( scene.position ); // or the origin
 
 
     const light = new THREE.DirectionalLight( 0xffffff, 3 );
@@ -294,8 +301,8 @@ function sandbox() {
     renderer.xr.cameraAutoUpdate = false;
 
      // Grid
-     const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
-     scene.add( gridHelper );
+    //  const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
+    //  scene.add( gridHelper );
 
 
     // models
@@ -320,19 +327,43 @@ function sandbox() {
     const palm = {
       scale: 0.045,
       path: 'models/palmshiny.glb',
-      position: { x: 1, y: 0, z: 0 }
+      position: { x: -2, y: 0, z: 0 }
     }
     loadModel(palm);
+
+    // let randomPosNeg = Math.random() < 0.5 ? -1 : 1;
+
+    /**
+     * Generates a random positive or negative number.
+     * @returns {number} A random positive or negative number.
+     */
+    // function randomPosNeg() {
+    //   return Math.random() < 0.5 ? -1 : 1;
+    // }
+    // function randomAdd() {
+    //   return randomPosNeg() * 5;
+    // }
+
+    // function addPalms () {
+    //    for(let i = 0; i < 200; i++) {
+    //       let newPalm = {...palm};
+    //       let newX = Math.random() * 20 + randomAdd();
+    //       let newZ = Math.random() * 20 + randomAdd();
+    //       newPalm.position = { x: newX, y: 0, z: newZ };
+    //       loadModel(newPalm);
+    //     }
+    // }
+    // addPalms();
 
     const human = {
       scale: 0.0035,
       path: 'models/human.glb',
-      position: { x: 1.75, y: .98, z: 0 }
+      position: { x: 1.75, y: .98, z: -3 }
     }
     loadModel(human);
 
     // heart
-    scene.add(heartMesh);
+    // scene.add(heartMesh);
 
 
     const sessionInit = {
@@ -394,7 +425,7 @@ function sandbox() {
     scene.add(exitText);
 
     // data screen
-    scene.add(dataScreenMesh);
+    // scene.add(dataScreenMesh);
 
     // world components and systems
     world

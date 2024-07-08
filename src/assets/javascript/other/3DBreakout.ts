@@ -16,7 +16,8 @@ function breakout() {
 
   //scene
   const scene: THREE.Scene = new THREE.Scene();
-  scene.background = new THREE.Color( 0xf0f0f0 );
+  // scene.background = new THREE.Color( 0xf0f0f0 );
+  scene.background = new THREE.Color( 0x000000) ;
 
   // Grid
   const tiles: number = 12;
@@ -45,7 +46,7 @@ function breakout() {
   //ball
   const zRND: number = Math.random() * 500;
   const ballGeo: THREE.SphereGeometry = new THREE.SphereGeometry( 25, 25, 50 );
-  const ballMatr: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+  const ballMatr: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
   const ball: THREE.Mesh = new THREE.Mesh( ballGeo, ballMatr );
 
   ball.position.x = -500;
