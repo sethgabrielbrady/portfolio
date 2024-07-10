@@ -264,11 +264,11 @@ function sandbox() {
     // camera.position.set( 0, 1.2, 0.3 );
 
 
-  const aspect = (window.innerWidth / window.innerHeight);
-  const d = 7;
-  camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
-  camera.position.set( 20, 20, 20 ); // all components equal
-  camera.lookAt( scene.position ); // or the origin
+    const aspect = (window.innerWidth / window.innerHeight);
+    const d = 7;
+    camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
+    camera.position.set( 20, 20, 20 ); // all components equal
+    camera.lookAt( scene.position ); // or the origin
 
 
     const light = new THREE.DirectionalLight( 0xffffff, 3 );
@@ -281,8 +281,8 @@ function sandbox() {
     renderer = new THREE.WebGLRenderer( {
       antialias: false,
       alpha: true,
-      // powerPreference: "high-performance"
-      // powerPreference: "low-performance"
+      precision: "lowp",
+      powerPreference: "low-power"
     } );
 
 
@@ -300,9 +300,16 @@ function sandbox() {
     renderer.xr.enabled = true;
     renderer.xr.cameraAutoUpdate = false;
 
-     // Grid
-    //  const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
-    //  scene.add( gridHelper );
+    //  Grid
+     const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
+     scene.add( gridHelper );
+     gridHelper.visible = false;
+
+     window.addEventListener( 'keydown', ( event ) => {
+      if (event.key === 'g') {
+        gridHelper.visible = !gridHelper.visible;
+      }
+     });
 
 
     // models
@@ -324,10 +331,18 @@ function sandbox() {
       )
     }
 
+    const ballGeo = new THREE.SphereGeometry( 0.25 );
+    const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+    const ball = new THREE.Mesh( ballGeo, ballMatr );
+    ball.position.x = -1;
+    ball.position.y = .25;
+    ball.position.z = 1;
+    scene.add( ball );
+
     const palm = {
       scale: 0.045,
       path: 'models/palmshiny.glb',
-      position: { x: -2, y: 0, z: 0 }
+      position: { x: -4, y: 0, z: 0 }
     }
     loadModel(palm);
 
@@ -358,7 +373,7 @@ function sandbox() {
     const human = {
       scale: 0.0035,
       path: 'models/human.glb',
-      position: { x: 1.75, y: .98, z: -3 }
+      position: { x: 3.75, y: .98, z: -3 }
     }
     loadModel(human);
 
@@ -374,13 +389,22 @@ function sandbox() {
     container.appendChild(VRButton.createButton(renderer, sessionInit ));
 
     //orbit controls
-    let orbitControls = null
-
-    orbitControls = new OrbitControls(camera, renderer.domElement)
-    orbitControls.enabled = true
-    orbitControls.enableRotate = true
+    let orbitEnabled = false;
+    let orbitControls = new OrbitControls(camera, renderer.domElement)
+    orbitControls.enabled = true;
+    orbitControls.enableRotate = orbitEnabled
     orbitControls.keyPanSpeed = 60.0 // magic number
     orbitControls.enableZoom = true
+
+    console.log("orbit1", orbitControls)
+    window.addEventListener( 'keydown', ( event ) => {
+      if (event.key === 'o') {
+        orbitEnabled = !orbitEnabled
+        orbitControls.enableRotate = orbitEnabled;
+        console.log("orbit2", orbitControls)
+        console.log("camera", camera)
+      }
+     });
 
     // controllers
     const controller1 = renderer.xr.getController( 0 );
@@ -425,8 +449,18 @@ function sandbox() {
     scene.add(exitText);
 
     // data screen
+    // dataScreenMesh.position.set( 0, 1.5, - 0.6 );
     // scene.add(dataScreenMesh);
 
+
+    const sideGeometry = new THREE.BoxGeometry( 1, 2, 6);
+    const sideMaterial = new THREE.MeshPhongMaterial({
+                                                    color: 0x00ffff,
+                                                    transparent: false,
+                                                  });
+    const sideMesh = new THREE.Mesh( sideGeometry, sideMaterial );
+    sideMesh.position.set( -5 ,1, 1 );
+    scene.add(sideMesh);
     // world components and systems
     world
       .registerComponent( Object3D )
@@ -491,8 +525,7 @@ function sandbox() {
     renderer.xr.updateCamera( camera );
     world.execute( delta, elapsedTime );
     renderer.render( scene, camera );
-    console.log( "current poly count", renderer.info.render.triangles );
-
+    // heartMesh.rotation.y += 0.1;
   }
 }
 

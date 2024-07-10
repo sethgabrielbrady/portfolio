@@ -64,9 +64,16 @@ const floor = new THREE.Mesh( floorGeometry, floorMaterial );
 floor.rotation.x = - Math.PI / 2;
 floor.receiveShadow = false;
 
-const floorText = createText( 'Hello!', 1 );
-floorText.position.set( 0, 2, .1 );
-floor.add( floorText );
+
+const floorText = createText( 'Hello,', 1 );
+const floorText2 = createText( "I'm Seth Brady.", 1 );
+
+floorText.position.set( -3, 3, .1 );
+floorText2.position.set( -1.35, 2.15, .1 );
+floorText.scale.set( 0.75, 0.75, 0.75 );
+floorText2.scale.set( 0.75, 0.75, 0.75 );
+
+floor.add( floorText, floorText2 );
 
 //walls
 const wall_loader = new THREE.TextureLoader();
