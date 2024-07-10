@@ -151,9 +151,10 @@ function sandbox() {
     ball.position.z = 1;
     scene.add( ball );
 
-    let xAxis = .35;
-    let yAxis = -.35;
     const ballRadius = 0.125;
+
+    let xAxis = .56;
+    let yAxis = -.56;
 
     const wallAxis = 5.00;
     function wallCollision(){
