@@ -150,45 +150,46 @@ function sandbox() {
     ball.position.z = 1;
     scene.add( ball );
 
-    const ballRadius = 0.125;
+    const ballRadius = (0.15/2)
 
     let xAxis = .56;
     let yAxis = -.56;
-
     const wallAxis = 5.00;
+
     function wallCollision(){
       const smoothness = 0.55;
       ball.position.x += xAxis * smoothness;
       ball.position.z += yAxis * smoothness;
 
-      if(ball.position.x <= ballRadius - wallAxis) {
+      console.log(ballRadius - wallAxis , ball.position.z);
+
+      if(ball.position.x <= -1 * wallAxis  ) {
+        ball.position.x = (-1 * wallAxis)
         xAxis = -xAxis + getRandomArbitrary();
       }
-      if(ball.position.x >= wallAxis - ballRadius) {
+
+      if(ball.position.x >= wallAxis) {
+        ball.position.x = wallAxis
         xAxis = -xAxis + getRandomArbitrary();
       }
-      if(ball.position.z <= ballRadius - wallAxis || ball.position.z >= wallAxis - ballRadius ) {
+
+      if(ball.position.z <= -1 * wallAxis) {
+        ball.position.z = (-1 * wallAxis)
         yAxis = -yAxis + getRandomArbitrary();
       }
-      // if(ball.position.z >= wallAxis - ballRadius) {
-      //   yAxis = -yAxis + getRandomArbitrary();
-      // }
-      console.log(ball.position.x, ball.position.z, )
+
+      if(ball.position.z >= wallAxis) {
+        ball.position.z = wallAxis
+        yAxis = -yAxis + getRandomArbitrary();
+      }
     }
+
     const brickGeo = new THREE.BoxGeometry( 1.0, .25, .25 );
     const brickMatr = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
     const orginalBrick = new THREE.Mesh( brickGeo, brickMatr );
     orginalBrick.position.y = ball.position.y;
     const bricks = new THREE.Group();
 
-
-    // function randomHexColor() {
-    //   const newColor = Math.floor(Math.random()*16777215).toString(16);
-    //   console.log(newColor);
-    //   return parseInt(newColor, 16);
-    // }
-
-    // console.log(randomRGBColor());
     function addBricks (rows = 7, cols = 3) {
       for(let i = 0; i < rows; i++) {
         for(let j = 0; j < cols; j++) {
@@ -206,11 +207,11 @@ function sandbox() {
      //brick collisions
     function brickCollision() {
       bricks.children.forEach((brick) => {
-        if (ball.position.x + xAxis >= brick.position.x - .50 && ball.position.x + xAxis <= brick.position.x + .50) {
-          if(ball.position.z + yAxis >= brick.position.z - .25 && ball.position.z + yAxis <= brick.position.z + .25) {
+        if (ball.position.x >= brick.position.x - 1 && ball.position.x  <= brick.position.x + 1) {
+          if(ball.position.z >= brick.position.z - .25 && ball.position.z <= brick.position.z + .25) {
+            bricks.remove(brick);
             yAxis = -yAxis + getRandomArbitrary();
             xAxis = -xAxis + getRandomArbitrary();
-            bricks.remove(brick);
           }
         }
       });
@@ -220,8 +221,6 @@ function sandbox() {
       const random = Math.random() * (.5 - 0) + .01;
       return random;
     }
-
-
 
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;

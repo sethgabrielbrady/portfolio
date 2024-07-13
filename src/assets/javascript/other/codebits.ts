@@ -23,3 +23,10 @@
   //   // scene.background = texture;
   // });
 
+
+      // function randomHexColor() {
+    //   const newColor = Math.floor(Math.random()*16777215).toString(16);
+    //   console.log(newColor);
+    //   return parseInt(newColor, 16);
+    // }
+
