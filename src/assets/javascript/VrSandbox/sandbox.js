@@ -19,8 +19,9 @@ function sandbox() {
     scene.background = new THREE.Color( backgroundColor );
 
     const aspect = (window.innerWidth / window.innerHeight);
-    const d = 7;
-    camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
+    const distance = 7;
+    // const d = 100;
+    camera = new THREE.OrthographicCamera(- distance * aspect, distance * aspect, distance, - distance, 1, 1000);
     camera.position.set( 20, 20, 20 ); // all components equal
     camera.lookAt( scene.position ); // or the origin
 
@@ -50,15 +51,15 @@ function sandbox() {
     renderer.xr.cameraAutoUpdate = false;
 
     //  Grid
-     const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
-     scene.add( gridHelper );
-     gridHelper.visible = false;
+    //  const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
+    //  scene.add( gridHelper );
+    //  gridHelper.visible = false;
 
-     window.addEventListener( 'keydown', ( event ) => {
-      if (event.key === 'g') {
-        gridHelper.visible = !gridHelper.visible;
-      }
-     });
+    //  window.addEventListener( 'keydown', ( event ) => {
+    //   if (event.key === 'g') {
+    //     gridHelper.visible = !gridHelper.visible;
+    //   }
+    //  });
 
 
 
@@ -105,8 +106,6 @@ function sandbox() {
      });
 
 
-
-
     //floor
     const floorColor = 0x111111;
     const floorGeometry = new THREE.PlaneGeometry( 10, 10);
@@ -143,7 +142,7 @@ function sandbox() {
   }
 
     //breakout
-    const ballGeo = new THREE.SphereGeometry( 0.25 );
+    const ballGeo = new THREE.SphereGeometry( 0.15 );
     const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
     const ball = new THREE.Mesh( ballGeo, ballMatr );
     ball.position.x = -1;
@@ -158,39 +157,42 @@ function sandbox() {
 
     const wallAxis = 5.00;
     function wallCollision(){
-      ball.position.x += xAxis;
-      ball.position.z += yAxis;
-      if(ball.position.x + xAxis <= ballRadius - wallAxis) {
+      const smoothness = 0.55;
+      ball.position.x += xAxis * smoothness;
+      ball.position.z += yAxis * smoothness;
+
+      if(ball.position.x <= ballRadius - wallAxis) {
         xAxis = -xAxis + getRandomArbitrary();
       }
-      if(ball.position.x + xAxis >= wallAxis - ballRadius) {
+      if(ball.position.x >= wallAxis - ballRadius) {
         xAxis = -xAxis + getRandomArbitrary();
       }
-      if(ball.position.z + yAxis <= ballRadius - wallAxis) {
+      if(ball.position.z <= ballRadius - wallAxis || ball.position.z >= wallAxis - ballRadius ) {
         yAxis = -yAxis + getRandomArbitrary();
       }
-      if(ball.position.z + yAxis >= wallAxis - ballRadius) {
-        yAxis = -yAxis + getRandomArbitrary();
-      }
+      // if(ball.position.z >= wallAxis - ballRadius) {
+      //   yAxis = -yAxis + getRandomArbitrary();
+      // }
+      console.log(ball.position.x, ball.position.z, )
     }
     const brickGeo = new THREE.BoxGeometry( 1.0, .25, .25 );
-    const brickMatr = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+    const brickMatr = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
     const orginalBrick = new THREE.Mesh( brickGeo, brickMatr );
     orginalBrick.position.y = ball.position.y;
     const bricks = new THREE.Group();
 
 
-    function randomHexColor() {
-      const newColor = Math.floor(Math.random()*16777215).toString(16);
-      console.log(newColor);
-      return parseInt(newColor, 16);
-    }
+    // function randomHexColor() {
+    //   const newColor = Math.floor(Math.random()*16777215).toString(16);
+    //   console.log(newColor);
+    //   return parseInt(newColor, 16);
+    // }
 
     // console.log(randomRGBColor());
     function addBricks (rows = 7, cols = 3) {
       for(let i = 0; i < rows; i++) {
         for(let j = 0; j < cols; j++) {
-          orginalBrick.material.color.setHex( randomHexColor() );
+          // orginalBrick.material.color.setHex( randomHexColor() );
           const brick = orginalBrick.clone();
           brick.position.x = (i * 1.5) - 4.5;
           brick.position.z = (j * .5) - 5.0;
