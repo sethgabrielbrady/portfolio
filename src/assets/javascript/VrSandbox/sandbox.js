@@ -11,12 +11,28 @@ function sandbox() {
   let camera, renderer, scene;
   let backgroundColor = 0x222222;
 
+  function randomizeDirection() {
+    let random = Math.random();
+    if(random < 0.5) {
+      return -1;
+    } else {
+      return 1;
+    }
+  }
+
   init();
   animate();
+  //units a second
+  let speed = 0.5;
+  let delta = 1/60;
 
   function init() {
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color( backgroundColor );
+
+    const axesHelper = new THREE.AxesHelper( 5 );
+    scene.add( axesHelper );
 
     const aspect = (window.innerWidth / window.innerHeight);
     const distance = 7;
@@ -119,6 +135,26 @@ function sandbox() {
     floor.receiveShadow = false;
 
 
+    const xText = createText( 'x', 1 );
+    xText.position.set( 5, 1, 0 );
+    xText.rotation.x = Math.PI / 2;
+    const xText2 = createText( '-x', 1 );
+    xText2.position.set( -5, 1, 0 );
+    xText2.rotation.x = Math.PI / 2;
+    const zText = createText( "z", 1 );
+    zText.position.set( 0, 1, 5 );
+    zText.rotation.x = Math.PI / 2;
+    const zText2 = createText( "-z", 1 );
+    zText2.position.set( 0, 1, -5 );
+    zText2.rotation.x = Math.PI / 2;
+    const axisGroup = new THREE.Group();
+    axisGroup.add(xText, zText, xText2, zText2);
+    // axisGroup.scale.set( 0.25, 0.25, 0.25 );
+
+
+    scene.add(axisGroup);
+
+
     const floorText = createText( 'Hello,', 1 );
     const floorText2 = createText( "I'm Seth Brady.", 1 );
 
@@ -145,23 +181,25 @@ function sandbox() {
     const ballGeo = new THREE.SphereGeometry( 0.15 );
     const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
     const ball = new THREE.Mesh( ballGeo, ballMatr );
-    ball.position.x = -1;
+    ball.position.x = randomizeDirection();
     ball.position.y = .25;
-    ball.position.z = 1;
+    ball.position.z = -1;
+
+
     scene.add( ball );
 
-    const ballRadius = (0.15/2)
 
-    let xAxis = .56;
-    let yAxis = -.56;
+    let xAxis = (speed * delta)
+    let yAxis = -1 + (speed * delta)
     const wallAxis = 5.00;
 
-    function wallCollision(){
-      const smoothness = 0.55;
-      ball.position.x += xAxis * smoothness;
-      ball.position.z += yAxis * smoothness;
 
-      console.log(ballRadius - wallAxis , ball.position.z);
+
+
+    function wallCollision(){
+      let smoothness = .5;
+      ball.translateX( xAxis * smoothness);
+      ball.translateZ( yAxis * smoothness);
 
       if(ball.position.x <= -1 * wallAxis  ) {
         ball.position.x = (-1 * wallAxis)
@@ -193,7 +231,6 @@ function sandbox() {
     function addBricks (rows = 7, cols = 3) {
       for(let i = 0; i < rows; i++) {
         for(let j = 0; j < cols; j++) {
-          // orginalBrick.material.color.setHex( randomHexColor() );
           const brick = orginalBrick.clone();
           brick.position.x = (i * 1.5) - 4.5;
           brick.position.z = (j * .5) - 5.0;
@@ -204,23 +241,55 @@ function sandbox() {
     }
     addBricks();
 
-     //brick collisions
-    function brickCollision() {
-      bricks.children.forEach((brick) => {
-        if (ball.position.x >= brick.position.x - 1 && ball.position.x  <= brick.position.x + 1) {
-          if(ball.position.z >= brick.position.z - .25 && ball.position.z <= brick.position.z + .25) {
-            bricks.remove(brick);
-            yAxis = -yAxis + getRandomArbitrary();
-            xAxis = -xAxis + getRandomArbitrary();
-          }
-        }
-      });
-    }
+    // const lineGeo = new THREE.BoxGeometry( 10.0, .25, .25 );
+    // const lineMatr = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+    // const orginalline = new THREE.Mesh( lineGeo, lineMatr );
+    // orginalline.position.y = ball.position.y - .35;
+    // const lines = new THREE.Group();
 
-    function getRandomArbitrary() {
-      const random = Math.random() * (.5 - 0) + .01;
-      return random;
-    }
+    // function addLines (rows = 21) {
+    //     for(let j = 0; j < rows; j++) {
+    //       const line = orginalline.clone();
+    //       console.log(j % 2 === 0)
+    //       if (j % 2 === 0) {
+    //         line.material.color.set(0x00ffff);
+    //         line.rotateZ(Math.PI / 2);
+    //       }
+    //       line.position.z = (j * .5) - 5;
+    //       lines.add(line);
+    //     }
+    //   scene.add(lines);
+    // }
+    // addLines();
+
+     //brick collisions
+  function brickCollision() {
+    bricks.children.forEach((brick) => {
+      if (ball.position.x >= brick.position.x - 1 && ball.position.x  <= brick.position.x + 1) {
+        if(ball.position.z >= brick.position.z - .25 && ball.position.z <= brick.position.z + .25) {
+          bricks.remove(brick);
+          yAxis = -yAxis + getRandomArbitrary();
+          xAxis = -xAxis + getRandomArbitrary();
+        }
+      }
+    });
+  }
+
+  function getRandomArbitrary() {
+    const random = Math.random() * (0.5 - 0.1) + .01;
+    return random;
+  }
+
+  function addBigCube() {
+    const cubeGeo = new THREE.BoxGeometry( 10.0, 10.0, 10.0 );
+    const cubeMatr = new THREE.MeshPhongMaterial( { color: 0x00ff00} );
+    const cube = new THREE.Mesh( cubeGeo, cubeMatr );
+    cube.position.x = 0;
+    cube.position.y = -5.01
+    cube.position.z = 0;
+    scene.add( cube );
+  }
+  addBigCube();
 
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -228,19 +297,24 @@ function sandbox() {
     renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
+  // function onWindowScroll() {
+  //   camera.position.x = window.scrollY * 0.01;
+  //   console.log("cz", camera.position.x)
+  // }
 
   function animate() {
     renderer.setAnimationLoop( render );
   }
 
   function render() {
-    const delta = clock.getDelta();
+    let delta = clock.getDelta();
     const elapsedTime = clock.elapsedTime;
     renderer.xr.updateCamera( camera );
     world.execute( delta, elapsedTime );
     renderer.render( scene, camera );
     wallCollision();
     brickCollision();
+    // onWindowScroll()
 
   }
 }
