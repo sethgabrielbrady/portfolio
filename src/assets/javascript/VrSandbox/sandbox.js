@@ -135,24 +135,24 @@ function sandbox() {
     floor.receiveShadow = false;
 
 
-    const xText = createText( 'x', 1 );
-    xText.position.set( 5, 1, 0 );
-    xText.rotation.x = Math.PI / 2;
-    const xText2 = createText( '-x', 1 );
-    xText2.position.set( -5, 1, 0 );
-    xText2.rotation.x = Math.PI / 2;
-    const zText = createText( "z", 1 );
-    zText.position.set( 0, 1, 5 );
-    zText.rotation.x = Math.PI / 2;
-    const zText2 = createText( "-z", 1 );
-    zText2.position.set( 0, 1, -5 );
-    zText2.rotation.x = Math.PI / 2;
-    const axisGroup = new THREE.Group();
-    axisGroup.add(xText, zText, xText2, zText2);
-    // axisGroup.scale.set( 0.25, 0.25, 0.25 );
+    // const xText = createText( 'x', 1 );
+    // xText.position.set( 5, 1, 0 );
+    // xText.rotation.x = Math.PI / 2;
+    // const xText2 = createText( '-x', 1 );
+    // xText2.position.set( -5, 1, 0 );
+    // xText2.rotation.x = Math.PI / 2;
+    // const zText = createText( "z", 1 );
+    // zText.position.set( 0, 1, 5 );
+    // zText.rotation.x = Math.PI / 2;
+    // const zText2 = createText( "-z", 1 );
+    // zText2.position.set( 0, 1, -5 );
+    // zText2.rotation.x = Math.PI / 2;
+    // const axisGroup = new THREE.Group();
+    // axisGroup.add(xText, zText, xText2, zText2);
+    // // axisGroup.scale.set( 0.25, 0.25, 0.25 );
 
 
-    scene.add(axisGroup);
+    // scene.add(axisGroup);
 
 
     const floorText = createText( 'Hello,', 1 );
@@ -193,9 +193,6 @@ function sandbox() {
     let yAxis = -1 + (speed * delta)
     const wallAxis = 5.00;
 
-
-
-
     function wallCollision(){
       let smoothness = .5;
       ball.translateX( xAxis * smoothness);
@@ -222,6 +219,15 @@ function sandbox() {
       }
     }
 
+    const paddleGeo = new THREE.BoxGeometry( 2.0, .25, .25 );
+    const paddleMatr = new THREE.MeshPhongMaterial( { color: 0x04d9ff } );
+    const paddle = new THREE.Mesh( paddleGeo, paddleMatr );
+    paddle.position.y = ball.position.y;
+    paddle.position.x = 0
+    paddle.position.z = 4.5;
+
+    scene.add(paddle);
+
     const brickGeo = new THREE.BoxGeometry( 1.0, .25, .25 );
     const brickMatr = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
     const orginalBrick = new THREE.Mesh( brickGeo, brickMatr );
@@ -241,28 +247,7 @@ function sandbox() {
     }
     addBricks();
 
-    // const lineGeo = new THREE.BoxGeometry( 10.0, .25, .25 );
-    // const lineMatr = new THREE.MeshPhongMaterial( { color: 0xffffff } );
-    // const orginalline = new THREE.Mesh( lineGeo, lineMatr );
-    // orginalline.position.y = ball.position.y - .35;
-    // const lines = new THREE.Group();
-
-    // function addLines (rows = 21) {
-    //     for(let j = 0; j < rows; j++) {
-    //       const line = orginalline.clone();
-    //       console.log(j % 2 === 0)
-    //       if (j % 2 === 0) {
-    //         line.material.color.set(0x00ffff);
-    //         line.rotateZ(Math.PI / 2);
-    //       }
-    //       line.position.z = (j * .5) - 5;
-    //       lines.add(line);
-    //     }
-    //   scene.add(lines);
-    // }
-    // addLines();
-
-     //brick collisions
+  //brick collisions
   function brickCollision() {
     bricks.children.forEach((brick) => {
       if (ball.position.x >= brick.position.x - 1 && ball.position.x  <= brick.position.x + 1) {
@@ -275,21 +260,85 @@ function sandbox() {
     });
   }
 
+  //paddle collisions
+  function paddleCollision() {
+    if (ball.position.x >= paddle.position.x - 1 && ball.position.x  <= paddle.position.x + 1) {
+      if(ball.position.z >= paddle.position.z - .25 && ball.position.z <= paddle.position.z + .25) {
+        yAxis = -yAxis + getRandomArbitrary();
+        xAxis = -xAxis + getRandomArbitrary();
+      }
+    }
+  }
+
   function getRandomArbitrary() {
     const random = Math.random() * (0.5 - 0.1) + .01;
     return random;
   }
 
+
   function addBigCube() {
     const cubeGeo = new THREE.BoxGeometry( 10.0, 10.0, 10.0 );
-    const cubeMatr = new THREE.MeshPhongMaterial( { color: 0x00ff00} );
+    const cubeMatr = new THREE.MeshPhongMaterial( { color: 0x00ff00, transparent:true, opacity: 0.5} );
     const cube = new THREE.Mesh( cubeGeo, cubeMatr );
     cube.position.x = 0;
     cube.position.y = -5.01
+    // cube.position.y = 0
+
     cube.position.z = 0;
     scene.add( cube );
   }
   addBigCube();
+
+  // const ballGeo = new THREE.SphereGeometry( 0.15 );
+  // const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+  // const ball = new THREE.Mesh( ballGeo, ballMatr );
+  // ball.position.x = 0;
+  // ball.position.y = randomizeDirection();
+  // ball.position.z = 0;
+
+
+  // scene.add( ball );
+  // const cubeAxes = 5.00;
+  //   let xAxis = (speed * delta)
+  //   let zAxis = -1 + (speed * delta)
+  //   let yAxis = -1 + (speed * delta)
+
+  //   function cubeCollision(){
+  //     let smoothness = .5;
+  //     ball.translateX( xAxis * smoothness);
+  //     ball.translateZ( zAxis * smoothness);
+  //     ball.translateY( yAxis * smoothness);
+
+  //     if(ball.position.x <= -1 * cubeAxes  ) {
+  //       ball.position.x = (-1 * cubeAxes)
+  //       xAxis = -xAxis + getRandomArbitrary();
+  //     }
+
+  //     if(ball.position.x >= cubeAxes) {
+  //       ball.position.x = cubeAxes
+  //       xAxis = -xAxis + getRandomArbitrary();
+  //     }
+
+  //     if(ball.position.z <= -1 * cubeAxes) {
+  //       ball.position.z = (-1 * cubeAxes)
+  //       zAxis = -zAxis + getRandomArbitrary();
+  //     }
+
+  //     if(ball.position.z >= cubeAxes) {
+  //       ball.position.z = cubeAxes
+  //       zAxis = -zAxis + getRandomArbitrary();
+  //     }
+  //     if(ball.position.y <= -1 * cubeAxes  ) {
+  //       ball.position.y = (-1 * cubeAxes)
+  //       yAxis = -yAxis + getRandomArbitrary();
+  //     }
+
+  //     if(ball.position.y >= cubeAxes) {
+  //       ball.position.y = cubeAxes
+  //       yAxis = -yAxis + getRandomArbitrary();
+  //     }
+  //   }
+
 
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -312,8 +361,10 @@ function sandbox() {
     renderer.xr.updateCamera( camera );
     world.execute( delta, elapsedTime );
     renderer.render( scene, camera );
+    // cubeCollision();
     wallCollision();
     brickCollision();
+    paddleCollision();
     // onWindowScroll()
 
   }
