@@ -177,6 +177,9 @@ function sandbox() {
     window.addEventListener( 'resize', onWindowResize() );
   }
 
+
+   // Update all the collision to use intersecting bounding boxes instead of the position of the objects
+
     //breakout
     const ballGeo = new THREE.SphereGeometry( 0.15 );
     const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
@@ -224,7 +227,7 @@ function sandbox() {
     const paddle = new THREE.Mesh( paddleGeo, paddleMatr );
     paddle.position.y = ball.position.y;
     paddle.position.x = 0
-    paddle.position.z = 4.5;
+    paddle.position.z = 5;
 
     scene.add(paddle);
 
@@ -250,7 +253,7 @@ function sandbox() {
   //brick collisions
   function brickCollision() {
     bricks.children.forEach((brick) => {
-      if (ball.position.x >= brick.position.x - 1 && ball.position.x  <= brick.position.x + 1) {
+      if (ball.position.x >= brick.position.x - 2 && ball.position.x  <= brick.position.x + 2) {
         if(ball.position.z >= brick.position.z - .25 && ball.position.z <= brick.position.z + .25) {
           bricks.remove(brick);
           yAxis = -yAxis + getRandomArbitrary();
@@ -262,8 +265,8 @@ function sandbox() {
 
   //paddle collisions
   function paddleCollision() {
-    if (ball.position.x >= paddle.position.x - 1 && ball.position.x  <= paddle.position.x + 1) {
-      if(ball.position.z >= paddle.position.z - .25 && ball.position.z <= paddle.position.z + .25) {
+    if (ball.position.x >= paddle.position.x - 1 && ball.position.x <= paddle.position.x + 1) {
+      if(ball.position.z === paddle.position.z - .25) {
         yAxis = -yAxis + getRandomArbitrary();
         xAxis = -xAxis + getRandomArbitrary();
       }
