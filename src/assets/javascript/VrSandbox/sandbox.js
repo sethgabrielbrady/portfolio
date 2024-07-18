@@ -22,8 +22,8 @@ function sandbox() {
   init();
   animate();
   //units a second
-  let speed = 0.5;
-  let delta = 1/30;
+  let speed = 0.2;
+  let delta = 1/60;
 
   function init() {
     scene = new THREE.Scene();
@@ -33,6 +33,7 @@ function sandbox() {
     const distance = 7;
     camera = new THREE.OrthographicCamera(- distance * aspect, distance * aspect, distance, - distance, 1, 1000);
     camera.position.set( 20, 20, 20 ); // all components equal
+    // camera.position.set( 1.4788384930664669e-8, 34.641016151360226, 0.00003464255276393731 );
     camera.lookAt( scene.position ); // or the origin
 
     const light = new THREE.DirectionalLight( 0xffffff, 3 );
@@ -159,10 +160,13 @@ function sandbox() {
 
     window.addEventListener( 'resize', onWindowResize() );
   }
-  //Update all the collision to use intersecting bounding boxes instead of the position of the objects
 
+  //Update all the collision to use intersecting bounding boxes instead of the position of the objects
   //breakout
   const breakoutObject = new THREE.Group();
+  // const startingYPos = 18.84;
+  const startingYPos = 0.25
+
 
   const ballGeo = new THREE.SphereGeometry( 0.15 );
   const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
@@ -172,7 +176,7 @@ function sandbox() {
   let yAxis = -1 + (speed * delta)
 
   ball.position.x = randomizeDirection();
-  ball.position.y = .25;
+  ball.position.y = startingYPos;
   ball.position.z = -1;
   breakoutObject.add(ball);
 
@@ -181,9 +185,9 @@ function sandbox() {
   const paddleMatr = new THREE.MeshPhongMaterial( { color: 0x04d9ff } );
   const paddle = new THREE.Mesh( paddleGeo, paddleMatr );
 
-  paddle.position.y = ball.position.y;
+  paddle.position.y = startingYPos;
   paddle.position.x = 0
-  paddle.position.z = 3;
+  paddle.position.z = 4.5;
   breakoutObject.add(paddle);
 
 
@@ -191,7 +195,7 @@ function sandbox() {
   const brickMatr = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
   const orginalBrick = new THREE.Mesh( brickGeo, brickMatr );
 
-  orginalBrick.position.y = ball.position.y;
+  orginalBrick.position.y = startingYPos;
 
   const bricks = new THREE.Group();
 
@@ -224,7 +228,7 @@ function sandbox() {
   }
 
   function collisions(){
-    let smoothness = .5;
+    let smoothness = .175;
     ball.translateX( xAxis * smoothness);
     ball.translateZ( yAxis * smoothness);
 
@@ -272,6 +276,27 @@ function sandbox() {
     renderer.setAnimationLoop( render );
   }
 
+  // function updateBreakoutYPosition() {
+  //   breakoutObject.translateY(-0.1);
+  //   console.log(breakoutObject.position.y);
+  // }
+
+  // function updateCameraPosition() {
+  //   let cx = camera.position.x;
+  //   let cy = camera.position.y;
+  //   let cz = camera.position.z;
+  //   if (camera.position.y > 20 ) {
+  //     cy -= 0.1;
+  //   }
+  //   if (camera.position.x < 20 ) {
+  //     cx  += 0.1;
+  //   }
+  //   if (camera.position.z < 20 ) {
+  //     cz  += 0.1;
+  //   }
+  //   camera.position.set(cx, cy, cz);
+  // }
+
   function render() {
     let delta = clock.getDelta();
     const elapsedTime = clock.elapsedTime;
@@ -279,7 +304,21 @@ function sandbox() {
     world.execute( delta, elapsedTime );
     renderer.render( scene, camera );
     collisions();
+
+    // if (elapsedTime > 3.0 && elapsedTime < 6.1) {
+    //   updateBreakoutYPosition();
+    // }
+    // if (elapsedTime > 1.0){
+    //   updateCameraPosition();
+    //   }
+    // }
+    // if (camera.position.y == 20 && camera.position.x == 20 && camera.position.z == 20) {
+    //   camera.update
+    // }
+
   }
 }
 
+//{x: 1.4788384930664669e-8, y: 34.641016151360226, z: 0.00003464255276393731}
+// position{x: 20, y: 20, z: 20.000000000000004}
 export { sandbox };
