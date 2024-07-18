@@ -1,5 +1,5 @@
 <script>
-  import { sandbox } from '@/assets/javascript/VrSandbox/sandbox.js'
+  import { sandbox } from '@/assets/javascript/VrSandbox/sandbox.ts'
 
   export default {
     components: {
