@@ -1,19 +1,32 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { World } from 'three/examples/jsm//libs/ecsy.module.js';
+import { World } from 'three/examples/jsm/libs/ecsy.module.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
+import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
+
+
+
+// Look at threejs ttf loader
+//https://threejs.org/examples/#webgl_loader_ttf
+
+// Look at threejs multiple elements with text
+//https://threejs.org/examples/#webgl_multiple_elements_text
+
+// post processing
+//https://threejs.org/examples/#webgl_postprocessing
+//https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
 
 const raycaster = new THREE.Raycaster();
+const floorColor = 0x222222;
+  // const backgroundColor: THREE.Color = new THREE.Color(0x222222);
 
 function sandbox() {
   const world: THREE.World = new World();
   const clock: THREE.Clock = new THREE.Clock();
   let delta: number = 0;
-  let camera: THREE.PerspectiveCamera;
+  let camera: THREE.OrthographicCamera;
   let renderer: THREE.WebGLRenderer;
-  let scene: THREE.Scene;
-  // let camera, renderer, scene;
-  const backgroundColor = 0x222222;
+  let scene: THREE.Scene = new THREE.Scene();
 
   function randomizeDirection() {
     const random: number = Math.random();
@@ -27,11 +40,12 @@ function sandbox() {
   init();
   animate();
   //units a second
-  const speed: number = 0.2;
+  const speed: number = 3;
 
   function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( backgroundColor );
+
+    scene.background = new THREE.Color( 0x222222 );
 
     const aspect: number = (window.innerWidth / window.innerHeight);
     const distance: number = 7;
@@ -81,7 +95,7 @@ function sandbox() {
       }
       if (event.key === 'b') {
         if (!ballInPlay) {
-          addBall();
+          addBall(paddle.position.x);
         }
       }
       if (event.key === 'c') {
@@ -92,7 +106,7 @@ function sandbox() {
 
      window.addEventListener( 'click', ( event ) => {
       if (!ballInPlay) {
-          addBall();
+          addBall(paddle.position.x);
         }
       });
 
@@ -104,18 +118,26 @@ function sandbox() {
 
      function translateCamera() {
       if (cameraSwitch) {
-        camera.position.set( 1.630175897290663e-7, 34.641016151360226, 0.00003464063257599432 );
+        camera.position.set( 0, 6, 0 );
+        camera.lookAt( scene.position )
       } else {
-        camera.position.set( 20, 20, 20 );
+          new TWEEN.Tween(camera.position)
+          .to({ x: 6, y: 7, z: 6 })
+          .easing(TWEEN.Easing.Quadratic.InOut)
+          .onUpdate(() =>
+            {
+              camera.lookAt( scene.position )
+            })
+        .start();
+        // camera.position.set( 20, 20, 20 );
       }
-      camera.lookAt( scene.position )
+
      }
 
 
     //floor
-    const floorColor = 0x111111;
     const floorGeometry = new THREE.PlaneGeometry( 10, 10 );
-    const floorMaterial = new THREE.MeshPhongMaterial( { color: floorColor, transparent: false } );
+    const floorMaterial = new THREE.MeshPhongMaterial( { color: floorColor, transparent: true, opacity:0 } );
 
     const floor = new THREE.Mesh( floorGeometry, floorMaterial );
     floor.rotation.x = - Math.PI / 2;
@@ -131,11 +153,10 @@ function sandbox() {
     floor.add( floorText, floorText2 );
     scene.add(floor);
 
-    container.addEventListener( 'resize', onWindowResize() );
+    container.addEventListener( 'resize', onWindowResize );
     container.addEventListener( 'pointermove', onIntersect );
   }
 
-  //Update all the collision to use intersecting bounding boxes instead of the position of the objects
   //breakout
   const breakoutObject = new THREE.Group();
   const startingYPos = 0.25
@@ -144,22 +165,20 @@ function sandbox() {
   const ballGeo = new THREE.SphereGeometry( 0.15 );
   const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
   const ball = new THREE.Mesh( ballGeo, ballMatr );
+
   const wallAxis = 5.00;
   let xAxis = (speed * delta)
   let yAxis = -1 + (speed * delta)
   let ballInPlay = false;
 
-
-
-  function addBall(x) {
+  function addBall(x = null) {
     ballInPlay = !ballInPlay;
-    ball.position.x = x || randomizeDirection();
+    ball.position.x = x !== null ? x : randomizeDirection();
     ball.position.y = startingYPos;
     ball.position.z = 4;
     breakoutObject.add(ball);
     xAxis = (speed * delta)
     yAxis = -1 + (speed * delta)
-
   }
 
   addBall();
@@ -177,6 +196,9 @@ function sandbox() {
 
   const brickGeo = new THREE.BoxGeometry( 1.0, .25, .25 );
   const brickMatr = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
+  brickMatr.transparent = true;
+  brickMatr.opacity = 0.75;
+
   const orginalBrick = new THREE.Mesh( brickGeo, brickMatr );
 
   orginalBrick.position.y = startingYPos;
@@ -211,11 +233,12 @@ function sandbox() {
     });
   }
 
+
   function checkPaddeCollision() {
     if (ball.position.x >= paddle.position.x - 1 && ball.position.x <= paddle.position.x + 1 ){
       if (ball.position.z >= paddle.position.z - 0.35 && ball.position.z <= paddle.position.z + 0.35) {
         yAxis = -yAxis + getRandomArbitrary();
-        xAxis = (-xAxis + getRandomArbitrary()) * randomizeDirection();
+        xAxis = -xAxis + getRandomArbitrary();
       }
     }
   }
@@ -292,7 +315,10 @@ function sandbox() {
     renderer.xr.updateCamera( camera );
     world.execute( delta, elapsedTime );
     renderer.render( scene, camera );
+    // cubeBall.position.x = ball.position.x;
+    // cubeBall.position.z= ball.position.z;
     collisions();
+    TWEEN.update();
   }
 }
 
