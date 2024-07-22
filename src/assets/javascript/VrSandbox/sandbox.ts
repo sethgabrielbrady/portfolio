@@ -5,17 +5,6 @@ import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 
 
-
-// Look at threejs ttf loader
-//https://threejs.org/examples/#webgl_loader_ttf
-
-// Look at threejs multiple elements with text
-//https://threejs.org/examples/#webgl_multiple_elements_text
-
-// post processing
-//https://threejs.org/examples/#webgl_postprocessing
-//https://threejs.org/examples/#webgl_postprocessing_unreal_bloom
-
 const raycaster = new THREE.Raycaster();
 const floorColor = 0x222222;
   // const backgroundColor: THREE.Color = new THREE.Color(0x222222);
@@ -226,7 +215,7 @@ function sandbox() {
       if (ball.position.x >= brick.position.x - 0.5 && ball.position.x <= brick.position.x + 0.5) {
         if(ball.position.z >= brick.position.z - .25 && ball.position.z <= brick.position.z + .25) {
           bricks.remove(brick);
-          yAxis = -yAxis + getRandomArbitrary();
+          yAxis = -yAxis;
           xAxis = -xAxis + getRandomArbitrary();
         }
       }
@@ -237,18 +226,19 @@ function sandbox() {
   function checkPaddeCollision() {
     if (ball.position.x >= paddle.position.x - 1 && ball.position.x <= paddle.position.x + 1 ){
       if (ball.position.z >= paddle.position.z - 0.35 && ball.position.z <= paddle.position.z + 0.35) {
-        yAxis = -yAxis + getRandomArbitrary();
+        console.log(xAxis, -xAxis);
+        yAxis = -yAxis;
         xAxis = -xAxis + getRandomArbitrary();
       }
     }
   }
 
   function collisions(){
-    if (xAxis >= 2) {
-      xAxis = 2;
+    if (xAxis > 5) {
+      xAxis = 5;
     }
-    if (yAxis >= 2) {
-      yAxis = 2;
+    if (yAxis > 5) {
+      yAxis = 5;
     }
     // console.log("xAxis", xAxis, yAxis);
     const smoothness = .175;
