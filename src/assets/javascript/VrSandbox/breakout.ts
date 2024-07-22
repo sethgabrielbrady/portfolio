@@ -9,19 +9,15 @@ import * as THREE from 'three';
   const scene: THREE.Scene = new THREE.Scene();
   const smoothness = .175;
 
-
-
   let camera: THREE.OrthographicCamera;
   let renderer: THREE.WebGLRenderer;
   let delta: number = 0;
   let xAxis = (speed * delta)
   let yAxis = -1 + (speed * delta)
   let ballInPlay = false;
-
-
+  let paddleInPlay = false;
 
   // 3D Objects
-
   // ball
   const ballGeo = new THREE.SphereGeometry( 0.15 );
   const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
@@ -126,6 +122,7 @@ import * as THREE from 'three';
 
 
   const pointer = new THREE.Vector2();
+
   function onPaddleIntersect( event: { clientX: number; }) {
     pointer.x = event.clientX / 90 ;
     raycaster.setFromCamera( pointer, camera );
@@ -145,7 +142,6 @@ import * as THREE from 'three';
     yAxis = -1 + (speed * delta)
   }
 
-  addBall();
 
   function randomizeDirection() {
     const random: number = Math.random();
@@ -164,6 +160,10 @@ import * as THREE from 'three';
   function render() {
     delta = clock.getDelta();
     renderer.render( scene, camera );
+
+    if (paddleInPlay) {
+      window.addEventListener( 'pointermove', onPaddleIntersect );
+    }
 
     collisions();
   }
@@ -202,14 +202,15 @@ import * as THREE from 'three';
     const container: HTMLElement = document.getElementById("sandbox")!;
     container.appendChild(renderer.domElement);
 
-    container.addEventListener( 'pointermove', onPaddleIntersect );
-
     container.addEventListener( 'click', ( event ) => {
-     if (!ballInPlay) {
+      if (!ballInPlay) {
         addBall(paddle.position.x);
       }
-    });
 
+      if (!paddleInPlay) {
+        paddleInPlay = !paddleInPlay;
+      }
+    });
   }
 
   function animate() {
