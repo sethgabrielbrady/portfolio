@@ -123,3 +123,15 @@
     // scene.add(axisGroup);
 
   //a axes helper
+
+
+
+  // orbit controls
+      //orbit controls
+    // import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    // let orbitEnabled = false;
+    // const orbitControls = new OrbitControls(camera, renderer.domElement)
+    // orbitControls.enabled = true;
+    // orbitControls.enableRotate = orbitEnabled
+    // orbitControls.keyPanSpeed = 60.0 // magic number
+    // orbitControls.enableZoom = true
