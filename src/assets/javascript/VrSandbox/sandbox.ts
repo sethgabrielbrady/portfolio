@@ -6,14 +6,14 @@ const floorColor = 0x222222;
 
 function sandbox() {
   const clock: THREE.Clock = new THREE.Clock();
+  const aspect: number = (window.innerWidth / window.innerHeight);
+  const distance: number = 7;
+
   let delta: number = 0;
   let camera: THREE.OrthographicCamera;
   let renderer: THREE.WebGLRenderer;
   let scene: THREE.Scene = new THREE.Scene();
   let cameraSwitch = false;
-
-  const aspect: number = (window.innerWidth / window.innerHeight);
-  const distance: number = 7;
 
   init();
   animate();
@@ -23,7 +23,7 @@ function sandbox() {
     scene.background = new THREE.Color( 0x222222 );
 
     camera = new THREE.OrthographicCamera(- distance * aspect, distance * aspect, distance, - distance, 1, 1000);
-    camera.position.set( 20, 20, 20 ); // all components equal
+    camera.position.set( 20, 20, 20 );
     camera.lookAt( scene.position ); // or the origin
 
     const light: THREE.DirectionalLight = new THREE.DirectionalLight( 0xffffff, 3 );
@@ -51,7 +51,7 @@ function sandbox() {
         cameraSwitch = !cameraSwitch;
         translateCamera();
       }
-     });
+    });
 
     function translateCamera() {
       if (cameraSwitch) {
@@ -61,20 +61,19 @@ function sandbox() {
           new TWEEN.Tween(camera.position)
           .to({ x: 6, y: 7, z: 6 })
           .easing(TWEEN.Easing.Quadratic.InOut)
-          .onUpdate(() =>
-            {
-              camera.lookAt( scene.position )
-            })
+          .onUpdate(() => {
+            camera.lookAt( scene.position )
+          })
         .start();
       }
     }
 
     //floor
-    const floorGeometry = new THREE.PlaneGeometry( 10, 10 );
-    const floorMaterial = new THREE.MeshPhongMaterial( { color: floorColor, transparent: true, opacity:0 } );
+    const floorGeometry: THREE.PlaneGeometry = new THREE.PlaneGeometry( 10, 10 );
+    const floorMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial( { color: floorColor, transparent: true, opacity:0 } );
     const floorText = createText( 'Hello,', 1 );
     const floorText2 = createText( "I'm Seth Brady.", 1 );
-    const floor = new THREE.Mesh( floorGeometry, floorMaterial );
+    const floor: THREE.Mesh = new THREE.Mesh( floorGeometry, floorMaterial );
 
     floor.rotation.x = - Math.PI / 2;
     floor.receiveShadow = false;
