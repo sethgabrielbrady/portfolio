@@ -20,7 +20,9 @@
 </script>
 
 <template>
-  <div id="sandbox" />
+  <div style="height: 120vh; width:100vw;">
+    <div id="sandbox" style="position:fixed; "/>
+  </div>
 </template>
 
 <style scoped>

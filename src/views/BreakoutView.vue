@@ -1,5 +1,5 @@
 <script>
-  import { breakout } from '@/assets/javascript/other/3DBreakout.ts'
+  import { breakout } from '@/assets/javascript/other/breakout.ts'
 
   export default {
     setup() {
@@ -17,6 +17,6 @@
 
 <template>
   <div style="width:100vw; height:100vh;">
-    <div id="3dBreakout" />
+    <div id="breakout" />
   </div>
 </template>

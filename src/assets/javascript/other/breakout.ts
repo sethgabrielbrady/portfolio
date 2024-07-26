@@ -170,7 +170,6 @@ import * as THREE from 'three';
 
 
   function init() {
-    console.log("init breakout");
     scene.background = new THREE.Color( 0x222233 );
 
     const aspect: number = (window.innerWidth / window.innerHeight);
@@ -192,14 +191,15 @@ import * as THREE from 'three';
       alpha: true,
       precision: "lowp",
       powerPreference: "low-power",
-    } );
+    });
+
     renderer.setClearColor
 
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.shadowMap.enabled = true;
 
-    const container: HTMLElement = document.getElementById("sandbox")!;
+    const container: HTMLElement = document.getElementById("breakout")!;
     container.appendChild(renderer.domElement);
 
     container.addEventListener( 'click', ( event ) => {
