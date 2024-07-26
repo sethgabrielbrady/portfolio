@@ -1,6 +1,8 @@
 import * as THREE from 'three';
+import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
-  const speed: number = 3;
+
+  const speed: number = 2;
   const clock: THREE.Clock = new THREE.Clock();
   const wallAxis = 5.00;
   const breakoutObject = new THREE.Group();
@@ -8,14 +10,15 @@ import * as THREE from 'three';
   const raycaster = new THREE.Raycaster();
   const scene: THREE.Scene = new THREE.Scene();
   const smoothness = .175;
+  const interval = 1/60;
 
   let camera: THREE.OrthographicCamera;
   let renderer: THREE.WebGLRenderer;
   let delta: number = 0;
-  let xAxis = (speed * delta)
-  let yAxis = -1 + (speed * delta)
+  let xAxis = speed * delta;
+  let yAxis = -1 + (speed * delta);
   let ballInPlay = false;
-  let paddleInPlay = false;
+  const paddlePosition = 0;
 
   // 3D Objects
   // ball
@@ -34,9 +37,9 @@ import * as THREE from 'three';
   breakoutObject.add(paddle);
 
   //bricks
-  const bricks = new THREE.Group();
-  const brickGeo = new THREE.BoxGeometry( 1.0, .25, .25 );
-  const brickMatr = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
+  const bricks: THREE.Group = new THREE.Group();
+  const brickGeo: THREE.BoxGeometry = new THREE.BoxGeometry( 1.0, .25, .25 );
+  const brickMatr: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial( { color: 0xb116e8 } );
   brickMatr.transparent = true;
   brickMatr.opacity = 0.75;
 
@@ -55,46 +58,48 @@ import * as THREE from 'three';
     }
    breakoutObject.add(bricks);
   }
+
   addBricks();
 
   scene.add(breakoutObject);
 
-  function collisions(){
+  function collisions() {
     if (xAxis > 5) {
       xAxis = 5;
     }
     if (yAxis > 5) {
       yAxis = 5;
     }
+
     ball.translateX( xAxis * smoothness);
     ball.translateZ( yAxis * smoothness);
 
-    if(ball.position.x <= -1 * wallAxis  ) {
+    checkWallCollision();
+    checkPaddeCollision();
+    checkBrickCollision();
+  }
+
+  //wall collision
+  function checkWallCollision() {
+    if (ball.position.x <= -1 * wallAxis  ) {
       ball.position.x = (-1 * wallAxis)
       xAxis = -xAxis;
-      // xAxis = (-1 * (xAxis + getRandomArbitrary()));
     }
 
-    if(ball.position.x >= wallAxis) {
+    if (ball.position.x >= wallAxis) {
       ball.position.x = wallAxis
       xAxis = -xAxis;
-
-      // xAxis = (-1 * (xAxis + getRandomArbitrary()));
     }
 
-    if(ball.position.z <= -1 * wallAxis) {
+    if (ball.position.z <= -1 * wallAxis) {
       ball.position.z = (-1 * wallAxis)
       yAxis = -yAxis;
     }
 
-
-    if(ball.position.z >= wallAxis + 2) {
+    if (ball.position.z >= wallAxis + 2) {
      breakoutObject.remove(ball);
      ballInPlay = !ballInPlay;
     }
-
-    checkPaddeCollision();
-    checkBrickCollision();
   }
 
   //brick collisions
@@ -110,7 +115,6 @@ import * as THREE from 'three';
     });
   }
 
-
   function checkPaddeCollision() {
     if (ball.position.x >= paddle.position.x - 1 && ball.position.x <= paddle.position.x + 1 ){
       if (ball.position.z >= paddle.position.z - 0.35 && ball.position.z <= paddle.position.z + 0.35) {
@@ -120,13 +124,10 @@ import * as THREE from 'three';
     }
   }
 
-
   const pointer = new THREE.Vector2();
-
   function onPaddleIntersect( event: { clientX: number; }) {
     pointer.x = event.clientX / 90 ;
     raycaster.setFromCamera( pointer, camera );
-
     if (pointer.x > 5 && pointer.x < 15) {
       paddle.position.x = pointer.x - 10;
     }
@@ -138,8 +139,7 @@ import * as THREE from 'three';
     ball.position.y = startingYPos;
     ball.position.z = 4;
     breakoutObject.add(ball);
-    xAxis = (speed * delta)
-    yAxis = -1 + (speed * delta)
+    yAxis = -yAxis
   }
 
 
@@ -156,18 +156,6 @@ import * as THREE from 'three';
     const random = Math.random() * (0.5 - 0.1) + .01;
     return random;
   }
-
-  function render() {
-    delta = clock.getDelta();
-    renderer.render( scene, camera );
-
-    if (paddleInPlay) {
-      window.addEventListener( 'pointermove', onPaddleIntersect );
-    }
-
-    collisions();
-  }
-
 
   function init() {
     scene.background = new THREE.Color( 0x222233 );
@@ -204,19 +192,26 @@ import * as THREE from 'three';
 
     container.addEventListener( 'click', ( event ) => {
       if (!ballInPlay) {
-        addBall(paddle.position.x);
-      }
-
-      if (!paddleInPlay) {
-        paddleInPlay = !paddleInPlay;
+        const x: number = paddle.position.x;
+        addBall(x);
       }
     });
   }
 
   function animate() {
-    renderer.setAnimationLoop( render );
+    requestAnimationFrame(animate);
+    delta += clock.getDelta();
+     if (delta  > interval) {
+      render();
+      delta = delta % interval;
+     }
   }
 
+  function render() {
+    renderer.render( scene, camera );
+    collisions();
+    window.addEventListener( 'pointermove', onPaddleIntersect );
+  }
 
   function breakout() {
     init();

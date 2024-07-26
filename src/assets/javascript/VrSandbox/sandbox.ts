@@ -18,7 +18,6 @@ function sandbox() {
   let scene: THREE.Scene = new THREE.Scene();
   let cameraSwitch = false;
 
-
   init();
   animate();
 
@@ -31,12 +30,7 @@ function sandbox() {
     camera.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), - Math.PI / 2 );
     camera.lookAt( scene.position ); // or the origin
 
-    // const light: THREE.DirectionalLight = new THREE.DirectionalLight( 0xffffff, 3 );
-    // light.position.set( 20, 20, 20);
-    // light.castShadow = false;
-    // scene.add( light );
     scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 3 ) );
-    // scene.add( new THREE.AmbientLight( 0xffffff, 0x999999, 3 ) );
 
     renderer = new THREE.WebGLRenderer( {
       antialias: false,
@@ -117,9 +111,7 @@ function sandbox() {
     container.addEventListener( 'resize', onWindowResize );
   }
 
-
   //floor cubes
-  // const oldCubeColor: number = 0x00ff00;
   const newCubeColor: number = 0x111111;
   const cubeCount: number = 100;
   const cubeSize: number = .125;
@@ -199,14 +191,12 @@ function sandbox() {
     delta += clock.getDelta();
     elapsedTime = clock.elapsedTime;
      if (delta  > interval) {
-      // The draw or time dependent code are here
       render();
       delta = delta % interval;
      }
   }
 
   function render() {
-    // delta = clock.getDelta();
     renderer.render( scene, camera );
     TWEEN.update();
     floorCubeAnimator();
