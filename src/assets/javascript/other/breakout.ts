@@ -185,7 +185,7 @@ import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.enabled = false;
 
     const container: HTMLElement = document.getElementById("breakout")!;
     container.appendChild(renderer.domElement);

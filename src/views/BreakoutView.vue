@@ -1,5 +1,6 @@
 <script>
-  import { breakout } from '@/assets/javascript/other/breakout.ts'
+  // import { breakout } from '@/assets/javascript/other/breakout.ts'
+  import { shootfox } from '@/assets/javascript/other/shootfox.ts'
 
   export default {
     setup() {
@@ -10,7 +11,8 @@
       }
     },
     mounted() {
-      breakout();
+      // breakout();
+      shootfox();
     },
   }
 </script>

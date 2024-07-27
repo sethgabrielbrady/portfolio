@@ -118,8 +118,10 @@ function sandbox() {
   // const cubeSize: number = .125;
   const cubeGeometry: THREE.BoxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
   const cubeMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial({ color: newCubeColor, transparent: true, opacity: 0.15, emissive: 0x00ffff });
-  const cube: THREE.Mesh = new THREE.Mesh( cubeGeometry, cubeMaterial );
+  const cube: THREE.InstancedMesh = new THREE.InstancedMesh( cubeGeometry, cubeMaterial, 1 );
+  // const cubes: THREE.InstancedMesh = new THREE.InstancedMesh( cubeGeometry, cubeMaterial, cubeCount );
 
+  // console.log(cubes);
   const cubeFloor = 0 + cubeSize;
   let xPos: number = 5;
   const yPos: number = cubeFloor;
