@@ -9,6 +9,8 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   const interval = 1/60;
   const raycaster = new THREE.Raycaster();
 
+
+  let showHelper = false;
   let camera = new THREE.Camera();
   let renderer: THREE.WebGLRenderer
   let delta: number = 0;
@@ -167,7 +169,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
   let photonInPlay = false;
 
-  const photonSpeed = .5;
+  const photonSpeed = 1;
   function animatePhoton(directions) {
 
     // const currentShipPosition = ship.position;
@@ -290,7 +292,6 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
     // // axis helper
     const axesHelper = new THREE.AxesHelper( 5 );
-    scene.add( axesHelper );
     const xText = createText( 'x', 1 );
     const xText2 = createText( '-x', 1 );
     const xText3 = createText( 'x', 1 );
@@ -340,7 +341,8 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     yText.rotation.x = Math.PI / 2;
     yText2.rotation.x = Math.PI / 2;
 
-    axisGroup.add(xGroup, zGroup, yGroup);
+    axisGroup.add(xGroup, zGroup, yGroup, axesHelper);
+    axisGroup.visible = showHelper;
     scene.add(axisGroup);
 
 
@@ -357,12 +359,19 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     const positionSpeed = 1200;
 
     window.addEventListener( 'keydown', ( event ) => {
+
+      if (event.key === 'r') {
+        showHelper = !showHelper;
+        axisGroup.visible = showHelper;
+      }
       if (event.key === 'c') {
         translateCamera();
       }
       if (event.key === 'o') {
         orbitControls.enabled = !orbitControls.enabled;
       }
+
+
 
       if (event.key === 'p' && photonCount < 1) {
         firePhoton();
