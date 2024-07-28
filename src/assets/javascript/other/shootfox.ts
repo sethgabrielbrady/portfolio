@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
   const clock: THREE.Clock = new THREE.Clock();
   const scene: THREE.Scene = new THREE.Scene();
@@ -71,6 +71,55 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   scene.add( cubeGroupContainer );
 
 
+  // I think a better way to do this would be to create 10 groups of random palms and add them to the scene every 10 or so units
+  // After 1 group goes beyond a certain point, remove it from the scene
+  // then add a new random group of palms to a further y positions
+
+  // const palm = {
+  //   scale: 0.125,
+  //   path: 'models/palmshiny.glb',
+  //   position: { x: 0, y: -20, z: ground.position.z + 1 }
+  // }
+  // const gltfLoader = new GLTFLoader();
+
+  // let model;
+  // const palmGroup = new THREE.Group();
+
+  // gltfLoader.load(palm.path,
+  // (gltf) => {
+  //   model = gltf.scene
+  //   model.scale.x = palm.scale;
+  //   model.scale.y = palm.scale;
+  //   model.scale.z = palm.scale;
+  //   model.position.x = palm.position.x;
+  //   model.position.y = palm.position.y;
+  //   model.position.z = palm.position.z;
+  //   model.rotation.x = Math.PI / 2;
+  //   model.castShadow = false;
+
+  //   for (let i = 0; i < 200; i++) {
+  //     const clone = model.clone();
+  //     let randomX = (Math.random() * 100) * getRandomPosOrNeg();
+  //     if (randomX <= 10 && randomX >= -10) {
+  //       randomX = (Math.random() * 400) * getRandomPosOrNeg();
+  //     }
+  //     const randomY = (Math.random() * 400) * getRandomPosOrNeg();
+  //     clone.position.x = randomX;
+  //     clone.position.y = randomY;
+  //     clone.scale.y = Math.random() * 0.125 + 0.1;
+  //     palmGroup.add(clone);
+  //   }
+  // });
+
+  // function getRandomPosOrNeg() {
+  //   return Math.random() < 0.5 ? -1 : 1;
+  // }
+
+  // scene.add(palmGroup);
+
+
+
+
   // Ship
   const radius = 4;
   const height = 5;
@@ -134,8 +183,9 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
 
   function animateModel(model) {
+
     model.position.y -= shipSpeed.x;
-    if (model.position.y < -200) {
+    if (model.position.y < -180) {
       model.position.y = -30;
     }
   }
@@ -169,32 +219,23 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
   let photonInPlay = false;
 
-  const photonSpeed = 1;
+  const photonSpeed = 1.25;
   function animatePhoton(directions) {
-
-    // const currentShipPosition = ship.position;
-    // const currentShipRotation = ship.rotation;
-    // photon.position.y = currentShipPosition.y;
-    // photon.position.x = currentShipPosition.x;
-    // photon.position.z = currentShipPosition.z;
-    // photon.rotation.x = currentShipRotation.y;
-    // photon.rotation.z = currentShipRotation.z;
-
     // console.log(photon.position);
     console.log(directions);
     photon.position.y += photonSpeed;
 
 
     if (directions.x === 1) {
-      photon.position.z += photonSpeed;
+      photon.position.z += .3;
     } else if (directions.x === -1) {
-      photon.position.z -= photonSpeed;
+      photon.position.z -= .3;
     }
 
     if (directions.y === 1) {
-      photon.position.x += photonSpeed;
+      photon.position.x += .3;
     } else if (directions.y === -1) {
-      photon.position.x -= photonSpeed;
+      photon.position.x -= .3;
     }
     if (photon.position.y > 30 || photon.position.z > 30 || photon.position.z < -30 || photon.position.x > 30 || photon.position.x < -30) {
       photon.position.y = ship.position.y ;
@@ -211,13 +252,13 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     console.log(counter += 1)
     // Maybe I should be firing on clones of the photon and removing them from the scene?
     photonInPlay = true;
-    // const currentShipPosition = ship.position;
+    const currentShipPosition = ship.position;
     const currentShipRotation = ship.rotation;
-    // photon.position.y = currentShipPosition.y;
-    // photon.position.x = currentShipPosition.x;
-    // photon.position.z = currentShipPosition.z;
-    // photon.rotation.x = currentShipRotation.y;
-    // photon.rotation.z = currentShipRotation.z;
+    photon.position.y = currentShipPosition.y;
+    photon.position.x = currentShipPosition.x;
+    photon.position.z = currentShipPosition.z;
+    photon.rotation.x = currentShipRotation.y;
+    photon.rotation.z = currentShipRotation.z;
     photon.scale.set(1,1,1);
     photonDirections = {
                                 x: Math.sign(currentShipRotation.x),
@@ -230,27 +271,39 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
 
 
-  function onPointerMove( event: { clientY: number; clientX: number; } ) {
-    pointer.y = event.clientY / 90 ;
-    pointer.x = event.clientX / 90 ;
-    raycaster.setFromCamera( pointer, camera );
+  // function onPointerMove( event: { clientY: number; clientX: number; } ) {
+  //   pointer.y = event.clientY / 90 ;
+  //   pointer.x = event.clientX / 90 ;
+  //   raycaster.setFromCamera( pointer, camera );
 
-    if (pointer.y > 5 && pointer.y < 15) {
-      const shipRotationX = ((pointer.y - 10) * Math.PI/2);
-      if (shipRotationX > -6.78 && shipRotationX < -5.3) {
-        ship.rotation.x = shipRotationX;
-      }
-    }
-    if (pointer.x > 5 && pointer.x < 15) {
-      const shipRotationY = ((pointer.x - 10) * Math.PI/2);
-      if (shipRotationY > -0.9 && shipRotationY < 0.9) {
-        ship.rotation.y = shipRotationY ;
-      }
-    }
-  }
+  //   if (pointer.y > 5 && pointer.y < 15) {
+  //     const shipRotationX = ((pointer.y - 10) * Math.PI/2);
+  //     if (shipRotationX > -6.78 && shipRotationX < -5.3) {
+  //       ship.rotation.x = shipRotationX;
+  //     }
+  //   }
+  //   if (pointer.x > 5 && pointer.x < 15) {
+  //     const shipRotationY = ((pointer.x - 10) * Math.PI/2);
+  //     if (shipRotationY > -0.9 && shipRotationY < 0.9) {
+  //       ship.rotation.y = shipRotationY ;
+  //     }
+  //   }
+  // }
 
+  let translateCount = 0;
   function translateCamera() {
-    camera.position.set( 10, 0, 0 );
+    if (translateCount === 3) {
+      translateCount = 0;
+    }
+    if (translateCount === 0) {
+      camera.position.set( 0, -12, 0 )
+    } else if (translateCount === 1) {
+      camera.position.set( 20, 0, 0 );
+    } else if (translateCount === 2) {
+      camera.position.set( 0, 0, 20 );
+    }
+
+    translateCount +=1;
     camera.rotation.x = Math.PI;
     camera.rotation.z = Math.PI;
     camera.lookAt( scene.position );
@@ -276,6 +329,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
       precision: "lowp",
       powerPreference: "low-power",
     });
+
 
     renderer.setPixelRatio( window.devicePixelRatio/2);
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -316,6 +370,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     const axisGroup = new THREE.Group();
 
 
+
     // update axis text position
     xText.position.set( 5, 1, 0 );
     xText2.position.set( -5, 1, 0 );
@@ -349,7 +404,6 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     //ship tween and controls
     const tweenXRotation = new TWEEN.Tween(ship.rotation);
     const tweenYRotation = new TWEEN.Tween(ship.rotation);
-    const tweenZRotation = new TWEEN.Tween(ship.rotation);
     const tweenXposition = new TWEEN.Tween(ship.position);
     const tweenYposition = new TWEEN.Tween(ship.position);
     const tweenBoostPosition = new TWEEN.Tween(ship.position);
@@ -357,6 +411,8 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     const rotationYSpeed = 500;
     const rotationXSpeed = 300;
     const positionSpeed = 1200;
+
+
 
     window.addEventListener( 'keydown', ( event ) => {
 
@@ -457,6 +513,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     renderer.render( scene, camera );
 
     animateModel(cubeGroupContainer);
+    // animateModel(palmGroup);
     if (photonInPlay) {
       animatePhoton(photonDirections);
     }
