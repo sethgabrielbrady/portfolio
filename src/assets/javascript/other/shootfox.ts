@@ -21,7 +21,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
   const landscapeGroup = new THREE.Group();
   const groundGeo = new THREE.PlaneGeometry( 4000, 800 );
-  const groundMatr = new THREE.MeshPhongMaterial( { color: 0x00ff99 } );
+  const groundMatr = new THREE.MeshLambertMaterial( { color: 0x00ff99 } );
   const ground = new THREE.Mesh( groundGeo, groundMatr );
   ground.position.z = -15;
   ground.rotation.z = ground.position.z * (Math.PI );
@@ -29,7 +29,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   landscapeGroup.add(ground);
 
   const roadGeo = new THREE.PlaneGeometry( 17.5, 800 );
-  const roadMatr = new THREE.MeshPhongMaterial( { color: 0xcccccc } );
+  const roadMatr = new THREE.MeshLambertMaterial( { color: 0xcccccc } );
   const road = new THREE.Mesh( roadGeo, roadMatr );
   road.position.z = ground.position.z + 0.1;
   landscapeGroup.add(road);
@@ -37,7 +37,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   scene.add( landscapeGroup );
 
   const roadSegGeo = new THREE.BoxGeometry( 14, 2, .5 );
-  const roadSegMatr = new THREE.MeshPhongMaterial( { color: 0xcc00cc } );
+  const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xcc00cc } );
   const roadSement = new THREE.Mesh( roadSegGeo, roadSegMatr );
   roadSement.position.z = ground.position.z - 0.1;
 
@@ -73,7 +73,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   const radius = 4;
   const height = 5;
   const shipGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
-  const shipMatr = new THREE.MeshPhongMaterial( { color: 0x04d9ff } );
+  const shipMatr = new THREE.MeshLambertMaterial( { color: 0x04d9ff } );
   const shipMeshFront = new THREE.Mesh( shipGeo, shipMatr );
   shipMeshFront.scale.set(1, 1.25, 1);
 
@@ -85,7 +85,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
   const wingGroupL = new THREE.Group();
   const wingGroupR = new THREE.Group();
-  const wingMatr = new THREE.MeshPhongMaterial( { color: 0xf4d9ff } );
+  const wingMatr = new THREE.MeshLambertMaterial( { color: 0xf4d9ff } );
 
 
   const wingXyScale = 0.6;
@@ -144,7 +144,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   const skylineGeo = new THREE.PlaneGeometry( 300, 150 );
   // const skylineGeo = new THREE.BoxGeometry( 744, 342, 1 );
   const skylineMatr = new THREE.MeshBasicMaterial( { color: 0xffffff, map: texture, transparent: true } );
-  const skylineLightMatr = new THREE.MeshPhongMaterial( { color: 0xffffff, transparent: true } );
+  const skylineLightMatr = new THREE.MeshLambertMaterial( { color: 0xffffff, transparent: true } );
 
   const skyline = new THREE.Mesh( skylineGeo, skylineMatr );
   const skylineLight = new THREE.Mesh( skylineGeo, skylineLightMatr );
@@ -162,12 +162,21 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
    const photonGeo = new THREE.SphereGeometry( .5, .5, .5 );
    const photonMatr = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
    const photon = new THREE.Mesh( photonGeo, photonMatr );
+   photon.scale.set(0,0,0);
    scene.add(photon);
 
   let photonInPlay = false;
 
   const photonSpeed = .5;
   function animatePhoton(directions) {
+
+    // const currentShipPosition = ship.position;
+    // const currentShipRotation = ship.rotation;
+    // photon.position.y = currentShipPosition.y;
+    // photon.position.x = currentShipPosition.x;
+    // photon.position.z = currentShipPosition.z;
+    // photon.rotation.x = currentShipRotation.y;
+    // photon.rotation.z = currentShipRotation.z;
 
     // console.log(photon.position);
     console.log(directions);
@@ -200,13 +209,13 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     console.log(counter += 1)
     // Maybe I should be firing on clones of the photon and removing them from the scene?
     photonInPlay = true;
-    const currentShipPosition = ship.position;
+    // const currentShipPosition = ship.position;
     const currentShipRotation = ship.rotation;
-    photon.position.y = currentShipPosition.y;
-    photon.position.x = currentShipPosition.x;
-    photon.position.z = currentShipPosition.x;
-    photon.rotation.x = currentShipRotation.y;
-    photon.rotation.z = currentShipRotation.z;
+    // photon.position.y = currentShipPosition.y;
+    // photon.position.x = currentShipPosition.x;
+    // photon.position.z = currentShipPosition.z;
+    // photon.rotation.x = currentShipRotation.y;
+    // photon.rotation.z = currentShipRotation.z;
     photon.scale.set(1,1,1);
     photonDirections = {
                                 x: Math.sign(currentShipRotation.x),
@@ -338,6 +347,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     //ship tween and controls
     const tweenXRotation = new TWEEN.Tween(ship.rotation);
     const tweenYRotation = new TWEEN.Tween(ship.rotation);
+    const tweenZRotation = new TWEEN.Tween(ship.rotation);
     const tweenXposition = new TWEEN.Tween(ship.position);
     const tweenYposition = new TWEEN.Tween(ship.position);
     const tweenBoostPosition = new TWEEN.Tween(ship.position);
