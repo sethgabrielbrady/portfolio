@@ -2,22 +2,24 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
   const clock: THREE.Clock = new THREE.Clock();
   const scene: THREE.Scene = new THREE.Scene();
-  const interval = 1/60;
+  const interval: Number = 1/60;
   const raycaster = new THREE.Raycaster();
 
+  const shipSpeed: Object = { x:.9};
+  const pointer = new THREE.Vector2();
 
-  let showHelper = false;
+
+  let showHelper: Boolean = false;
   let camera = new THREE.Camera();
   let renderer: THREE.WebGLRenderer
-  let delta: number = 0;
-  let photonCount = 0;
+  let delta: Number = 0;
 
-  const shipSpeed = { x:.9};
-  const pointer = new THREE.Vector2();
+
+  let photonCount: Number = 0;
   let photonDirections = {x: 0, y: 0, z: 0};
 
 
@@ -75,47 +77,47 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
   // After 1 group goes beyond a certain point, remove it from the scene
   // then add a new random group of palms to a further y positions
 
-  // const palm = {
-  //   scale: 0.125,
-  //   path: 'models/palmshiny.glb',
-  //   position: { x: 0, y: -20, z: ground.position.z + 1 }
-  // }
-  // const gltfLoader = new GLTFLoader();
+  const palm = {
+    scale: 0.125,
+    path: 'models/palmshiny.glb',
+    position: { x: 0, y: -20, z: ground.position.z + 1 }
+  }
+  const gltfLoader = new GLTFLoader();
 
-  // let model;
-  // const palmGroup = new THREE.Group();
+  let model;
+  const palmGroup = new THREE.Group();
 
-  // gltfLoader.load(palm.path,
-  // (gltf) => {
-  //   model = gltf.scene
-  //   model.scale.x = palm.scale;
-  //   model.scale.y = palm.scale;
-  //   model.scale.z = palm.scale;
-  //   model.position.x = palm.position.x;
-  //   model.position.y = palm.position.y;
-  //   model.position.z = palm.position.z;
-  //   model.rotation.x = Math.PI / 2;
-  //   model.castShadow = false;
+  gltfLoader.load(palm.path,
+  (gltf) => {
+    model = gltf.scene
+    model.scale.x = palm.scale;
+    model.scale.y = palm.scale;
+    model.scale.z = palm.scale;
+    model.position.x = palm.position.x;
+    model.position.y = palm.position.y;
+    model.position.z = palm.position.z;
+    model.rotation.x = Math.PI / 2;
+    model.castShadow = false;
 
-  //   for (let i = 0; i < 200; i++) {
-  //     const clone = model.clone();
-  //     let randomX = (Math.random() * 100) * getRandomPosOrNeg();
-  //     if (randomX <= 10 && randomX >= -10) {
-  //       randomX = (Math.random() * 400) * getRandomPosOrNeg();
-  //     }
-  //     const randomY = (Math.random() * 400) * getRandomPosOrNeg();
-  //     clone.position.x = randomX;
-  //     clone.position.y = randomY;
-  //     clone.scale.y = Math.random() * 0.125 + 0.1;
-  //     palmGroup.add(clone);
-  //   }
-  // });
+    for (let i = 0; i < 200; i++) {
+      const clone = model.clone();
+      let randomX = (Math.random() * 100) * getRandomPosOrNeg();
+      if (randomX <= 10 && randomX >= -10) {
+        randomX = (Math.random() * 400) * getRandomPosOrNeg();
+      }
+      const randomY = (Math.random() * 400) * getRandomPosOrNeg();
+      clone.position.x = randomX;
+      clone.position.y = randomY;
+      clone.scale.y = Math.random() * 0.125 + 0.1;
+      palmGroup.add(clone);
+    }
+  });
 
-  // function getRandomPosOrNeg() {
-  //   return Math.random() < 0.5 ? -1 : 1;
-  // }
+  function getRandomPosOrNeg() {
+    return Math.random() < 0.5 ? -1 : 1;
+  }
 
-  // scene.add(palmGroup);
+  scene.add(palmGroup);
 
 
 
@@ -210,16 +212,22 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
 
    // photon
+   let photonInPlay = false;
+   const photonSpeed = 2;
+   const startingPhotonPosition = ship.position.y + 3;
+
   //  const photonGeo = new THREE.PlaneGeometry( .5, 3, 1 );
-   const photonGeo = new THREE.SphereGeometry( .5, .5, .5 );
+  //  const photonGeo = new THREE.SphereGeometry( .5, .5, .5 );
+   const photonGeo = new THREE.BoxGeometry( .5, .5, .5 );
+
    const photonMatr = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
    const photon = new THREE.Mesh( photonGeo, photonMatr );
-   photon.scale.set(0,0,0);
+   photon.position.y = startingPhotonPosition;
+  //  photon.scale.set(0,0,0);
+  photon.scale.set(1,1,1);
    scene.add(photon);
 
-  let photonInPlay = false;
 
-  const photonSpeed = 1.25;
   function animatePhoton(directions) {
     // console.log(photon.position);
     console.log(directions);
@@ -238,10 +246,10 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
       photon.position.x -= .3;
     }
     if (photon.position.y > 30 || photon.position.z > 30 || photon.position.z < -30 || photon.position.x > 30 || photon.position.x < -30) {
-      photon.position.y = ship.position.y ;
+      photon.position.y = startingPhotonPosition;
       photon.position.z = ship.position.z ;
       photon.position.x = ship.position.x ;
-      photon.scale.set(0,0,0);
+      photon.scale.set(1,1,1);
       photonCount = 0;
       photonInPlay = false;
     }
@@ -254,7 +262,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     photonInPlay = true;
     const currentShipPosition = ship.position;
     const currentShipRotation = ship.rotation;
-    photon.position.y = currentShipPosition.y;
+    photon.position.y = currentShipPosition.y + 3;
     photon.position.x = currentShipPosition.x;
     photon.position.z = currentShipPosition.z;
     photon.rotation.x = currentShipRotation.y;
@@ -513,7 +521,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
     renderer.render( scene, camera );
 
     animateModel(cubeGroupContainer);
-    // animateModel(palmGroup);
+    animateModel(palmGroup);
     if (photonInPlay) {
       animatePhoton(photonDirections);
     }
