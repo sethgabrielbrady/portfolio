@@ -3,22 +3,22 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { set } from 'vue-demi';
 
   const clock: THREE.Clock = new THREE.Clock();
   const scene: THREE.Scene = new THREE.Scene();
-  const interval: Number = 1/60;
+  const interval: number = 1/60;
   const raycaster = new THREE.Raycaster();
 
   const shipSpeed: Object = { x:.9};
   const pointer = new THREE.Vector2();
 
 
+  let boostReady: Boolean = true;
   let showHelper: Boolean = false;
   let camera = new THREE.Camera();
   let renderer: THREE.WebGLRenderer
   let delta: Number = 0;
-
-
   let photonCount: Number = 0;
   let photonDirections = {x: 0, y: 0, z: 0};
 
@@ -40,42 +40,47 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
   scene.add( landscapeGroup );
 
-  const roadSegGeo = new THREE.BoxGeometry( 14, 2, .5 );
-  const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xcc00cc } );
+  const roadSegGeo = new THREE.BoxGeometry(17, 2, .5 );
+  const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
   const roadSement = new THREE.Mesh( roadSegGeo, roadSegMatr );
   roadSement.position.z = ground.position.z - 0.1;
 
-  const cubeGeo = new THREE.BoxGeometry( 2, 2, 2 );
-  const cubeMatr = new THREE.MeshPhongMaterial( { color: 0xffff99 } );
-  const cube = new THREE.Mesh( cubeGeo, cubeMatr );
-  cube.position.z = ground.position.z + 1;
-  cube.position.x = 0;
-  cube.position.y = 0;
-  const cubeGroup = new THREE.Group();
-  const cubeGroup2 = new THREE.Group();
+  // const cubeGeo = new THREE.BoxGeometry( 2, 2, 2 );
+  // const cubeMatr = new THREE.MeshPhongMaterial( { color: 0xffff99 } );
+  // const cube = new THREE.Mesh( cubeGeo, cubeMatr );
+  // cube.position.z = ground.position.z + 1;
+  // cube.position.x = 0;
+  // cube.position.y = 0;
+  // const cubeGroup = new THREE.Group();
+  // const cubeGroup2 = new THREE.Group();
 
   const roadSegmentGroup = new THREE.Group();
   for (let i = 0; i < 100; i++) {
-    const cubeClone = cube.clone();
+    // const cubeClone = cube.clone();
     const roadSegClone = roadSement.clone();
     roadSegClone.position.y = i * 8;
-    cubeClone.position.y = i * 8;
-    cubeGroup.add(cubeClone);
+    // cubeClone.position.y = i * 8;
+    // cubeGroup.add(cubeClone);
     roadSegmentGroup.add(roadSegClone);
   }
 
-  cubeGroup2.add(cubeGroup.clone());
-  cubeGroup2.position.x = 8;
-  cubeGroup.position.x = -8;
+  // cubeGroup2.add(cubeGroup.clone());
+  // cubeGroup2.position.x = 8;
+  // cubeGroup.position.x = -8;
   const cubeGroupContainer = new THREE.Group();
 
-  cubeGroupContainer.add(cubeGroup, cubeGroup2, roadSegmentGroup);
+  // cubeGroupContainer.add(cubeGroup, cubeGroup2, roadSegmentGroup);
+  cubeGroupContainer.add(roadSegmentGroup);
+
   scene.add( cubeGroupContainer );
 
 
   // I think a better way to do this would be to create 10 groups of random palms and add them to the scene every 10 or so units
   // After 1 group goes beyond a certain point, remove it from the scene
   // then add a new random group of palms to a further y positions
+
+
+  // Rather than palm trees, I shold place randomly generatored buildings
 
   const palm = {
     scale: 0.125,
@@ -223,8 +228,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
    const photonMatr = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
    const photon = new THREE.Mesh( photonGeo, photonMatr );
    photon.position.y = startingPhotonPosition;
-  //  photon.scale.set(0,0,0);
-  photon.scale.set(1,1,1);
+    photon.scale.set(0,0,0);
    scene.add(photon);
 
 
@@ -249,7 +253,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
       photon.position.y = startingPhotonPosition;
       photon.position.z = ship.position.z ;
       photon.position.x = ship.position.x ;
-      photon.scale.set(1,1,1);
+      photon.scale.set(0,0,0);
       photonCount = 0;
       photonInPlay = false;
     }
@@ -317,6 +321,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     camera.lookAt( scene.position );
   }
 
+  function updateBoostTime() {
+    if (!boostReady) {
+      setTimeout(() => {
+        boostReady = true;
+      }, 2000);
+   }
+  }
   function init() {
     scene.background = new THREE.Color( 0x000000 );
 
@@ -428,9 +439,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
         showHelper = !showHelper;
         axisGroup.visible = showHelper;
       }
+
       if (event.key === 'c') {
         translateCamera();
       }
+
       if (event.key === 'o') {
         orbitControls.enabled = !orbitControls.enabled;
       }
@@ -442,9 +455,15 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
         photonCount++;
       }
 
-      if (event.key === 'm') {
+
+      if (event.key === 'm' && boostReady) {
+
         tweenBoostPosition.to({y: 15}, positionSpeed).start();
         tweenBoostSpeed.to({x: 6.0}, 3000).start();
+        setTimeout(() => {
+          updateBoostTime();
+          boostReady = false;
+        },3000)
       }
 
       if (event.key === 'a') {
