@@ -135,3 +135,28 @@
     // orbitControls.enableRotate = orbitEnabled
     // orbitControls.keyPanSpeed = 60.0 // magic number
     // orbitControls.enableZoom = true
+
+
+
+  // Raycaster pointer movement
+
+  // const raycaster = new THREE.Raycaster();
+  // const pointer = new THREE.Vector2();
+  // function onPointerMove( event: { clientY: number; clientX: number; } ) {
+  //   pointer.y = event.clientY / 90 ;
+  //   pointer.x = event.clientX / 90 ;
+  //   raycaster.setFromCamera( pointer, camera );
+
+  //   if (pointer.y > 5 && pointer.y < 15) {
+  //     const shipRotationX = ((pointer.y - 10) * Math.PI/2);
+  //     if (shipRotationX > -6.78 && shipRotationX < -5.3) {
+  //       ship.rotation.x = shipRotationX;
+  //     }
+  //   }
+  //   if (pointer.x > 5 && pointer.x < 15) {
+  //     const shipRotationY = ((pointer.x - 10) * Math.PI/2);
+  //     if (shipRotationY > -0.9 && shipRotationY < 0.9) {
+  //       ship.rotation.y = shipRotationY ;
+  //     }
+  //   }
+  // }

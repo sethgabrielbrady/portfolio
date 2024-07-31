@@ -3,15 +3,15 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { set } from 'vue-demi';
+import { add } from 'three/examples/jsm/nodes/Nodes.js';
+
 
   const clock: THREE.Clock = new THREE.Clock();
   const scene: THREE.Scene = new THREE.Scene();
   const interval: number = 1/60;
-  const raycaster = new THREE.Raycaster();
 
   const shipSpeed: Object = { x:.9};
-  const pointer = new THREE.Vector2();
+
 
 
   let boostReady: Boolean = true;
@@ -82,47 +82,121 @@ import { set } from 'vue-demi';
 
   // Rather than palm trees, I shold place randomly generatored buildings
 
-  const palm = {
-    scale: 0.125,
-    path: 'models/palmshiny.glb',
-    position: { x: 0, y: -20, z: ground.position.z + 1 }
+  // const palm = {
+  //   scale: 0.125,
+  //   path: 'models/palmshiny.glb',
+  //   position: { x: 0, y: -20, z: ground.position.z + 1 }
+  // }
+  // const gltfLoader = new GLTFLoader();
+
+  // let model;
+  // const palmGroup = new THREE.Group();
+
+  // gltfLoader.load(palm.path,
+  // (gltf) => {
+  //   model = gltf.scene
+  //   model.scale.x = palm.scale;
+  //   model.scale.y = palm.scale;
+  //   model.scale.z = palm.scale;
+  //   model.position.x = palm.position.x;
+  //   model.position.y = palm.position.y;
+  //   model.position.z = palm.position.z;
+  //   model.rotation.x = Math.PI / 2;
+  //   model.castShadow = false;
+
+  //   for (let i = 0; i < 200; i++) {
+  //     const clone = model.clone();
+  //     let randomX = (Math.random() * 100) * getRandomPosOrNeg();
+  //     if (randomX <= 10 && randomX >= -10) {
+  //       randomX = (Math.random() * 400) * getRandomPosOrNeg();
+  //     }
+  //     const randomY = (Math.random() * 400) * getRandomPosOrNeg();
+  //     clone.position.x = randomX;
+  //     clone.position.y = randomY;
+  //     clone.scale.y = Math.random() * 0.125 + 0.1;
+  //     palmGroup.add(clone);
+  //   }
+  // });
+
+  // function getRandomPosOrNeg() {
+  //   return Math.random() < 0.5 ? -1 : 1;
+  // }
+
+  // scene.add(palmGroup);
+
+  const buildingGroupY = new THREE.Group();
+  const buildingGroup = new THREE.Group();
+  const buildingGeo = new THREE.BoxGeometry( 4, 4, 20 );
+  const buildingMatr = new THREE.MeshLambertMaterial( { color: 0xffaaff } );
+  const building = new THREE.Mesh( buildingGeo, buildingMatr );
+  building.position.z = ground.position.z + 1;
+
+
+  // for( let i = 0; i < buildingYPlanesCount; i++) {
+  //   const buildingYPlane = new THREE.Group();
+  //   for (let j = 0; j < 10; j++) {
+  //     const clone = building.clone();
+  //     clone.position.x = (j * 10) - 50;
+  //     clone.position.y = (i * 10) - 50;
+  //     buildingYPlane.add(clone);
+  //   }
+  //   buildingGroup.add(buildingYPlane);
+  // }
+
+// const buildingYCounter = 0;
+let buildingGroupYStartPos = -50;
+const buildingArray: THREE.Group<THREE.Object3DEventMap>[] = [];
+
+function addBuildingGroupX() {
+  for (let i = 0; i < 10; i++) {
+    const clone = building.clone();
+    let randomX = (Math.random() * 100) * getRandomPosOrNeg();
+    if (randomX <= 14 && randomX >= -14) {
+      randomX = (Math.random() * 400) * getRandomPosOrNeg();
+    }
+    if (randomX > 50 || randomX < -50) {
+      randomX = (Math.random() * 400) * getRandomPosOrNeg();
+    }
+    // const randomY = (Math.random() * 400) * getRandomPosOrNeg();
+    // clone.position.y = buildingGroupYStartPos;
+    clone.position.x = randomX;
+
+    clone.scale.y = Math.random() * 2 + 1;
+    clone.scale.x = Math.random() * 2 + 1;
+    clone.scale.z = Math.random() * 2 + 1;
+    buildingGroup.add(clone);
   }
-  const gltfLoader = new GLTFLoader();
+  buildingGroupY.position.y = buildingGroupYStartPos;
+  buildingGroupY.add(buildingGroup);
+  buildingArray.push(buildingGroup);
+}
 
-  let model;
-  const palmGroup = new THREE.Group();
+function addBuildingGroupY() {
+  for (let i = 0; i < 10; i++) {
+    addBuildingGroupX();
+    buildingGroupYStartPos += 50;
+  }
+}
 
-  gltfLoader.load(palm.path,
-  (gltf) => {
-    model = gltf.scene
-    model.scale.x = palm.scale;
-    model.scale.y = palm.scale;
-    model.scale.z = palm.scale;
-    model.position.x = palm.position.x;
-    model.position.y = palm.position.y;
-    model.position.z = palm.position.z;
-    model.rotation.x = Math.PI / 2;
-    model.castShadow = false;
+function getRandomPosOrNeg() {
+  return Math.random() < 0.5 ? -1 : 1;
+}
 
-    for (let i = 0; i < 200; i++) {
-      const clone = model.clone();
-      let randomX = (Math.random() * 100) * getRandomPosOrNeg();
-      if (randomX <= 10 && randomX >= -10) {
-        randomX = (Math.random() * 400) * getRandomPosOrNeg();
-      }
-      const randomY = (Math.random() * 400) * getRandomPosOrNeg();
-      clone.position.x = randomX;
-      clone.position.y = randomY;
-      clone.scale.y = Math.random() * 0.125 + 0.1;
-      palmGroup.add(clone);
+// addBuildingGroupX();
+addBuildingGroupY();
+scene.add(buildingGroupY);
+
+
+function animateBuildingGroupY() {
+  buildingGroupY.position.y -= shipSpeed.x;
+
+  buildingArray.forEach((buildingGroup) => {
+    if (buildingGroup.position.y < -400) {
+      buildingGroup.position.y = 400;
     }
   });
+}
 
-  function getRandomPosOrNeg() {
-    return Math.random() < 0.5 ? -1 : 1;
-  }
-
-  scene.add(palmGroup);
 
 
 
@@ -190,13 +264,11 @@ import { set } from 'vue-demi';
 
 
   function animateModel(model) {
-
     model.position.y -= shipSpeed.x;
     if (model.position.y < -180) {
       model.position.y = -30;
     }
   }
-
 
 
   const texture = new THREE.TextureLoader().load( "skyline2.png" );
@@ -281,26 +353,6 @@ import { set } from 'vue-demi';
   }
 
 
-
-
-  // function onPointerMove( event: { clientY: number; clientX: number; } ) {
-  //   pointer.y = event.clientY / 90 ;
-  //   pointer.x = event.clientX / 90 ;
-  //   raycaster.setFromCamera( pointer, camera );
-
-  //   if (pointer.y > 5 && pointer.y < 15) {
-  //     const shipRotationX = ((pointer.y - 10) * Math.PI/2);
-  //     if (shipRotationX > -6.78 && shipRotationX < -5.3) {
-  //       ship.rotation.x = shipRotationX;
-  //     }
-  //   }
-  //   if (pointer.x > 5 && pointer.x < 15) {
-  //     const shipRotationY = ((pointer.x - 10) * Math.PI/2);
-  //     if (shipRotationY > -0.9 && shipRotationY < 0.9) {
-  //       ship.rotation.y = shipRotationY ;
-  //     }
-  //   }
-  // }
 
   let translateCount = 0;
   function translateCamera() {
@@ -457,13 +509,10 @@ import { set } from 'vue-demi';
 
 
       if (event.key === 'm' && boostReady) {
-
         tweenBoostPosition.to({y: 15}, positionSpeed).start();
         tweenBoostSpeed.to({x: 6.0}, 3000).start();
-        setTimeout(() => {
-          updateBoostTime();
-          boostReady = false;
-        },3000)
+        updateBoostTime();
+        boostReady = false;
       }
 
       if (event.key === 'a') {
@@ -540,13 +589,14 @@ import { set } from 'vue-demi';
     renderer.render( scene, camera );
 
     animateModel(cubeGroupContainer);
-    animateModel(palmGroup);
+    // animateModel(buildingGroupY);
+    // animateModel(palmGroup);
+    animateBuildingGroupY();
     if (photonInPlay) {
       animatePhoton(photonDirections);
     }
 
     TWEEN.update();
-
   }
 
   function shootfox() {
