@@ -75,129 +75,71 @@ import { add } from 'three/examples/jsm/nodes/Nodes.js';
   scene.add( cubeGroupContainer );
 
 
-  // I think a better way to do this would be to create 10 groups of random palms and add them to the scene every 10 or so units
-  // After 1 group goes beyond a certain point, remove it from the scene
-  // then add a new random group of palms to a further y positions
 
 
-  // Rather than palm trees, I shold place randomly generatored buildings
+const buildingGroupY = new THREE.Group();
+const buildingGroup = new THREE.Group();
+const buildingGeo = new THREE.BoxGeometry( 4, 4, 20 );
+const buildingMatr = new THREE.MeshLambertMaterial( { color: 0x1F51FF } );
+const building = new THREE.Mesh( buildingGeo, buildingMatr );
+building.position.z = ground.position.z + 1;
 
-  // const palm = {
-  //   scale: 0.125,
-  //   path: 'models/palmshiny.glb',
-  //   position: { x: 0, y: -20, z: ground.position.z + 1 }
-  // }
-  // const gltfLoader = new GLTFLoader();
-
-  // let model;
-  // const palmGroup = new THREE.Group();
-
-  // gltfLoader.load(palm.path,
-  // (gltf) => {
-  //   model = gltf.scene
-  //   model.scale.x = palm.scale;
-  //   model.scale.y = palm.scale;
-  //   model.scale.z = palm.scale;
-  //   model.position.x = palm.position.x;
-  //   model.position.y = palm.position.y;
-  //   model.position.z = palm.position.z;
-  //   model.rotation.x = Math.PI / 2;
-  //   model.castShadow = false;
-
-  //   for (let i = 0; i < 200; i++) {
-  //     const clone = model.clone();
-  //     let randomX = (Math.random() * 100) * getRandomPosOrNeg();
-  //     if (randomX <= 10 && randomX >= -10) {
-  //       randomX = (Math.random() * 400) * getRandomPosOrNeg();
-  //     }
-  //     const randomY = (Math.random() * 400) * getRandomPosOrNeg();
-  //     clone.position.x = randomX;
-  //     clone.position.y = randomY;
-  //     clone.scale.y = Math.random() * 0.125 + 0.1;
-  //     palmGroup.add(clone);
-  //   }
-  // });
-
-  // function getRandomPosOrNeg() {
-  //   return Math.random() < 0.5 ? -1 : 1;
-  // }
-
-  // scene.add(palmGroup);
-
-  const buildingGroupY = new THREE.Group();
-  const buildingGroup = new THREE.Group();
-  const buildingGeo = new THREE.BoxGeometry( 4, 4, 20 );
-  const buildingMatr = new THREE.MeshLambertMaterial( { color: 0xffaaff } );
-  const building = new THREE.Mesh( buildingGeo, buildingMatr );
-  building.position.z = ground.position.z + 1;
-
-
-  // for( let i = 0; i < buildingYPlanesCount; i++) {
-  //   const buildingYPlane = new THREE.Group();
-  //   for (let j = 0; j < 10; j++) {
-  //     const clone = building.clone();
-  //     clone.position.x = (j * 10) - 50;
-  //     clone.position.y = (i * 10) - 50;
-  //     buildingYPlane.add(clone);
-  //   }
-  //   buildingGroup.add(buildingYPlane);
-  // }
 
 // const buildingYCounter = 0;
-let buildingGroupYStartPos = -50;
+let buildingGroupYStartPos = 400;
 const buildingArray: THREE.Group<THREE.Object3DEventMap>[] = [];
 
 function addBuildingGroupX() {
-  for (let i = 0; i < 10; i++) {
-    const clone = building.clone();
-    let randomX = (Math.random() * 100) * getRandomPosOrNeg();
-    if (randomX <= 14 && randomX >= -14) {
-      randomX = (Math.random() * 400) * getRandomPosOrNeg();
-    }
-    if (randomX > 50 || randomX < -50) {
-      randomX = (Math.random() * 400) * getRandomPosOrNeg();
-    }
-    // const randomY = (Math.random() * 400) * getRandomPosOrNeg();
-    // clone.position.y = buildingGroupYStartPos;
-    clone.position.x = randomX;
+  for (let j = 0; j < 30; j++) {
+    for (let i = 0; i < 15; i++) {
+      const clone = building.clone();
+      let randomX = (Math.random() * 100) * getRandomPosOrNeg();
+      if (randomX < 18 && randomX > -18) {
+        randomX = (Math.random() * 400) * getRandomPosOrNeg();
+      }
+      if (randomX > 50 || randomX < -50) {
+        randomX = (Math.random() * 400) * getRandomPosOrNeg();
+      }
+      if (clone.position.x < 18 && clone.position.x > -18) {
+        randomX = (Math.random() * 400) * getRandomPosOrNeg();
+      }
+      clone.position.x = randomX;
 
-    clone.scale.y = Math.random() * 2 + 1;
-    clone.scale.x = Math.random() * 2 + 1;
-    clone.scale.z = Math.random() * 2 + 1;
-    buildingGroup.add(clone);
-  }
-  buildingGroupY.position.y = buildingGroupYStartPos;
-  buildingGroupY.add(buildingGroup);
-  buildingArray.push(buildingGroup);
-}
 
-function addBuildingGroupY() {
-  for (let i = 0; i < 10; i++) {
-    addBuildingGroupX();
-    buildingGroupYStartPos += 50;
+
+      clone.scale.y = Math.random() * 2 + 1;
+      clone.scale.x = Math.random() * 2 + 1;
+      clone.scale.z = Math.random() * 2 + 1;
+      clone.position.y = buildingGroupYStartPos;
+      buildingGroup.add(clone);
+    }
+    buildingGroupYStartPos -= 50;
+    buildingGroupY.add(buildingGroup);
+    buildingArray.push(buildingGroup);
   }
+
 }
+addBuildingGroupX();
 
 function getRandomPosOrNeg() {
   return Math.random() < 0.5 ? -1 : 1;
 }
 
-// addBuildingGroupX();
-addBuildingGroupY();
+
 scene.add(buildingGroupY);
 
 
 function animateBuildingGroupY() {
   buildingGroupY.position.y -= shipSpeed.x;
+  if (buildingGroupY.position.y < -200) {
+    buildingGroupY.position.y = 400;
 
-  buildingArray.forEach((buildingGroup) => {
-    if (buildingGroup.position.y < -400) {
-      buildingGroup.position.y = 400;
-    }
-  });
+    addBuildingGroupX();
+    buildingArray.shift();
+    console.log(buildingArray.length);
+  }
+
 }
-
-
 
 
 
@@ -306,7 +248,7 @@ function animateBuildingGroupY() {
 
   function animatePhoton(directions) {
     // console.log(photon.position);
-    console.log(directions);
+    // console.log(directions);
     photon.position.y += photonSpeed;
 
 
@@ -331,9 +273,9 @@ function animateBuildingGroupY() {
     }
   }
 
-  let counter = 0;
+  // const counter = 0;
   function firePhoton() {
-    console.log(counter += 1)
+    // console.log(counter += 1)
     // Maybe I should be firing on clones of the photon and removing them from the scene?
     photonInPlay = true;
     const currentShipPosition = ship.position;
