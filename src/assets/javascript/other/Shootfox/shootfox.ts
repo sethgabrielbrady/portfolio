@@ -2,146 +2,91 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { add } from 'three/examples/jsm/nodes/Nodes.js';
+import { buildingArray , buildingGroupY} from '@js/other/Shootfox/models.ts';
+
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+const clock: THREE.Clock = new THREE.Clock();
+const scene: THREE.Scene = new THREE.Scene();
+const interval: number = 1/60;
+const shipSpeed: Object = { x:.9};
+
+let boostReady: Boolean = true;
+let showHelper: Boolean = false;
+let camera = new THREE.Camera();
+let renderer: THREE.WebGLRenderer
+let delta: Number = 0;
+let photonCount: Number = 0;
+let photonDirections = {x: 0, y: 0, z: 0};
 
 
-  const clock: THREE.Clock = new THREE.Clock();
-  const scene: THREE.Scene = new THREE.Scene();
-  const interval: number = 1/60;
+const landscapeGroup = new THREE.Group();
+const groundGeo = new THREE.PlaneGeometry( 4000, 800 );
+const groundMatr = new THREE.MeshLambertMaterial( { color: 0x00ff99 } );
+const ground = new THREE.Mesh( groundGeo, groundMatr );
+ground.position.z = -15;
+ground.rotation.z = ground.position.z * (Math.PI );
 
-  const shipSpeed: Object = { x:.9};
+landscapeGroup.add(ground);
 
+const roadGeo = new THREE.PlaneGeometry( 17.5, 800 );
+const roadMatr = new THREE.MeshLambertMaterial( { color: 0xcccccc } );
+const road = new THREE.Mesh( roadGeo, roadMatr );
+road.position.z = ground.position.z + 0.1;
+landscapeGroup.add(road);
 
+scene.add( landscapeGroup );
 
-  let boostReady: Boolean = true;
-  let showHelper: Boolean = false;
-  let camera = new THREE.Camera();
-  let renderer: THREE.WebGLRenderer
-  let delta: Number = 0;
-  let photonCount: Number = 0;
-  let photonDirections = {x: 0, y: 0, z: 0};
+const roadSegGeo = new THREE.BoxGeometry(17, 2, .5 );
+const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
+const roadSement = new THREE.Mesh( roadSegGeo, roadSegMatr );
+roadSement.position.z = ground.position.z - 0.1;
 
+// const cubeGeo = new THREE.BoxGeometry( 2, 2, 2 );
+// const cubeMatr = new THREE.MeshPhongMaterial( { color: 0xffff99 } );
+// const cube = new THREE.Mesh( cubeGeo, cubeMatr );
+// cube.position.z = ground.position.z + 1;
+// cube.position.x = 0;
+// cube.position.y = 0;
+// const cubeGroup = new THREE.Group();
+// const cubeGroup2 = new THREE.Group();
 
-  const landscapeGroup = new THREE.Group();
-  const groundGeo = new THREE.PlaneGeometry( 4000, 800 );
-  const groundMatr = new THREE.MeshLambertMaterial( { color: 0x00ff99 } );
-  const ground = new THREE.Mesh( groundGeo, groundMatr );
-  ground.position.z = -15;
-  ground.rotation.z = ground.position.z * (Math.PI );
-
-  landscapeGroup.add(ground);
-
-  const roadGeo = new THREE.PlaneGeometry( 17.5, 800 );
-  const roadMatr = new THREE.MeshLambertMaterial( { color: 0xcccccc } );
-  const road = new THREE.Mesh( roadGeo, roadMatr );
-  road.position.z = ground.position.z + 0.1;
-  landscapeGroup.add(road);
-
-  scene.add( landscapeGroup );
-
-  const roadSegGeo = new THREE.BoxGeometry(17, 2, .5 );
-  const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
-  const roadSement = new THREE.Mesh( roadSegGeo, roadSegMatr );
-  roadSement.position.z = ground.position.z - 0.1;
-
-  // const cubeGeo = new THREE.BoxGeometry( 2, 2, 2 );
-  // const cubeMatr = new THREE.MeshPhongMaterial( { color: 0xffff99 } );
-  // const cube = new THREE.Mesh( cubeGeo, cubeMatr );
-  // cube.position.z = ground.position.z + 1;
-  // cube.position.x = 0;
-  // cube.position.y = 0;
-  // const cubeGroup = new THREE.Group();
-  // const cubeGroup2 = new THREE.Group();
-
-  const roadSegmentGroup = new THREE.Group();
-  for (let i = 0; i < 100; i++) {
-    // const cubeClone = cube.clone();
-    const roadSegClone = roadSement.clone();
-    roadSegClone.position.y = i * 8;
-    // cubeClone.position.y = i * 8;
-    // cubeGroup.add(cubeClone);
-    roadSegmentGroup.add(roadSegClone);
-  }
-
-  // cubeGroup2.add(cubeGroup.clone());
-  // cubeGroup2.position.x = 8;
-  // cubeGroup.position.x = -8;
-  const cubeGroupContainer = new THREE.Group();
-
-  // cubeGroupContainer.add(cubeGroup, cubeGroup2, roadSegmentGroup);
-  cubeGroupContainer.add(roadSegmentGroup);
-
-  scene.add( cubeGroupContainer );
-
-
-
-
-const buildingGroupY = new THREE.Group();
-const buildingGroup = new THREE.Group();
-const buildingGeo = new THREE.BoxGeometry( 4, 4, 20 );
-const buildingMatr = new THREE.MeshLambertMaterial( { color: 0x1F51FF } );
-const building = new THREE.Mesh( buildingGeo, buildingMatr );
-building.position.z = ground.position.z + 1;
-
-
-// const buildingYCounter = 0;
-let buildingGroupYStartPos = 400;
-const buildingArray: THREE.Group<THREE.Object3DEventMap>[] = [];
-
-function addBuildingGroupX() {
-  for (let j = 0; j < 30; j++) {
-    for (let i = 0; i < 15; i++) {
-      const clone = building.clone();
-      let randomX = (Math.random() * 100) * getRandomPosOrNeg();
-      if (randomX < 18 && randomX > -18) {
-        randomX = (Math.random() * 400) * getRandomPosOrNeg();
-      }
-      if (randomX > 50 || randomX < -50) {
-        randomX = (Math.random() * 400) * getRandomPosOrNeg();
-      }
-      if (clone.position.x < 18 && clone.position.x > -18) {
-        randomX = (Math.random() * 400) * getRandomPosOrNeg();
-      }
-      clone.position.x = randomX;
-
-
-
-      clone.scale.y = Math.random() * 2 + 1;
-      clone.scale.x = Math.random() * 2 + 1;
-      clone.scale.z = Math.random() * 2 + 1;
-      clone.position.y = buildingGroupYStartPos;
-      buildingGroup.add(clone);
-    }
-    buildingGroupYStartPos -= 50;
-    buildingGroupY.add(buildingGroup);
-    buildingArray.push(buildingGroup);
-  }
-
-}
-addBuildingGroupX();
-
-function getRandomPosOrNeg() {
-  return Math.random() < 0.5 ? -1 : 1;
+const roadSegmentGroup = new THREE.Group();
+for (let i = 0; i < 100; i++) {
+  // const cubeClone = cube.clone();
+  const roadSegClone = roadSement.clone();
+  roadSegClone.position.y = i * 8;
+  // cubeClone.position.y = i * 8;
+  // cubeGroup.add(cubeClone);
+  roadSegmentGroup.add(roadSegClone);
 }
 
+// cubeGroup2.add(cubeGroup.clone());
+// cubeGroup2.position.x = 8;
+// cubeGroup.position.x = -8;
+const cubeGroupContainer = new THREE.Group();
 
+// cubeGroupContainer.add(cubeGroup, cubeGroup2, roadSegmentGroup);
+cubeGroupContainer.add(roadSegmentGroup);
+scene.add( cubeGroupContainer );
+
+
+
+// add buildings and animate from models.ts
 scene.add(buildingGroupY);
-
-
 function animateBuildingGroupY() {
-  buildingGroupY.position.y -= shipSpeed.x;
-  if (buildingGroupY.position.y < -200) {
-    buildingGroupY.position.y = 400;
-
-    addBuildingGroupX();
-    buildingArray.shift();
-    console.log(buildingArray.length);
-  }
-
+    buildingArray.forEach((group) => {
+      group.position.y -= shipSpeed.x * 0.1;
+      if (group.position.y <= -1200) {
+        group.position.y = -200;
+      }
+    });
+  // buildingGroupY.position.y -= shipSpeed.x;
+  // if (buildingGroupY.position.y <= -1600) {
+  //   buildingGroupY.position.y = 400;
+  //   // addBuildingGroupX();
+  // }
 }
-
-
 
   // Ship
   const radius = 4;
@@ -531,9 +476,7 @@ function animateBuildingGroupY() {
     renderer.render( scene, camera );
 
     animateModel(cubeGroupContainer);
-    // animateModel(buildingGroupY);
-    // animateModel(palmGroup);
-    animateBuildingGroupY();
+    animateBuildingGroupY(buildingArray);
     if (photonInPlay) {
       animatePhoton(photonDirections);
     }

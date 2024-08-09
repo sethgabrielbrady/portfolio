@@ -1,6 +1,6 @@
 <script>
   // import { breakout } from '@/assets/javascript/other/breakout.ts'
-  import { shootfox } from '@/assets/javascript/other/shootfox.ts'
+  import { shootfox } from '@/assets/javascript/other/Shootfox/shootfox'
 
   export default {
     setup() {
