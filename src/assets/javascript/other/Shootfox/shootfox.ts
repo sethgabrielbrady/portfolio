@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-import { buildingArray , buildingGroupY} from '@js/other/Shootfox/models.ts';
+import { BuildingGroup} from '@js/other/Shootfox/models.ts';
 
-// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -18,6 +18,7 @@ let renderer: THREE.WebGLRenderer
 let delta: Number = 0;
 let photonCount: Number = 0;
 let photonDirections = {x: 0, y: 0, z: 0};
+let cockpitCamera: Boolean = false;
 
 
 const landscapeGroup = new THREE.Group();
@@ -42,50 +43,67 @@ const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
 const roadSement = new THREE.Mesh( roadSegGeo, roadSegMatr );
 roadSement.position.z = ground.position.z - 0.1;
 
-// const cubeGeo = new THREE.BoxGeometry( 2, 2, 2 );
-// const cubeMatr = new THREE.MeshPhongMaterial( { color: 0xffff99 } );
-// const cube = new THREE.Mesh( cubeGeo, cubeMatr );
-// cube.position.z = ground.position.z + 1;
-// cube.position.x = 0;
-// cube.position.y = 0;
-// const cubeGroup = new THREE.Group();
-// const cubeGroup2 = new THREE.Group();
 
 const roadSegmentGroup = new THREE.Group();
 for (let i = 0; i < 100; i++) {
-  // const cubeClone = cube.clone();
   const roadSegClone = roadSement.clone();
   roadSegClone.position.y = i * 8;
-  // cubeClone.position.y = i * 8;
-  // cubeGroup.add(cubeClone);
   roadSegmentGroup.add(roadSegClone);
 }
-
-// cubeGroup2.add(cubeGroup.clone());
-// cubeGroup2.position.x = 8;
-// cubeGroup.position.x = -8;
 const cubeGroupContainer = new THREE.Group();
 
-// cubeGroupContainer.add(cubeGroup, cubeGroup2, roadSegmentGroup);
 cubeGroupContainer.add(roadSegmentGroup);
 scene.add( cubeGroupContainer );
 
 
 
 // add buildings and animate from models.ts
-scene.add(buildingGroupY);
+// scene.add(buildingGroupY, building2);
+
+// const newG = new BuildingGroup(20);
+// scene.add( newG );
+
+const buildings = [];
+const startPos = 400;
+let counter = 0;
+
+function createNewBuildingsXset() {
+  const newBuildings = new BuildingGroup(20, startPos);
+    buildings.push(newBuildings);
+    // startPos += 50;
+    scene.add(newBuildings);
+    counter += 1;
+    console.log('createNewBuildingsXset', counter, buildings.length);
+}
+
+createNewBuildingsXset();
+
 function animateBuildingGroupY() {
-    buildingArray.forEach((group) => {
-      group.position.y -= shipSpeed.x * 0.1;
-      if (group.position.y <= -1200) {
-        group.position.y = -200;
-      }
-    });
-  // buildingGroupY.position.y -= shipSpeed.x;
-  // if (buildingGroupY.position.y <= -1600) {
-  //   buildingGroupY.position.y = 400;
-  //   // addBuildingGroupX();
+  buildings.forEach(building => {
+    building.position.y -= shipSpeed.x;
+    if (building.position.y === -200) {
+      scene.remove(buildings[0]);
+      buildings.shift();
+
+    }
+    if (building.length < 20) {
+      createNewBuildingsXset()
+    }
+  })
+
+  // newG.position.y -= shipSpeed.x;
+  // if (newG.position.y <= -1000) {
+  //   // newG.position.y = 400;
+  //   scene.remove(newG);
   // }
+
+  // buildings.forEach(building => {
+  //   building.position.y -= shipSpeed.x;
+  //   if (building.position.y <= -1200) {
+  //     const returnBuild
+  //     // building.position.y = 400;
+  //   }
+  // });
 }
 
   // Ship
@@ -94,7 +112,10 @@ function animateBuildingGroupY() {
   const shipGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
   const shipMatr = new THREE.MeshLambertMaterial( { color: 0x04d9ff } );
   const shipMeshFront = new THREE.Mesh( shipGeo, shipMatr );
+
+  shipMeshFront.name = "shipMeshFront";
   shipMeshFront.scale.set(1, 1.25, 1);
+
 
 
   const shipMeshRear = new THREE.Mesh( shipGeo, shipMatr );
@@ -142,8 +163,18 @@ function animateBuildingGroupY() {
   wingGroupR.position.y = -4
   wingGroupR.rotation.z = Math.PI / -5;
 
+
+  // const cockpitGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
+  // const cockpitMatr = new THREE.MeshLambertMaterial( { color: 0xffffff } );
+  // const cockpitMesh = new THREE.Mesh( cockpitGeo, cockpitMatr );
+  // cockpitMesh.scale.set(1.5, 1.75, 1.5);
+  // cockpitMesh.position.z = -0.9;
+  // cockpitMesh.position.y = 4;
+  // cockpitMesh.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), .2);
+  // scene.add(cockpitMesh);
+
   const ship = new THREE.Group();
-  ship.add(shipMeshFront,shipMeshRear, wingGroupL, wingGroupR);
+  ship.add(shipMeshFront, shipMeshRear, wingGroupL, wingGroupR);
   scene.add(ship);
 
 
@@ -175,39 +206,41 @@ function animateBuildingGroupY() {
   scene.add( skylineGroup );
 
 
-   // photon
-   let photonInPlay = false;
-   const photonSpeed = 2;
-   const startingPhotonPosition = ship.position.y + 3;
-
-  //  const photonGeo = new THREE.PlaneGeometry( .5, 3, 1 );
-  //  const photonGeo = new THREE.SphereGeometry( .5, .5, .5 );
-   const photonGeo = new THREE.BoxGeometry( .5, .5, .5 );
-
-   const photonMatr = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
-   const photon = new THREE.Mesh( photonGeo, photonMatr );
-   photon.position.y = startingPhotonPosition;
-    photon.scale.set(0,0,0);
-   scene.add(photon);
+  // photon
+  let photonInPlay = false;
+  const photonSpeed = 2;
+  const startingPhotonPosition = ship.position.y + 3;
+  const photonGeo = new THREE.BoxGeometry( .5, .5, .5 );
+  const photonMatr = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
+  const photon = new THREE.Mesh( photonGeo, photonMatr );
+  photon.position.y = startingPhotonPosition;
+  photon.scale.set(0,0,0);
+  scene.add(photon);
 
 
   function animatePhoton(directions) {
-    // console.log(photon.position);
-    // console.log(directions);
     photon.position.y += photonSpeed;
 
-
-    if (directions.x === 1) {
-      photon.position.z += .3;
-    } else if (directions.x === -1) {
-      photon.position.z -= .3;
-    }
+    // if (directions.x === 1) {
+    //   photon.position.z += .3;
+    // } else if (directions.x === -1) {
+    //   photon.position.z -= .3;
+    // }
 
     if (directions.y === 1) {
       photon.position.x += .3;
     } else if (directions.y === -1) {
       photon.position.x -= .3;
     }
+
+    if (directions.z === 1) {
+      photon.position.z += 1;
+    } else if (directions.z === -1) {
+      photon.position.z -= 1;
+    }
+
+
+
     if (photon.position.y > 30 || photon.position.z > 30 || photon.position.z < -30 || photon.position.x > 30 || photon.position.x < -30) {
       photon.position.y = startingPhotonPosition;
       photon.position.z = ship.position.z ;
@@ -360,6 +393,9 @@ function animateBuildingGroupY() {
 
 
     //ship tween and controls
+    const tweenCameraRotation = new TWEEN.Tween(camera.rotation);
+    const tweenCameraPositionX = new TWEEN.Tween(camera.position);
+    const tweenCameraPositionZ = new TWEEN.Tween(camera.position);
     const tweenXRotation = new TWEEN.Tween(ship.rotation);
     const tweenYRotation = new TWEEN.Tween(ship.rotation);
     const tweenXposition = new TWEEN.Tween(ship.position);
@@ -371,8 +407,55 @@ function animateBuildingGroupY() {
     const positionSpeed = 1200;
 
 
+    // if (cockpitCamera) {
+    //   camera.rotation.set(ship.rotation.x, ship.rotation.y, ship.rotation.z);
+    //   camera.position.y -= 12;
+    //   // camera.position.z += 20;
+    //   camera.lookAt( scene.position );
+    // }
 
+
+
+    const cockpitZ = 1.25;
+    const cockpitY = -1.25;
+    // if (cockpitCamera) {
+    //   camera.position.set( 0, cockpitY, cockpitZ );
+    //   shipMeshFront.scale.set(1.5, 1.75, 1.5);
+    //   shipMeshFront.position.z = -0.9;
+    //   shipMeshFront.position.y = 4;
+    //   shipMeshFront.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), .2)
+    // } else {
+    //   camera.position.set( 0, -12, 0 );
+    //   shipMeshFront.scale.set(1, 1.25, 1);
+    //   shipMeshFront.position.z = 0;
+    //   shipMeshFront.position.y = 0;
+    //   shipMeshFront.rotateOnAxis( new THREE.Vector3( 0, 0, 0 ), 0)
+    // }
+
+
+    const z = shipMeshFront.position.z;
+    const y = shipMeshFront.position.y;
     window.addEventListener( 'keydown', ( event ) => {
+
+      if (event.key === 'l') {
+        cockpitCamera = !cockpitCamera;
+
+        if (cockpitCamera) {
+          camera.position.set( 0, cockpitY, cockpitZ );
+          shipMeshFront.scale.set(1.75, 2.25, 1.75);
+          shipMeshFront.position.z = z - 0.9;
+          shipMeshFront.position.y = 4;
+        } else {
+          camera.position.set( 0, -12, 0 );
+          shipMeshFront.scale.set(1, 1, 1);
+          shipMeshFront.position.z = 0;
+          shipMeshFront.position.y = -.65;
+
+        }
+
+      }
+
+
 
       if (event.key === 'r') {
         showHelper = !showHelper;
@@ -407,6 +490,13 @@ function animateBuildingGroupY() {
         tweenXposition.stop();
         tweenXRotation.to({y: -1.5}, rotationYSpeed).start();
         tweenXposition.to({x: -10}, positionSpeed).start();
+
+        if (cockpitCamera) {
+        tweenCameraPositionX.stop();
+        tweenCameraRotation.stop();
+        tweenCameraPositionX.to({x: -9.7}, positionSpeed).start();
+        tweenCameraRotation.to({z: -1.5}, rotationYSpeed*10).start();
+        }
       }
 
       if (event.key === 'd') {
@@ -414,6 +504,12 @@ function animateBuildingGroupY() {
         tweenXposition.stop();
         tweenXRotation.to({y: 1.5}, rotationYSpeed).start();
         tweenXposition.to({x: 10}, positionSpeed).start();
+        if (cockpitCamera) {
+        tweenCameraPositionX.stop();
+        tweenCameraRotation.stop();
+        tweenCameraPositionX.to({x: 9.7}, positionSpeed).start();
+        tweenCameraRotation.to({z: 1.5}, rotationYSpeed*10).start();
+        }
       }
 
       if (event.key === 'w') {
@@ -421,6 +517,13 @@ function animateBuildingGroupY() {
         tweenYposition.stop();
         tweenYRotation.to({x: -0.4}, rotationXSpeed).start();
         tweenYposition.to({z: -10}, positionSpeed).start();
+
+        if (cockpitCamera) {
+        tweenCameraPositionZ.stop();
+        // tweenCameraRotation.stop();
+        tweenCameraPositionZ.to({z: -9.7}, positionSpeed).start();
+        // tweenCameraRotation.to({x: 0.3}, rotationYSpeed*2).start();
+        }
       }
 
       if (event.key === 's') {
@@ -428,6 +531,14 @@ function animateBuildingGroupY() {
         tweenYposition.stop();
         tweenYRotation.to({x: 0.7}, rotationXSpeed).start();
         tweenYposition.to({z: 6}, positionSpeed).start();
+
+        if (cockpitCamera) {
+        tweenCameraPositionZ.stop();
+        tweenCameraPositionZ.to({z: 5.7}, positionSpeed).start();
+
+        // tweenCameraRotation.stop();
+        // tweenCameraRotation.to({x: 0.5}, rotationYSpeed*2).start();
+        }
       }
 
     });
@@ -438,12 +549,26 @@ function animateBuildingGroupY() {
         tweenXRotation.to({y: 0}, rotationYSpeed).start();
         tweenXposition.stop();
         tweenXposition.to({x: 0}, positionSpeed).start();
+
+        if (cockpitCamera) {
+        tweenCameraPositionX.stop();
+        tweenCameraRotation.stop();
+        tweenCameraPositionX.to({x: 0}, positionSpeed).start();
+        tweenCameraRotation.to({z: 0}, rotationYSpeed).start();
+        }
       }
       if (event.key === 'w' || event.key === 's') {
         tweenYRotation.stop();
         tweenYRotation.to({x: 0}, rotationXSpeed).start();
         tweenYposition.stop();
         tweenYposition.to({z: 0}, positionSpeed).start();
+
+        if (cockpitCamera) {
+        tweenCameraPositionZ.stop();
+        // tweenCameraRotation.stop();
+        tweenCameraPositionZ.to({z: cockpitZ}, positionSpeed).start();
+        // tweenCameraRotation.to({x: 0}, rotationYSpeed).start();
+        }
       }
 
       if (event.key === 'm') {
@@ -451,6 +576,7 @@ function animateBuildingGroupY() {
         tweenBoostPosition.to({y: 0}, positionSpeed).start();
         tweenBoostSpeed.stop();
         tweenBoostSpeed.to({x: .75}, 1000).start();
+
       }
     });
 
@@ -462,6 +588,9 @@ function animateBuildingGroupY() {
       photonCount++;
     }
   });
+
+
+
 
   function animate() {
     requestAnimationFrame(animate);
@@ -476,10 +605,11 @@ function animateBuildingGroupY() {
     renderer.render( scene, camera );
 
     animateModel(cubeGroupContainer);
-    animateBuildingGroupY(buildingArray);
+    animateBuildingGroupY();
     if (photonInPlay) {
       animatePhoton(photonDirections);
     }
+
 
     TWEEN.update();
   }
