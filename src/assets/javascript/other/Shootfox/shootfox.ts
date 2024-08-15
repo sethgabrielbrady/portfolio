@@ -3,8 +3,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { BuildingGroup} from '@js/other/Shootfox/models.ts';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 
+const stats = new Stats();
+document.body.appendChild( stats.dom );
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -17,7 +20,7 @@ let camera = new THREE.Camera();
 let renderer: THREE.WebGLRenderer
 let delta: Number = 0;
 let photonCount: Number = 0;
-let photonDirections = {x: 0, y: 0, z: 0};
+const photonDirections = {x: 0, y: 0, z: 0};
 let cockpitCamera: Boolean = false;
 
 
@@ -105,6 +108,32 @@ function animateBuildingGroupY() {
   //   }
   // });
 }
+
+
+
+// const triangleShape = new THREE.Shape();
+// triangleShape.moveTo( 80, 20 );
+// triangleShape.lineTo( 40, 80 );
+// triangleShape.lineTo( 120, 80 );
+// triangleShape.lineTo( 80, 20 ); // close path
+
+// const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
+// const triangleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+// const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+// triangleMesh.position.set(0, 0, 0);
+// scene.add(triangleMesh);
+
+
+// const pyramidGeo = new THREE.ConeGeometry( 5, 20, 4 );
+// const pyramidMatr = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+// const pyramid = new THREE.Mesh( pyramidGeo, pyramidMatr );
+// pyramid.position.set(0, 0, 0);
+// scene.add(pyramid);
+
+
+
+
+
 
   // Ship
   const radius = 4;
@@ -207,72 +236,96 @@ function animateBuildingGroupY() {
 
 
   // photon
-  let photonInPlay = false;
+  // let photonInPlay = false;
   const photonSpeed = 2;
   const startingPhotonPosition = ship.position.y + 3;
-  const photonGeo = new THREE.BoxGeometry( .5, .5, .5 );
-  const photonMatr = new THREE.MeshBasicMaterial( { color: 0x00ffff } );
-  const photon = new THREE.Mesh( photonGeo, photonMatr );
-  photon.position.y = startingPhotonPosition;
-  photon.scale.set(0,0,0);
-  scene.add(photon);
+  const photonGeo = new THREE.ConeGeometry( 1, 1, 4 );
+  const photonMatr = new THREE.MeshBasicMaterial( { color: 0x4deeea} );
 
 
-  function animatePhoton(directions) {
-    photon.position.y += photonSpeed;
-
-    // if (directions.x === 1) {
-    //   photon.position.z += .3;
-    // } else if (directions.x === -1) {
-    //   photon.position.z -= .3;
-    // }
-
-    if (directions.y === 1) {
-      photon.position.x += .3;
-    } else if (directions.y === -1) {
-      photon.position.x -= .3;
-    }
-
-    if (directions.z === 1) {
-      photon.position.z += 1;
-    } else if (directions.z === -1) {
-      photon.position.z -= 1;
-    }
-
-
-
-    if (photon.position.y > 30 || photon.position.z > 30 || photon.position.z < -30 || photon.position.x > 30 || photon.position.x < -30) {
-      photon.position.y = startingPhotonPosition;
-      photon.position.z = ship.position.z ;
-      photon.position.x = ship.position.x ;
-      photon.scale.set(0,0,0);
-      photonCount = 0;
-      photonInPlay = false;
-    }
-  }
-
-  // const counter = 0;
   function firePhoton() {
-    // console.log(counter += 1)
-    // Maybe I should be firing on clones of the photon and removing them from the scene?
-    photonInPlay = true;
-    const currentShipPosition = ship.position;
-    const currentShipRotation = ship.rotation;
-    photon.position.y = currentShipPosition.y + 3;
-    photon.position.x = currentShipPosition.x;
-    photon.position.z = currentShipPosition.z;
-    photon.rotation.x = currentShipRotation.y;
-    photon.rotation.z = currentShipRotation.z;
-    photon.scale.set(1,1,1);
-    photonDirections = {
-                                x: Math.sign(currentShipRotation.x),
-                                y: Math.sign(currentShipRotation.y),
-                                z: Math.sign(currentShipRotation.z)
-                              };
-    animatePhoton(photonDirections);
+    const photon = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
+    photon.scale.set(.5,.5,.5);
+    scene.add(photon);
+
+    // Capture the ship's rotation
+    const shipRotation = new THREE.Euler(ship.rotation.x, ship.rotation.y, ship.rotation.z);
+
+    // Calculate the direction vector
+    const direction = new THREE.Vector3(0, 1, 0); // Assuming photon fires forward along the y-axis
+    direction.applyEuler(shipRotation);
+
+    // Set the initial position of the photon to the nose of the ship
+    photon.position.copy(ship.position);
+
+    // Animate the photon
+    animatePhoton(photon, direction);
   }
 
 
+  const sphere = new THREE.SphereGeometry( 2, 32, 32 );
+  const sphereMaterial = new THREE.MeshBasicMaterial( {color: 0xffac00, transparent: true, opacity: 0.5} );
+
+  function tweenSunScale(photonPosition) {
+    const explosion = new THREE.Mesh( sphere, sphereMaterial );
+    explosion.scale.set(0,0,0);
+    explosion.position.copy(photonPosition);
+    scene.add(explosion);
+
+    const tween = new TWEEN.Tween(explosion.scale);
+    tween.to({x: 2, y: 2, z: 2}, 600).start()
+    .onComplete(() => {
+      tween.to({x: 0, y: 0, z: 0}, 600).start();
+      scene.remove(explosion);
+    });
+  }
+
+
+  function animatePhoton(photon, direction) {
+    function updatePhotonPosition() {
+      photon.position.addScaledVector(direction, photonSpeed);
+
+      // Continue the animation
+      if (photon.position.z >= ground.position.z && photon.position.y < 100
+        && photon.position.x < 100 && photon.position.x > -100) {
+
+        requestAnimationFrame(updatePhotonPosition);
+      } else {
+        // need to add check for building postions
+        if (photon.position.z <= ground.position.z) {
+          const photonPosition = photon.position;
+          tweenSunScale(photonPosition)
+        }
+
+        scene.remove(photon);
+        photonCount = photonCount - 1;
+      }
+    }
+    updatePhotonPosition();
+  }
+
+
+  // Assuming ship is an instance of THREE.Object3D or similar
+// and velocity is a THREE.Vector3 representing the ship's velocity
+
+function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.Vector3) {
+  // Normalize the velocity vector to get the direction of travel
+  const direction = velocity.clone().normalize();
+
+  // Calculate the desired rotation
+  const desiredRotation = new THREE.Quaternion();
+  desiredRotation.setFromUnitVectors(new THREE.Vector3(-1, 0, 0), direction);
+
+  // Apply the desired rotation to the ship
+  ship.quaternion.slerp(desiredRotation, 0.1); // Adjust the interpolation factor as needed
+}
+
+// Example usage
+// const ship = new THREE.Object3D();
+// const velocity = new THREE.Vector3(1, 0, 0); // Example velocity vector
+
+// // Call this function in your animation loop or update function
+// tiltShipTowardsDirectionOfTravel(ship, velocity);
 
   let translateCount = 0;
   function translateCamera() {
@@ -398,6 +451,7 @@ function animateBuildingGroupY() {
     const tweenCameraPositionZ = new TWEEN.Tween(camera.position);
     const tweenXRotation = new TWEEN.Tween(ship.rotation);
     const tweenYRotation = new TWEEN.Tween(ship.rotation);
+    const tweenZRotation = new TWEEN.Tween(ship.rotation);
     const tweenXposition = new TWEEN.Tween(ship.position);
     const tweenYposition = new TWEEN.Tween(ship.position);
     const tweenBoostPosition = new TWEEN.Tween(ship.position);
@@ -406,33 +460,8 @@ function animateBuildingGroupY() {
     const rotationXSpeed = 300;
     const positionSpeed = 1200;
 
-
-    // if (cockpitCamera) {
-    //   camera.rotation.set(ship.rotation.x, ship.rotation.y, ship.rotation.z);
-    //   camera.position.y -= 12;
-    //   // camera.position.z += 20;
-    //   camera.lookAt( scene.position );
-    // }
-
-
-
     const cockpitZ = 1.25;
     const cockpitY = -1.25;
-    // if (cockpitCamera) {
-    //   camera.position.set( 0, cockpitY, cockpitZ );
-    //   shipMeshFront.scale.set(1.5, 1.75, 1.5);
-    //   shipMeshFront.position.z = -0.9;
-    //   shipMeshFront.position.y = 4;
-    //   shipMeshFront.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), .2)
-    // } else {
-    //   camera.position.set( 0, -12, 0 );
-    //   shipMeshFront.scale.set(1, 1.25, 1);
-    //   shipMeshFront.position.z = 0;
-    //   shipMeshFront.position.y = 0;
-    //   shipMeshFront.rotateOnAxis( new THREE.Vector3( 0, 0, 0 ), 0)
-    // }
-
-
     const z = shipMeshFront.position.z;
     const y = shipMeshFront.position.y;
     window.addEventListener( 'keydown', ( event ) => {
@@ -450,12 +479,8 @@ function animateBuildingGroupY() {
           shipMeshFront.scale.set(1, 1, 1);
           shipMeshFront.position.z = 0;
           shipMeshFront.position.y = -.65;
-
         }
-
       }
-
-
 
       if (event.key === 'r') {
         showHelper = !showHelper;
@@ -470,9 +495,7 @@ function animateBuildingGroupY() {
         orbitControls.enabled = !orbitControls.enabled;
       }
 
-
-
-      if (event.key === 'p' && photonCount < 1) {
+      if (event.key === 'p' && photonCount < 10) {
         firePhoton();
         photonCount++;
       }
@@ -485,11 +508,21 @@ function animateBuildingGroupY() {
         boostReady = false;
       }
 
+      if (event.key === 'ArrowLeft') {
+        const velocity = new THREE.Vector3(-1, 0, 0); // Example velocity vector
+        tiltShipTowardsDirectionOfTravel(ship, velocity);
+      }
+
       if (event.key === 'a') {
         tweenXRotation.stop();
         tweenXposition.stop();
         tweenXRotation.to({y: -1.5}, rotationYSpeed).start();
-        tweenXposition.to({x: -10}, positionSpeed).start();
+        tweenXposition.to({x: -20}, positionSpeed).start();
+        // const velocity = new THREE.Vector3(-1, -1, 1); // Example velocity vector
+        // tiltShipTowardsDirectionOfTravel(ship, velocity);
+
+
+
 
         if (cockpitCamera) {
         tweenCameraPositionX.stop();
@@ -502,8 +535,10 @@ function animateBuildingGroupY() {
       if (event.key === 'd') {
         tweenXRotation.stop();
         tweenXposition.stop();
-        tweenXRotation.to({y: 1.5}, rotationYSpeed).start();
-        tweenXposition.to({x: 10}, positionSpeed).start();
+
+        tweenXRotation.to({ y: 1.5}, rotationYSpeed).start();
+        tweenXposition.to({x: 20}, positionSpeed).start();
+
         if (cockpitCamera) {
         tweenCameraPositionX.stop();
         tweenCameraRotation.stop();
@@ -516,7 +551,7 @@ function animateBuildingGroupY() {
         tweenYRotation.stop();
         tweenYposition.stop();
         tweenYRotation.to({x: -0.4}, rotationXSpeed).start();
-        tweenYposition.to({z: -10}, positionSpeed).start();
+        tweenYposition.to({z: -15}, positionSpeed).start();
 
         if (cockpitCamera) {
         tweenCameraPositionZ.stop();
@@ -530,7 +565,7 @@ function animateBuildingGroupY() {
         tweenYRotation.stop();
         tweenYposition.stop();
         tweenYRotation.to({x: 0.7}, rotationXSpeed).start();
-        tweenYposition.to({z: 6}, positionSpeed).start();
+        tweenYposition.to({z: 5}, positionSpeed).start();
 
         if (cockpitCamera) {
         tweenCameraPositionZ.stop();
@@ -549,6 +584,7 @@ function animateBuildingGroupY() {
         tweenXRotation.to({y: 0}, rotationYSpeed).start();
         tweenXposition.stop();
         tweenXposition.to({x: 0}, positionSpeed).start();
+
 
         if (cockpitCamera) {
         tweenCameraPositionX.stop();
@@ -606,12 +642,13 @@ function animateBuildingGroupY() {
 
     animateModel(cubeGroupContainer);
     animateBuildingGroupY();
-    if (photonInPlay) {
-      animatePhoton(photonDirections);
-    }
+    // if (photonInPlay) {
+    //   animatePhoton(photonDirections);
+    // }
 
 
     TWEEN.update();
+    stats.update();
   }
 
   function shootfox() {
