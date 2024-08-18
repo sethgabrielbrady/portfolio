@@ -262,12 +262,10 @@ function animateBuildingGroupY() {
     animatePhoton(photon, direction);
   }
 
-
-  const sphere = new THREE.SphereGeometry( 2, 32, 32 );
-  const sphereMaterial = new THREE.MeshBasicMaterial( {color: 0xffac00, transparent: true, opacity: 0.5} );
-
   function tweenSunScale(photonPosition) {
-    const explosion = new THREE.Mesh( sphere, sphereMaterial );
+    const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
+    const sphereMaterial = new THREE.MeshBasicMaterial( {color: 0xffac00, transparent: true, opacity: 0.5} );
+    const explosion = new THREE.Mesh(sphereGeo, sphereMaterial);
     explosion.scale.set(0,0,0);
     explosion.position.copy(photonPosition);
     scene.add(explosion);
@@ -280,6 +278,22 @@ function animateBuildingGroupY() {
     });
   }
 
+  let photonCharging = false;
+  const chargeeGeo = new THREE.SphereGeometry( 2, 32, 32 );
+  const chargeMaterial = new THREE.MeshBasicMaterial( {color: 0x00ffff, transparent: true, opacity: 0.5} );
+  const charge = new THREE.Mesh(chargeeGeo, chargeMaterial);
+  function chargePhoton(position, keyEvent) {
+    if (keyEvent === "keyUp") {
+      scene.remove(charge);
+      photonCharging = false;
+    } else {
+      scene.add(charge);
+      charge.position.copy(position);
+      const chargeTween = new TWEEN.Tween(charge.scale);
+      chargeTween.to({x: 1, y: 1, z: 1}, 600).start();
+    }
+  }
+
 
   function animatePhoton(photon, direction) {
     function updatePhotonPosition() {
@@ -288,17 +302,16 @@ function animateBuildingGroupY() {
       // Continue the animation
       if (photon.position.z >= ground.position.z && photon.position.y < 100
         && photon.position.x < 100 && photon.position.x > -100) {
-
         requestAnimationFrame(updatePhotonPosition);
       } else {
         // need to add check for building postions
         if (photon.position.z <= ground.position.z) {
           const photonPosition = photon.position;
-          tweenSunScale(photonPosition)
+          tweenSunScale(photonPosition);
         }
 
         scene.remove(photon);
-        photonCount = photonCount - 1;
+        photonCount -= 1;
       }
     }
     updatePhotonPosition();
@@ -446,6 +459,8 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
 
 
     //ship tween and controls
+    const tweenChargeXPosition = new TWEEN.Tween(charge.position);
+    const tweenChargeYPosition = new TWEEN.Tween(charge.position);
     const tweenCameraRotation = new TWEEN.Tween(camera.rotation);
     const tweenCameraPositionX = new TWEEN.Tween(camera.position);
     const tweenCameraPositionZ = new TWEEN.Tween(camera.position);
@@ -463,8 +478,17 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
     const cockpitZ = 1.25;
     const cockpitY = -1.25;
     const z = shipMeshFront.position.z;
-    const y = shipMeshFront.position.y;
+
     window.addEventListener( 'keydown', ( event ) => {
+
+      if (event.key === 'p' && photonCount < 10) {
+        photonCharging = true;
+        chargePhoton(ship.position, "keyDown");
+        if (photonCharging) {
+          charge.position.copy(ship.position);
+        }
+      }
+
 
       if (event.key === 'l') {
         cockpitCamera = !cockpitCamera;
@@ -482,25 +506,6 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         }
       }
 
-      if (event.key === 'r') {
-        showHelper = !showHelper;
-        axisGroup.visible = showHelper;
-      }
-
-      if (event.key === 'c') {
-        translateCamera();
-      }
-
-      if (event.key === 'o') {
-        orbitControls.enabled = !orbitControls.enabled;
-      }
-
-      if (event.key === 'p' && photonCount < 10) {
-        firePhoton();
-        photonCount++;
-      }
-
-
       if (event.key === 'm' && boostReady) {
         tweenBoostPosition.to({y: 15}, positionSpeed).start();
         tweenBoostSpeed.to({x: 6.0}, 3000).start();
@@ -517,18 +522,22 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenXRotation.stop();
         tweenXposition.stop();
         tweenXRotation.to({y: -1.5}, rotationYSpeed).start();
+        tweenXRotation.to({z: .55}, rotationYSpeed).start();
         tweenXposition.to({x: -20}, positionSpeed).start();
-        // const velocity = new THREE.Vector3(-1, -1, 1); // Example velocity vector
-        // tiltShipTowardsDirectionOfTravel(ship, velocity);
+
+        console.log('ship.position', ship.rotationa);
 
 
+
+        tweenChargeXPosition.stop();
+        tweenChargeXPosition.to({x: -20}, positionSpeed).start();
 
 
         if (cockpitCamera) {
-        tweenCameraPositionX.stop();
-        tweenCameraRotation.stop();
-        tweenCameraPositionX.to({x: -9.7}, positionSpeed).start();
-        tweenCameraRotation.to({z: -1.5}, rotationYSpeed*10).start();
+          tweenCameraPositionX.stop();
+          tweenCameraRotation.stop();
+          tweenCameraPositionX.to({x: -9.7}, positionSpeed).start();
+          tweenCameraRotation.to({z: -1.5}, rotationYSpeed*10).start();
         }
       }
 
@@ -539,11 +548,14 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenXRotation.to({ y: 1.5}, rotationYSpeed).start();
         tweenXposition.to({x: 20}, positionSpeed).start();
 
+        tweenChargeXPosition.stop();
+        tweenChargeXPosition.to({x: 20}, positionSpeed).start();
+
         if (cockpitCamera) {
-        tweenCameraPositionX.stop();
-        tweenCameraRotation.stop();
-        tweenCameraPositionX.to({x: 9.7}, positionSpeed).start();
-        tweenCameraRotation.to({z: 1.5}, rotationYSpeed*10).start();
+          tweenCameraPositionX.stop();
+          tweenCameraRotation.stop();
+          tweenCameraPositionX.to({x: 9.7}, positionSpeed).start();
+          tweenCameraRotation.to({z: 1.5}, rotationYSpeed*10).start();
         }
       }
 
@@ -553,11 +565,13 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenYRotation.to({x: -0.4}, rotationXSpeed).start();
         tweenYposition.to({z: -15}, positionSpeed).start();
 
+        tweenChargeYPosition.stop();
+        tweenChargeYPosition.to({z: -15}, positionSpeed).start();
+
+
         if (cockpitCamera) {
         tweenCameraPositionZ.stop();
-        // tweenCameraRotation.stop();
         tweenCameraPositionZ.to({z: -9.7}, positionSpeed).start();
-        // tweenCameraRotation.to({x: 0.3}, rotationYSpeed*2).start();
         }
       }
 
@@ -565,25 +579,52 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenYRotation.stop();
         tweenYposition.stop();
         tweenYRotation.to({x: 0.7}, rotationXSpeed).start();
-        tweenYposition.to({z: 5}, positionSpeed).start();
+        tweenYposition.to({z: 15}, positionSpeed).start();
+
+        tweenChargeYPosition.stop();
+        tweenChargeYPosition.to({z: 15}, positionSpeed).start();
 
         if (cockpitCamera) {
         tweenCameraPositionZ.stop();
         tweenCameraPositionZ.to({z: 5.7}, positionSpeed).start();
-
-        // tweenCameraRotation.stop();
-        // tweenCameraRotation.to({x: 0.5}, rotationYSpeed*2).start();
         }
       }
 
     });
 
     window.addEventListener( 'keyup', ( event ) => {
+
+      if (event.key === 'r') {
+        showHelper = !showHelper;
+        axisGroup.visible = showHelper;
+      }
+
+      if (event.key === 'c') {
+        translateCamera();
+      }
+
+      if (event.key === 'o') {
+        orbitControls.enabled = !orbitControls.enabled;
+      }
+
+      if (event.key === 'p' && photonCount < 10) {
+        chargePhoton(ship.position, "keyUp");
+        firePhoton();
+        photonCount++;
+      }
+
+
+
+
+
       if (event.key === 'a' || event.key === 'd') {
         tweenXRotation.stop();
         tweenXRotation.to({y: 0}, rotationYSpeed).start();
         tweenXposition.stop();
         tweenXposition.to({x: 0}, positionSpeed).start();
+
+        tweenChargeXPosition.stop();
+        tweenChargeXPosition.to({x: 0}, positionSpeed).start();
 
 
         if (cockpitCamera) {
@@ -598,12 +639,12 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenYRotation.to({x: 0}, rotationXSpeed).start();
         tweenYposition.stop();
         tweenYposition.to({z: 0}, positionSpeed).start();
+        tweenChargeYPosition.stop();
+        tweenChargeYPosition.to({z: 0}, positionSpeed).start();
 
         if (cockpitCamera) {
         tweenCameraPositionZ.stop();
-        // tweenCameraRotation.stop();
         tweenCameraPositionZ.to({z: cockpitZ}, positionSpeed).start();
-        // tweenCameraRotation.to({x: 0}, rotationYSpeed).start();
         }
       }
 
