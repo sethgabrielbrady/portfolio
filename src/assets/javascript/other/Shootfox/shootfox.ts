@@ -521,11 +521,11 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
       if (event.key === 'a') {
         tweenXRotation.stop();
         tweenXposition.stop();
-        tweenXRotation.to({y: -1.5}, rotationYSpeed).start();
-        tweenXRotation.to({z: .55}, rotationYSpeed).start();
+        // tweenXRotation.to({y: -1.5}, rotationYSpeed).start();
+        tweenXRotation.to({z: 1}, rotationYSpeed).start();
         tweenXposition.to({x: -20}, positionSpeed).start();
 
-        console.log('ship.position', ship.rotationa);
+        console.log('ship.position', ship.rotation);
 
 
 
@@ -540,12 +540,14 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
           tweenCameraRotation.to({z: -1.5}, rotationYSpeed*10).start();
         }
       }
-
       if (event.key === 'd') {
         tweenXRotation.stop();
         tweenXposition.stop();
 
-        tweenXRotation.to({ y: 1.5}, rotationYSpeed).start();
+
+
+        // tweenXRotation.to({ y: 1.5}, rotationYSpeed).start();
+        tweenXRotation.to({z: -1}, rotationYSpeed).start();
         tweenXposition.to({x: 20}, positionSpeed).start();
 
         tweenChargeXPosition.stop();
@@ -619,9 +621,11 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
 
       if (event.key === 'a' || event.key === 'd') {
         tweenXRotation.stop();
-        tweenXRotation.to({y: 0}, rotationYSpeed).start();
+        // tweenXRotation.to({y: 0}, rotationYSpeed).start();
+        tweenXRotation.to({z: 0}, rotationYSpeed).start();
+
         tweenXposition.stop();
-        tweenXposition.to({x: 0}, positionSpeed).start();
+        tweenXposition.to({x: 0}, positionSpeed).satart();
 
         tweenChargeXPosition.stop();
         tweenChargeXPosition.to({x: 0}, positionSpeed).start();
