@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { BuildingGroup} from '@js/other/Shootfox/models.ts';
+import { axisGroup } from '@js/other/Shootfox/axisHelper.ts';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 
@@ -103,33 +104,10 @@ function animateBuildingGroupY() {
   // buildings.forEach(building => {
   //   building.position.y -= shipSpeed.x;
   //   if (building.position.y <= -1200) {
-  //     const returnBuild
   //     // building.position.y = 400;
   //   }
   // });
 }
-
-
-
-// const triangleShape = new THREE.Shape();
-// triangleShape.moveTo( 80, 20 );
-// triangleShape.lineTo( 40, 80 );
-// triangleShape.lineTo( 120, 80 );
-// triangleShape.lineTo( 80, 20 ); // close path
-
-// const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
-// const triangleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-// const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
-// triangleMesh.position.set(0, 0, 0);
-// scene.add(triangleMesh);
-
-
-// const pyramidGeo = new THREE.ConeGeometry( 5, 20, 4 );
-// const pyramidMatr = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-// const pyramid = new THREE.Mesh( pyramidGeo, pyramidMatr );
-// pyramid.position.set(0, 0, 0);
-// scene.add(pyramid);
-
 
 
 
@@ -193,22 +171,26 @@ function animateBuildingGroupY() {
   wingGroupR.rotation.z = Math.PI / -5;
 
 
+  const reticleSprite = new THREE.TextureLoader().load( "reticle.png" );
+  const reticleMatrSprite = new THREE.SpriteMaterial( { map: reticleSprite } );
+  const reticleMain = new THREE.Sprite(reticleMatrSprite );
+  reticleMain.position.z = 0;
+  reticleMain.scale.set(4,4,4);
+  reticleMain.rotateX(Math.PI / 2);
+  reticleMain.position.y = 10
+
+  // const reticleGeo = new THREE.PlaneGeometry(2, 2);
+  // const reticleMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+  // const reticle = new THREE.Mesh( reticleGeo, reticleMatr );
+  // reticleGeo.rotateX(Math.PI / 2);
+  // reticle.position.y = 10;
+
+
   // const cockpitGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
-  // const cockpitMatr = new THREE.MeshLambertMaterial( { color: 0xffffff } );
-  // const cockpitMesh = new THREE.Mesh( cockpitGeo, cockpitMatr );
-  // cockpitMesh.scale.set(1.5, 1.75, 1.5);
-  // cockpitMesh.position.z = -0.9;
-  // cockpitMesh.position.y = 4;
-  // cockpitMesh.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), .2);
-  // scene.add(cockpitMesh);
 
   const ship = new THREE.Group();
-  ship.add(shipMeshFront, shipMeshRear, wingGroupL, wingGroupR);
+  ship.add(shipMeshFront, shipMeshRear, wingGroupL, wingGroupR, reticleMain);
   scene.add(ship);
-
-
-
-
 
   function animateModel(model) {
     model.position.y -= shipSpeed.x;
@@ -401,64 +383,13 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
     const container: HTMLElement = document.getElementById("breakout")!;
     container.appendChild(renderer.domElement);
 
-    // // axis helper
-    const axesHelper = new THREE.AxesHelper( 5 );
-    const xText = createText( 'x', 1 );
-    const xText2 = createText( '-x', 1 );
-    const xText3 = createText( 'x', 1 );
-    const xText4 = createText( '-x', 1 );
-    const xGroup = new THREE.Group();
-    xGroup.add(xText, xText2, xText3, xText4);
-
-    const zText = createText( "z", 1 );
-    const zText2 = createText( "-z", 1 );
-    const zText3 = createText( "z", 1 );
-    const zText4 = createText( "-z", 1 );
-    const zGroup = new THREE.Group();
-    zGroup.add(zText, zText2, zText3, zText4);
-
-    const yText = createText( "y", 1 );
-    const yText2 = createText( "-y", 1 );
-    const yText3 = createText( "y", 1 );
-    const yText4 = createText( "-y", 1 );
-    const yGroup = new THREE.Group();
-    yGroup.add(yText, yText2, yText3, yText4);
-
-    const axisGroup = new THREE.Group();
-
-
-
-    // update axis text position
-    xText.position.set( 5, 1, 0 );
-    xText2.position.set( -5, 1, 0 );
-    xText3.position.set( 5, 1, 0 );
-    xText4.position.set( -5, 1, 0 );
-
-    zText.position.set( 0, 1, 5 );
-    zText2.position.set( 0, 1, -5 );
-    zText3.position.set( 0, 1, 5 );
-    zText4.position.set( 0, 1, -5 );
-
-    yText.position.set( 1, 5, 0 );
-    yText2.position.set( 1, -5, 0 );
-    yText3.position.set( 1, 5, 0 );
-    yText4.position.set( 1, -5, 0 );
-
-
-    // update axis text rotation
-    xText.rotation.x = Math.PI / 2;
-    xText2.rotation.x = Math.PI / 2;
-    zText.rotation.x = Math.PI / 2;
-    zText2.rotation.x = Math.PI / 2;
-    yText.rotation.x = Math.PI / 2;
-    yText2.rotation.x = Math.PI / 2;
-
-    axisGroup.add(xGroup, zGroup, yGroup, axesHelper);
+    // adds axis helper
     axisGroup.visible = showHelper;
     scene.add(axisGroup);
 
 
     //ship tween and controls
+
     const tweenChargeXPosition = new TWEEN.Tween(charge.position);
     const tweenChargeYPosition = new TWEEN.Tween(charge.position);
     const tweenCameraRotation = new TWEEN.Tween(camera.rotation);
@@ -481,12 +412,18 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
 
     window.addEventListener( 'keydown', ( event ) => {
 
+      // if (event.key === 'p' && photonCount < 10) {
+      //   photonCharging = true;
+      //   // chargePhoton(ship.position, "keyDown");
+      //   if (photonCharging) {
+      //     charge.position.copy(ship.position);
+      //   }
+      // }
+
       if (event.key === 'p' && photonCount < 10) {
-        photonCharging = true;
-        chargePhoton(ship.position, "keyDown");
-        if (photonCharging) {
-          charge.position.copy(ship.position);
-        }
+        chargePhoton(ship.position, "keyUp");
+        firePhoton();
+        photonCount++;
       }
 
 
@@ -525,13 +462,8 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenXRotation.to({z: 1}, rotationYSpeed).start();
         tweenXposition.to({x: -20}, positionSpeed).start();
 
-        console.log('ship.position', ship.rotation);
-
-
-
         tweenChargeXPosition.stop();
         tweenChargeXPosition.to({x: -20}, positionSpeed).start();
-
 
         if (cockpitCamera) {
           tweenCameraPositionX.stop();
@@ -539,14 +471,13 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
           tweenCameraPositionX.to({x: -9.7}, positionSpeed).start();
           tweenCameraRotation.to({z: -1.5}, rotationYSpeed*10).start();
         }
+
+
       }
       if (event.key === 'd') {
         tweenXRotation.stop();
         tweenXposition.stop();
 
-
-
-        // tweenXRotation.to({ y: 1.5}, rotationYSpeed).start();
         tweenXRotation.to({z: -1}, rotationYSpeed).start();
         tweenXposition.to({x: 20}, positionSpeed).start();
 
@@ -570,7 +501,6 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         tweenChargeYPosition.stop();
         tweenChargeYPosition.to({z: -15}, positionSpeed).start();
 
-
         if (cockpitCamera) {
         tweenCameraPositionZ.stop();
         tweenCameraPositionZ.to({z: -9.7}, positionSpeed).start();
@@ -592,6 +522,8 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         }
       }
 
+
+
     });
 
     window.addEventListener( 'keyup', ( event ) => {
@@ -609,23 +541,19 @@ function tiltShipTowardsDirectionOfTravel(ship: THREE.Object3D, velocity: THREE.
         orbitControls.enabled = !orbitControls.enabled;
       }
 
-      if (event.key === 'p' && photonCount < 10) {
-        chargePhoton(ship.position, "keyUp");
-        firePhoton();
-        photonCount++;
-      }
-
-
-
+      // if (event.key === 'p' && photonCount < 10) {
+      //   chargePhoton(ship.position, "keyUp");
+      //   firePhoton();
+      //   photonCount++;
+      // }
 
 
       if (event.key === 'a' || event.key === 'd') {
         tweenXRotation.stop();
-        // tweenXRotation.to({y: 0}, rotationYSpeed).start();
         tweenXRotation.to({z: 0}, rotationYSpeed).start();
 
         tweenXposition.stop();
-        tweenXposition.to({x: 0}, positionSpeed).satart();
+        tweenXposition.to({x: 0}, positionSpeed).start();
 
         tweenChargeXPosition.stop();
         tweenChargeXPosition.to({x: 0}, positionSpeed).start();
