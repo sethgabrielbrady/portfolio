@@ -9,6 +9,11 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
+      path: '/shootfox',
+      name: 'Shootfox',
+      component: () => import('../views/ShootfoxView.vue')
+    },
+    {
       path: '/breakout',
       name: 'breakout',
       component: () => import('../views/BreakoutView.vue')

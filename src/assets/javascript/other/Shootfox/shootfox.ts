@@ -97,7 +97,7 @@ function init() {
   orbitControls.keyPanSpeed = 60.0 // magic number
   orbitControls.enableZoom = true
 
-  const container: HTMLElement = document.getElementById("breakout")!;
+  const container: HTMLElement = document.getElementById("shootfox")!;
   container.appendChild(renderer.domElement);
 
 
