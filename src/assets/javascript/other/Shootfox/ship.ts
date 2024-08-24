@@ -4,13 +4,14 @@ import { ground } from '@js/other/Shootfox/models.ts';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 
 
-
+const shipColor = 0xf000ff;
+const photonColor = 0xffac00;
 
 // Ship
 const radius = 4;
 const height = 5;
 const shipGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
-const shipMatr = new THREE.MeshLambertMaterial( { color: 0x04d9ff } );
+const shipMatr = new THREE.MeshLambertMaterial( { color: shipColor } );
 const shipMeshFront = new THREE.Mesh( shipGeo, shipMatr );
 
 shipMeshFront.name = "shipMeshFront";
@@ -25,7 +26,7 @@ shipMeshRear.scale.set(1, 0.75, 1);
 
 const wingGroupL = new THREE.Group();
 const wingGroupR = new THREE.Group();
-const wingMatr = new THREE.MeshLambertMaterial( { color: 0xf4d9ff } );
+const wingMatr = new THREE.MeshLambertMaterial( { color: shipColor } );
 
 
 const wingXyScale = 0.6;
@@ -63,23 +64,30 @@ wingGroupR.position.x = 1.1;
 wingGroupR.position.y = -4
 wingGroupR.rotation.z = Math.PI / -5;
 
-const reticleSprite = new THREE.TextureLoader().load( "reticle.png" );
-const reticleMatrSprite = new THREE.SpriteMaterial( { map: reticleSprite } );
-const reticleMain = new THREE.Sprite(reticleMatrSprite );
-reticleMain.position.z = 0;
-reticleMain.scale.set(4,4,4);
-reticleMain.rotateX(Math.PI / 2);
-reticleMain.position.y = 10
+
+
+// reticle
+const reticlePoints = [];
+reticlePoints.push( new THREE.Vector3( -1, 0, 0 ) );
+reticlePoints.push( new THREE.Vector3( 0, 0, 1 ) );
+reticlePoints.push( new THREE.Vector3( 1, 0, 0 ) );
+reticlePoints.push( new THREE.Vector3( 0, 0, -1 ) );
+reticlePoints.push( new THREE.Vector3( -1, 0, 0 ) );
+
+const reticleMat = new THREE.LineBasicMaterial({ color: 0xff0000 });
+const reticleGeometry = new THREE.BufferGeometry().setFromPoints( reticlePoints );
+
+const reticle = new THREE.Line( reticleGeometry, reticleMat );
+reticle.position.y = 8;
 
 const ship = new THREE.Group();
-ship.add( shipMeshFront, shipMeshRear, wingGroupL, wingGroupR, reticleMain);
-
+ship.add( shipMeshFront, shipMeshRear, wingGroupL, wingGroupR, reticle);
 
 
 // photon
 const photonSpeed = 2;
 const photonGeo = new THREE.ConeGeometry( 1, 1, 4 );
-const photonMatr = new THREE.MeshBasicMaterial( { color: 0x4deeea} );
+const photonMatr = new THREE.MeshBasicMaterial( { color: photonColor} );
 const photonCount: Number = 0;
 
 function firePhoton() {
