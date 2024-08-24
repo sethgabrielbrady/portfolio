@@ -124,38 +124,72 @@ function getRandomPosOrNeg() {
 
 // landscape
 const landscapeGroup = new THREE.Group();
-const groundGeo = new THREE.PlaneGeometry( 4000, 800 );
-const groundMatr = new THREE.MeshLambertMaterial( { color: 0x00ff99 } );
+const groundGeo = new THREE.PlaneGeometry( 60, 900 );
+const groundMatr = new THREE.MeshLambertMaterial( { color: 0xa6fd29 } );
 const ground = new THREE.Mesh( groundGeo, groundMatr );
 ground.position.z = -15;
 ground.rotation.z = ground.position.z * (Math.PI);
+ground.position.y = 400;
+ground.receiveShadow = true;
 
 landscapeGroup.add(ground);
 
-const roadGeo = new THREE.PlaneGeometry( 17.5, 800 );
-const roadMatr = new THREE.MeshLambertMaterial( { color: 0xcccccc } );
-const road = new THREE.Mesh( roadGeo, roadMatr );
-road.position.z = ground.position.z + 0.1;
-landscapeGroup.add(road);
+// const roadColor = 0x37013a;
+// const roadGeo = new THREE.PlaneGeometry( 17.5, 900 );
+// const roadMatr = new THREE.MeshLambertMaterial( { color: roadColor } );
+// const road = new THREE.Mesh( roadGeo, roadMatr );
+// road.position.z = ground.position.z + 0.1;
+// road.position.y = ground.position.y;
+// road.receiveShadow = true;
+// landscapeGroup.add(road);
+
+
+
+
+
+  // const segmentDirectionLight = new THREE.DirectionalLight( 0xffffff, 1 );
+  // segmentDirectionLight.position.set( 0, 0, 3 );
+  // segmentDirectionLight.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2 );
+  // segmentDirectionLight.castShadow = true;
+
+  // const segmentDirectionLight2 = segmentDirectionLight.clone();
+  //const helper = new THREE.CameraHelper( segmentDirectionLight.shadow.camera );
+  //scene.add( helper );
+
 
 
 
 // cubeGroupContainer
-const roadSegGeo = new THREE.BoxGeometry(17, 2, .5 );
-const roadSegMatr = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
-const roadSement = new THREE.Mesh( roadSegGeo, roadSegMatr );
+const segmentColor: number = 0xa6fd29;
+const roadSegGeo = new THREE.BoxGeometry(34, 4, .5 );
+const roadSegMatr = new THREE.MeshLambertMaterial( { color: segmentColor } );
+const roadSegment = new THREE.Mesh( roadSegGeo, roadSegMatr );
+roadSegment.castShadow = true;
+roadSegment.position.y = ground.position.y;
+roadSegment.position.z = ground.position.z ;
+roadSegment.receiveShadow = false;
 
-roadSement.position.z = ground.position.z - 0.1;
 
 const roadSegmentGroup = new THREE.Group();
 for (let i = 0; i < 100; i++) {
-  const roadSegClone = roadSement.clone();
+  const roadSegClone = roadSegment.clone();
   roadSegClone.position.y = i * 8;
   roadSegmentGroup.add(roadSegClone);
 }
+const roadSegmentGroup2 = roadSegmentGroup.clone();
+roadSegmentGroup.rotateOnAxis( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 );
+roadSegmentGroup2.rotateOnAxis( new THREE.Vector3( 0, -1, 0 ), Math.PI / 2 );
+roadSegmentGroup.position.x = -30.5;
+roadSegmentGroup.position.y = -4;
+roadSegmentGroup2.position.x = -1 * roadSegmentGroup.position.x
 
 const cubeGroupContainer = new THREE.Group();
-cubeGroupContainer.add(roadSegmentGroup);
+cubeGroupContainer.add(roadSegmentGroup, roadSegmentGroup2);
+
+// segmentDirectionLight.target = roadSegmentGroup;
+// segmentDirectionLight2.target = roadSegmentGroup2;
+// segmentDirectionLight.position.set( 60, 40, 0 );
+// segmentDirectionLight2.position.set( -60, 40, 0 );
 
 
 // skyline

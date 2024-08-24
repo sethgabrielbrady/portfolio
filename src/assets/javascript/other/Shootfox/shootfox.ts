@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-import { landscapeGroup, cubeGroupContainer, skylineGroup, animateModel, animateBuildingGroupY, createNewBuildingsXset} from '@js/other/Shootfox/models.ts';
+import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY} from '@js/other/Shootfox/models.ts';
 import { axisGroup } from '@js/other/Shootfox/axisHelper.ts';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { ship, shipMeshFront, firePhoton } from '@js/other/Shootfox/ship.ts';
@@ -14,14 +14,12 @@ let renderer: THREE.WebGLRenderer
 let delta: Number = 0;
 let cockpitCamera: Boolean = false;
 
-
-const stats = new Stats();
-document.body.appendChild( stats.dom );
-
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
 const interval: number = 1/60;
 const shipSpeed: Object = { x:.9};
+const stats = new Stats();
+document.body.appendChild(stats.dom);
 
 
 // scene additions
@@ -35,9 +33,7 @@ scene.add(axisGroup);
 // cubeGroupContainer
 scene.add( cubeGroupContainer );
 //skylineGroup
-scene.add( skylineGroup );
-
-
+// scene.add( skylineGroup );
 
 let translateCount = 0;
 function translateCamera() {
@@ -66,7 +62,6 @@ function updateBoostTime() {
   }
 }
 
-createNewBuildingsXset();
 
 
 function init() {
@@ -78,7 +73,36 @@ function init() {
   camera.position.set( 0, -12, 0 ); // all components equal
   camera.lookAt( scene.position ); // or the origin
 
-  scene.add( new THREE.HemisphereLight( 0xffffff, 0x000000, 1 ) );
+  // scene.add( new THREE.HemisphereLight( 0xffffff, 0x000000, 1 ) );
+  const ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 );
+  scene.add( ambientLight );
+
+
+  const directionLight = new THREE.DirectionalLight( 0xffffff, 1 );
+  directionLight.position.set( 0, 0, 3 );
+  directionLight.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2 );
+  // directionLight.target.position.set( 0, 1, 0 );
+
+  directionLight.castShadow = true;
+  directionLight.shadow.mapSize.width = 1024;
+  directionLight.shadow.mapSize.height = 1024;
+  directionLight.shadow.camera.near = 0.5;
+  directionLight.shadow.camera.far = 500;
+  directionLight.shadow.camera.left = -20;
+  directionLight.shadow.camera.right = 20;
+  directionLight.shadow.camera.top = 20;
+  directionLight.shadow.camera.bottom = -5;
+  //const helper = new THREE.CameraHelper( directionLight.shadow.camera );
+  //scene.add( helper );
+  scene.add( directionLight );
+
+  // const helper1 = new THREE.CameraHelper( segmentDirectionLight.shadow.camera );
+  // scene.add( helper1 );
+  // const helper2 = new THREE.CameraHelper( segmentDirectionLight2.shadow.camera );
+  // scene.add( helper2 );
+  // scene.add( segmentDirectionLight );
+  // scene.add( segmentDirectionLight2 );
+
 
   renderer = new THREE.WebGLRenderer( {
     antialias: true,
@@ -89,7 +113,8 @@ function init() {
 
   renderer.setPixelRatio( window.devicePixelRatio/2);
   renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.shadowMap.enabled = false;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const orbitControls = new OrbitControls(camera, renderer.domElement)
   orbitControls.enabled = false;

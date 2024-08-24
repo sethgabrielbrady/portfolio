@@ -5,7 +5,7 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 
 
 const shipColor = 0xf000ff;
-const photonColor = 0xffac00;
+const photonColor = 0xff3b94;
 
 // Ship
 const radius = 4;
@@ -18,38 +18,48 @@ shipMeshFront.name = "shipMeshFront";
 shipMeshFront.scale.set(1, 1.25, 1);
 
 
-
+shipMeshFront.receiveShadow = false;
+shipMeshFront.castShadow = true;
 const shipMeshRear = new THREE.Mesh( shipGeo, shipMatr );
 shipMeshRear.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI );
 shipMeshRear.position.y = -5;
 shipMeshRear.scale.set(1, 0.75, 1);
+shipMeshRear.receiveShadow = false;
+shipMeshRear.castShadow = true;
 
 const wingGroupL = new THREE.Group();
 const wingGroupR = new THREE.Group();
-const wingMatr = new THREE.MeshLambertMaterial( { color: shipColor } );
+const wingMatr = new THREE.MeshPhongMaterial( { color: shipColor } );
 
 
 const wingXyScale = 0.6;
 const shipWingLRear: THREE.Mesh = new THREE.Mesh( shipGeo, wingMatr );
 shipWingLRear.position.x = 2.5;
 shipWingLRear.scale.set(wingXyScale, 0.25, wingXyScale);
+shipWingLRear.receiveShadow = false;
+shipWingLRear.castShadow = true;
 
 const shipWingRRear: THREE.Mesh = new THREE.Mesh( shipGeo, wingMatr );
 shipWingRRear.position.x = -2.5;
 shipWingRRear.scale.set(wingXyScale, 0.25, wingXyScale);
-
+shipWingRRear.receiveShadow = false;
+shipWingRRear.castShadow = true;
 
 const shipWingLFront: THREE.Mesh = new THREE.Mesh( shipGeo, wingMatr );
 shipWingLFront.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI );
 shipWingLFront.position.x = 2.5;
 shipWingLFront.position.y = -2.5
 shipWingLFront.scale.set(wingXyScale, 0.75, wingXyScale);
+shipWingLFront.receiveShadow = false;
+shipWingLFront.castShadow = true;
 
 const shipWingRFront: THREE.Mesh = new THREE.Mesh( shipGeo, wingMatr );
 shipWingRFront.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI );
 shipWingRFront.position.x = -2.5;
 shipWingRFront.position.y = -2.5
 shipWingRFront.scale.set(wingXyScale, 0.75, wingXyScale);
+shipWingRFront.receiveShadow = false;
+shipWingRFront.castShadow = true;
 
 wingGroupL.add(shipWingLRear);
 wingGroupL.add(shipWingLFront);
@@ -81,6 +91,7 @@ const reticle = new THREE.Line( reticleGeometry, reticleMat );
 reticle.position.y = 8;
 
 const ship = new THREE.Group();
+
 ship.add( shipMeshFront, shipMeshRear, wingGroupL, wingGroupR, reticle);
 
 
@@ -111,18 +122,20 @@ function firePhoton() {
 
 function tweenSunScale(photonPosition) {
   const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
-  const sphereMaterial = new THREE.MeshBasicMaterial( {color: 0xffac00, transparent: true, opacity: 0.5} );
+  const sphereMaterial = new THREE.MeshBasicMaterial( {color: photonColor, transparent: true, opacity: 0.5} );
   const explosion = new THREE.Mesh(sphereGeo, sphereMaterial);
-  explosion.scale.set(0,0,0);
   explosion.position.copy(photonPosition);
+
+  explosion.scale.set(0,0,0);
   scene.add(explosion);
 
-  const tween = new TWEEN.Tween(explosion.scale);
-  tween.to({x: 2, y: 2, z: 2}, 600).start()
-  .onComplete(() => {
-    tween.to({x: 0, y: 0, z: 0}, 600).start();
-    scene.remove(explosion);
-  });
+
+  const explosionTween = new TWEEN.Tween(explosion.scale);
+  explosionTween.to({x: 2, y: 2, z: 2}, 600).start()
+    .onComplete(() => {
+      explosionTween.to({x: 0, y: 0, z: 0}, 600).start();
+      scene.remove(explosion);
+    });
 }
 
 
