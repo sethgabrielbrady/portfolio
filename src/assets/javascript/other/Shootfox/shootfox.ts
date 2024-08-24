@@ -5,6 +5,7 @@ import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY
 import { axisGroup } from '@js/other/Shootfox/axisHelper.ts';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { ship, shipMeshFront, firePhoton } from '@js/other/Shootfox/ship.ts';
+import { enemyCube , animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
 
 
 let boostReady: Boolean = true;
@@ -13,6 +14,7 @@ let camera = new THREE.Camera();
 let renderer: THREE.WebGLRenderer
 let delta: Number = 0;
 let cockpitCamera: Boolean = false;
+let showEnemeies: Boolean = true;
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -34,6 +36,8 @@ scene.add(axisGroup);
 scene.add( cubeGroupContainer );
 //skylineGroup
 // scene.add( skylineGroup );
+// enemyCube
+scene.add( enemyCube );
 
 let translateCount = 0;
 function translateCamera() {
@@ -273,6 +277,15 @@ function init() {
       tweenBoostSpeed.stop();
       tweenBoostSpeed.to({x: .75}, 1000).start();
     }
+
+    if (event.key === 'k') {
+      showEnemeies = !showEnemeies;
+      if (!showEnemeies) {
+       scene.remove(enemyCube);
+      } else {
+        scene.add(enemyCube);
+      }
+    }
   });
 }
 
@@ -290,6 +303,8 @@ function render() {
 
   animateModel(cubeGroupContainer, shipSpeed);
   animateBuildingGroupY(shipSpeed);
+  // animateEnemyCube();
+
 
   TWEEN.update();
   stats.update();

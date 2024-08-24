@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { scene } from '@/assets/javascript/other/Shootfox/shootfox.ts';
 import { ground } from '@js/other/Shootfox/models.ts';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
+import { enemyCube, enemyErrorAnimation } from '@js/other/Shootfox/enemies.ts';
 
 
 const shipColor = 0xf000ff;
@@ -99,7 +100,7 @@ ship.add( shipMeshFront, shipMeshRear, wingGroupL, wingGroupR, reticle);
 const photonSpeed = 2;
 const photonGeo = new THREE.ConeGeometry( 1, 1, 4 );
 const photonMatr = new THREE.MeshBasicMaterial( { color: photonColor} );
-const photonCount: Number = 0;
+let photonCount: Number = 0;
 
 function firePhoton() {
   const photon = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
@@ -138,6 +139,12 @@ function tweenSunScale(photonPosition) {
     });
 }
 
+function photonOutofBounds(photon) {
+  const yBounds = photon.position.y >= 100 || photon.position.y <= -100;
+  const xBounds = photon.position.x >= 100 || photon.position.x <= -100;
+  const zBounds = photon.position.z >= 50 || photon.position.z <= -50;
+  return yBounds || xBounds || zBounds;
+}
 
 function animatePhoton(photon, direction) {
   function updatePhotonPosition() {
@@ -152,10 +159,25 @@ function animatePhoton(photon, direction) {
       if (photon.position.z <= ground.position.z) {
         const photonPosition = photon.position;
         tweenSunScale(photonPosition);
+        scene.remove(photon);
       }
 
-      scene.remove(photon);
-      photonCount -= 1;
+
+      //check for enemyCube intersection
+      const enemyCubePosition = enemyCube.position;
+      const yIntersect = photon.position.y >= enemyCubePosition.y - 2.5;
+      const xIntersect = enemyCubePosition.x - 2.5 <= photon.position.x && enemyCubePosition.x + 2.5 >= photon.position.x;
+      const zIntersect = enemyCubePosition.z - 2.5 <= photon.position.z && enemyCubePosition.z + 2.5 >= photon.position.z;
+      if (yIntersect && xIntersect && zIntersect) {
+        scene.remove(photon);
+        tweenSunScale(enemyCubePosition);
+        enemyErrorAnimation();
+        photonCount -= 1;
+      } else if (photonOutofBounds(photon)) {
+
+        scene.remove(photon);
+        photonCount -= 1;
+      }
     }
   }
   updatePhotonPosition();
