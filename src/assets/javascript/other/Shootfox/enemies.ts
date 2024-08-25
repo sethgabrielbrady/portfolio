@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 
 const enemyCubeGeo = new THREE.BoxGeometry( 4, 4, 4 );
-const enemyCubeMatr = new THREE.MeshLambertMaterial( { color: 0xfb5607, wireframe: false } );
-
+const enemyCubeMatr = new THREE.MeshPhongMaterial( { color: 0xfb5607, shininess: 1.0, flatShading: true } );
 const enemyCube = new THREE.Mesh( enemyCubeGeo, enemyCubeMatr );
+
 enemyCube.position.set( 0, 20, 0 );
 
 
@@ -28,7 +28,6 @@ function enemyErrorAnimation() {
     yDirection = 10;
   }
 
-  console.log('enemyErrorAnimation', xDirection, yDirection, zDirection);
   enemyXTween.to({ x: xDirection}, 500).start();
   enemyYTween.to({ y: yDirection}, 500).start();
   enemyZTween.to({ z: zDirection}, 500).start();
@@ -44,10 +43,7 @@ function animateEnemyCube() {
     enemyCube.rotation.x = (Math.random() * 40) - 20;
     enemyCube.rotation.z = (Math.random() * 40) - 20;
   }
-
-
 }
-
 
 export { enemyCube , animateEnemyCube, enemyErrorAnimation };
 

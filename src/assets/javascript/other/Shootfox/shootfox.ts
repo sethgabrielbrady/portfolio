@@ -20,6 +20,7 @@ const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
 const interval: number = 1/60;
 const shipSpeed: Object = { x:.9};
+
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
@@ -34,10 +35,10 @@ axisGroup.visible = showHelper;
 scene.add(axisGroup);
 // cubeGroupContainer
 scene.add( cubeGroupContainer );
-//skylineGroup
-// scene.add( skylineGroup );
-// enemyCube
+
+//enemyCube
 scene.add( enemyCube );
+
 
 let translateCount = 0;
 function translateCamera() {
@@ -69,7 +70,7 @@ function updateBoostTime() {
 
 
 function init() {
-  scene.background = new THREE.Color( 0x000000 );
+  scene.background = new THREE.Color( 0xffffff );
 
   const aspect: number = (window.innerWidth / window.innerHeight);
 

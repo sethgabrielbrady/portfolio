@@ -5,6 +5,9 @@ import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.m
 import { enemyCube, enemyErrorAnimation } from '@js/other/Shootfox/enemies.ts';
 
 
+// const shipColor = 0x000000;
+// const photonColor = 0x000000;
+
 const shipColor = 0xf000ff;
 const photonColor = 0xff3b94;
 
@@ -12,7 +15,10 @@ const photonColor = 0xff3b94;
 const radius = 4;
 const height = 5;
 const shipGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
-const shipMatr = new THREE.MeshLambertMaterial( { color: shipColor } );
+// const shipMatr = new THREE.MeshLambertMaterial( { color: shipColor } );
+const shipMatr = new THREE.MeshPhongMaterial( { color: shipColor, flatShading: true } );
+
+
 const shipMeshFront = new THREE.Mesh( shipGeo, shipMatr );
 
 shipMeshFront.name = "shipMeshFront";
@@ -30,7 +36,7 @@ shipMeshRear.castShadow = true;
 
 const wingGroupL = new THREE.Group();
 const wingGroupR = new THREE.Group();
-const wingMatr = new THREE.MeshPhongMaterial( { color: shipColor } );
+const wingMatr =new THREE.MeshPhongMaterial( { color: shipColor, flatShading: true } );
 
 
 const wingXyScale = 0.6;
@@ -98,12 +104,16 @@ ship.add( shipMeshFront, shipMeshRear, wingGroupL, wingGroupR, reticle);
 
 // photon
 const photonSpeed = 2;
-const photonGeo = new THREE.ConeGeometry( 1, 1, 4 );
+const photonGeo = new THREE.BoxGeometry( 1, 1, 4 );
 const photonMatr = new THREE.MeshBasicMaterial( { color: photonColor} );
+const photonParent = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
+
+
 let photonCount: Number = 0;
 
 function firePhoton() {
-  const photon = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
+  const photon = photonParent.clone();
+
   photon.scale.set(.5,.5,.5);
   scene.add(photon);
 
@@ -143,42 +153,35 @@ function photonOutofBounds(photon) {
   const yBounds = photon.position.y >= 100 || photon.position.y <= -100;
   const xBounds = photon.position.x >= 100 || photon.position.x <= -100;
   const zBounds = photon.position.z >= 50 || photon.position.z <= -50;
+
+  if (photon.position.z <= ground.position.z) {
+    const photonPosition = photon.position;
+    tweenSunScale(photonPosition);
+    scene.remove(photon);
+  }
   return yBounds || xBounds || zBounds;
 }
 
 function animatePhoton(photon, direction) {
   function updatePhotonPosition() {
     photon.position.addScaledVector(direction, photonSpeed);
-
     // Continue the animation
-    if (photon.position.z >= ground.position.z && photon.position.y < 100
-      && photon.position.x < 100 && photon.position.x > -100) {
-      requestAnimationFrame(updatePhotonPosition);
-    } else {
-      // need to add check for building postions
-      if (photon.position.z <= ground.position.z) {
-        const photonPosition = photon.position;
-        tweenSunScale(photonPosition);
+    if (!photonOutofBounds(photon)) {
+      const photonBox = new THREE.Box3().setFromObject(photon);
+      const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
+      if (photonBox.intersectsBox(enemyCubeBox)) {
         scene.remove(photon);
-      }
-
-
-      //check for enemyCube intersection
-      const enemyCubePosition = enemyCube.position;
-      const yIntersect = photon.position.y >= enemyCubePosition.y - 2.5;
-      const xIntersect = enemyCubePosition.x - 2.5 <= photon.position.x && enemyCubePosition.x + 2.5 >= photon.position.x;
-      const zIntersect = enemyCubePosition.z - 2.5 <= photon.position.z && enemyCubePosition.z + 2.5 >= photon.position.z;
-      if (yIntersect && xIntersect && zIntersect) {
-        scene.remove(photon);
-        tweenSunScale(enemyCubePosition);
+        tweenSunScale(enemyCube.position);
         enemyErrorAnimation();
         photonCount -= 1;
-      } else if (photonOutofBounds(photon)) {
-
-        scene.remove(photon);
-        photonCount -= 1;
+      } else {
+        requestAnimationFrame(updatePhotonPosition);
       }
+    } else {
+      scene.remove(photon);
+      photonCount -= 1;
     }
+
   }
   updatePhotonPosition();
 }
