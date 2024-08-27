@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY} from '@js/other/Shootfox/models.ts';
-import { axisGroup } from '@js/other/Shootfox/axisHelper.ts';
+import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY, largeSphere} from '@js/other/Shootfox/models.ts';
+import { createAxisHelper } from '@js/other/Shootfox/axisHelper.ts';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { ship, shipMeshFront, firePhoton } from '@js/other/Shootfox/ship.ts';
-import { enemyCube , animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
+import { EnemyCube, animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
 
 
 let boostReady: Boolean = true;
@@ -15,6 +15,8 @@ let renderer: THREE.WebGLRenderer
 let delta: Number = 0;
 let cockpitCamera: Boolean = false;
 let showEnemeies: Boolean = true;
+let enemyCubeCount = 0;
+let continuingFire: Boolean = false;
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -23,21 +25,6 @@ const shipSpeed: Object = { x:.9};
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
-
-
-// scene additions
-// landscape
-scene.add(landscapeGroup);
-// ship
-scene.add(ship);
-// adds axis helper
-axisGroup.visible = showHelper;
-scene.add(axisGroup);
-// cubeGroupContainer
-scene.add( cubeGroupContainer );
-
-//enemyCube
-scene.add( enemyCube );
 
 
 let translateCount = 0;
@@ -67,10 +54,43 @@ function updateBoostTime() {
   }
 }
 
+let enemyCube = new EnemyCube();
 
+function addEnemyCube() {
+  enemyCube = new EnemyCube();
+  scene.add(enemyCube);
+  enemyCubeCount += 1;
+}
+
+
+// const backgroundColor: number = 0x555555;
+// const backgroundColor: number = 0xdddddd;
+const backgroundColor: number = 0x222222;
 
 function init() {
-  scene.background = new THREE.Color( 0xffffff );
+  scene.background = new THREE.Color( backgroundColor );
+
+  // scene additions
+  // landscape
+  scene.add(landscapeGroup);
+  // // ship
+  scene.add(ship);
+  // const shipHelper = createAxisHelper(ship);
+  // scene.add(shipHelper);
+  // adds axis helper
+//  shipHelper.visible = showHelper;
+
+  // // cubeGroupContainer
+  scene.add(cubeGroupContainer);
+  scene.add(enemyCube);
+  console.log('enemyCube', enemyCube);
+  // const enemyHelper = createAxisHelper(enemyCube);
+  // scene.add(enemyHelper);
+  scene.add(largeSphere);
+
+
+
+  enemyCubeCount += 1;
 
   const aspect: number = (window.innerWidth / window.innerHeight);
 
@@ -79,35 +99,24 @@ function init() {
   camera.lookAt( scene.position ); // or the origin
 
   // scene.add( new THREE.HemisphereLight( 0xffffff, 0x000000, 1 ) );
-  const ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 );
+  const ambientLight = new THREE.AmbientLight( 0xffffff, 0.025 );
   scene.add( ambientLight );
-
 
   const directionLight = new THREE.DirectionalLight( 0xffffff, 1 );
   directionLight.position.set( 0, 0, 3 );
-  directionLight.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2 );
-  // directionLight.target.position.set( 0, 1, 0 );
+  directionLight.rotateOnAxis( new THREE.Vector3( 0, 1, -1 ), Math.PI/2  );
+  // directionLight.target.position.set( 0, 0, -1 );
 
   directionLight.castShadow = true;
   directionLight.shadow.mapSize.width = 1024;
   directionLight.shadow.mapSize.height = 1024;
   directionLight.shadow.camera.near = 0.5;
-  directionLight.shadow.camera.far = 500;
+  directionLight.shadow.camera.far = 50;
   directionLight.shadow.camera.left = -20;
   directionLight.shadow.camera.right = 20;
   directionLight.shadow.camera.top = 20;
   directionLight.shadow.camera.bottom = -5;
-  //const helper = new THREE.CameraHelper( directionLight.shadow.camera );
-  //scene.add( helper );
   scene.add( directionLight );
-
-  // const helper1 = new THREE.CameraHelper( segmentDirectionLight.shadow.camera );
-  // scene.add( helper1 );
-  // const helper2 = new THREE.CameraHelper( segmentDirectionLight2.shadow.camera );
-  // scene.add( helper2 );
-  // scene.add( segmentDirectionLight );
-  // scene.add( segmentDirectionLight2 );
-
 
   renderer = new THREE.WebGLRenderer( {
     antialias: true,
@@ -148,9 +157,22 @@ function init() {
   const cockpitZ = 1.25;
   const cockpitY = -1.25;
 
+
+  function continueFire() {
+    if(continuingFire) {
+      firePhoton();
+      setTimeout(() => {
+        continueFire();
+      }, 400);
+    }
+  }
+
   window.addEventListener( 'keydown', ( event ) => {
     if (event.key === 'p') {
       firePhoton();
+      // continuingFire = true;
+      // firePhoton();
+      // continueFire();
     }
 
     if (event.key === 'l') {
@@ -179,7 +201,7 @@ function init() {
     if (event.key === 'a') {
       tweenXRotation.stop();
       tweenXposition.stop();
-      tweenXRotation.to({z: 1}, rotationYSpeed).start();
+      tweenXRotation.to({z: 0.25}, rotationYSpeed).start();
       tweenXposition.to({x: -20}, positionSpeed).start();
 
       if (cockpitCamera) {
@@ -194,7 +216,7 @@ function init() {
       tweenXRotation.stop();
       tweenXposition.stop();
 
-      tweenXRotation.to({z: -1}, rotationYSpeed).start();
+      tweenXRotation.to({z:-0.25}, rotationYSpeed).start();
       tweenXposition.to({x: 20}, positionSpeed).start();
 
       if (cockpitCamera) {
@@ -232,9 +254,14 @@ function init() {
   });
 
   window.addEventListener( 'keyup', ( event ) => {
+
+    if (event.key === 'p') {
+      continuingFire = false;
+    }
+
     if (event.key === 'r') {
       showHelper = !showHelper;
-      axisGroup.visible = showHelper;
+      shipHelper.visible = showHelper;
     }
 
     if (event.key === 'c') {
@@ -283,7 +310,10 @@ function init() {
       showEnemeies = !showEnemeies;
       if (!showEnemeies) {
        scene.remove(enemyCube);
+       enemyCubeCount = 0;
       } else {
+        enemyCubeCount += 1;
+        enemyCube = new EnemyCube();
         scene.add(enemyCube);
       }
     }
@@ -304,7 +334,7 @@ function render() {
 
   animateModel(cubeGroupContainer, shipSpeed);
   animateBuildingGroupY(shipSpeed);
-  // animateEnemyCube();
+  animateEnemyCube();
 
 
   TWEEN.update();
@@ -316,6 +346,6 @@ function shootfox() {
   animate();
 }
 
-export { shootfox, scene};
+export { shootfox, scene, enemyCube, addEnemyCube};
 
 

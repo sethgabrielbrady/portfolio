@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { scene } from './shootfox';
+import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
+import { getRandomNumber, getRandomPosOrNeg } from '../generators';
 
 const buildingGroupY = new THREE.Group();
 const buildingGroup = new THREE.Group();
@@ -116,12 +118,6 @@ function addBuildingGroupX() {
 }
 addBuildingGroupX();
 
-function getRandomPosOrNeg() {
-  return Math.random() < 0.5 ? -1 : 1;
-}
-
-
-
 // landscape
 const landscapeGroup = new THREE.Group();
 const groundGeo = new THREE.PlaneGeometry( 60, 900 );
@@ -157,34 +153,82 @@ landscapeGroup.add(ground);
   //scene.add( helper );
 
 
+const sphereColor = 0xcccccc;
+const largeSphereGeo = new THREE.SphereGeometry( 100, 320, 320 );
+const largeSphereMatr = new THREE.MeshLambertMaterial( { color: sphereColor} );
+const largeSphere = new THREE.Mesh( largeSphereGeo, largeSphereMatr );
+largeSphere.position.z = -10;
+largeSphere.position.y = 600;
+largeSphere.receiveShadow = false;
+// landscapeGroup.add(largeSphere);
+
+// function sphereTween() {
+//   const sphereTween = new TWEEN.Tween(largeSphere.scale);
+//   sphereTween.to({ x: 0.5, y: 0.5, z: 0.5}, 5000).start().onComplete(() => {
+//     sphereTween.to({ x: 1, y: 1, z: 1}, 5000)
+//   });
+// }
+
+// sphereTween();
+
 
 
 // cubeGroupContainer
 const segmentColor: number = 0xa6fd29;
-const roadSegGeo = new THREE.BoxGeometry(34, 4, .5 );
-const roadSegMatr = new THREE.MeshLambertMaterial( { color: segmentColor } );
+const segmentColor2: number = 0x37013a;
+const roadSegGeo = new THREE.PlaneGeometry(34, 4 );
+
+const roadSegMatr = new THREE.MeshLambertMaterial( { color: segmentColor, emissive: segmentColor, transparent: true, opacity: 0.5, emissiveIntensity: 0.8 } );
+const roadSegMatr2 = new THREE.MeshLambertMaterial( { color: segmentColor2, emissive: segmentColor2, emissiveIntensity: 0.8 } );
+
 const roadSegment = new THREE.Mesh( roadSegGeo, roadSegMatr );
-roadSegment.castShadow = true;
 roadSegment.position.y = ground.position.y;
 roadSegment.position.z = ground.position.z ;
 roadSegment.receiveShadow = false;
 
-
 const roadSegmentGroup = new THREE.Group();
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 30; i++) {
   const roadSegClone = roadSegment.clone();
-  roadSegClone.position.y = i * 8;
+  roadSegClone.scale.y = Math.random() * 2 + 1;
+  roadSegClone.position.y = i * 20;
+  roadSegClone.position.z = getRandomNumber (0, 10) * getRandomPosOrNeg();
   roadSegmentGroup.add(roadSegClone);
 }
 const roadSegmentGroup2 = roadSegmentGroup.clone();
+
 roadSegmentGroup.rotateOnAxis( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 );
 roadSegmentGroup2.rotateOnAxis( new THREE.Vector3( 0, -1, 0 ), Math.PI / 2 );
 roadSegmentGroup.position.x = -30.5;
 roadSegmentGroup.position.y = -4;
 roadSegmentGroup2.position.x = -1 * roadSegmentGroup.position.x
 
+//////
+const roadSegment2 = new THREE.Mesh( roadSegGeo, roadSegMatr2 );
+roadSegment2.position.y = ground.position.y;
+roadSegment2.position.z = ground.position.z ;
+roadSegment2.receiveShadow = false;
+
+const roadSegmentGroup3 = new THREE.Group();
+for (let j = 0; j < 30; j++) {
+  const roadSegClone2 = roadSegment2.clone();
+  roadSegClone2.scale.y = Math.random() * 2 + 1;
+  roadSegClone2.position.y = j * 20;
+  roadSegClone2.position.z = getRandomNumber (0, 10) * getRandomPosOrNeg();
+  roadSegmentGroup3.add(roadSegClone2);
+}
+const roadSegmentGroup4 = roadSegmentGroup3.clone();
+
+roadSegmentGroup3.rotateOnAxis( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 );
+roadSegmentGroup4.rotateOnAxis( new THREE.Vector3( 0, -1, 0 ), Math.PI / 2 );
+roadSegmentGroup3.position.x = -30.5;
+roadSegmentGroup3.position.y = -4;
+roadSegmentGroup4.position.x = -1 * roadSegmentGroup3.position.x
+
 const cubeGroupContainer = new THREE.Group();
-cubeGroupContainer.add(roadSegmentGroup, roadSegmentGroup2);
+cubeGroupContainer.add(roadSegmentGroup, roadSegmentGroup2, roadSegmentGroup3, roadSegmentGroup4);
+
+
+
 
 // segmentDirectionLight.target = roadSegmentGroup;
 // segmentDirectionLight2.target = roadSegmentGroup2;
@@ -218,4 +262,4 @@ function animateModel(model, speed) {
 }
 
 
-export  { BuildingGroup, landscapeGroup, ground, cubeGroupContainer, skylineGroup, animateModel, animateBuildingGroupY, createNewBuildingsXset }
+export  { BuildingGroup, landscapeGroup, ground, cubeGroupContainer, skylineGroup, animateModel, animateBuildingGroupY, createNewBuildingsXset, largeSphere }

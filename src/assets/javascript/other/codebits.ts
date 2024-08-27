@@ -160,3 +160,24 @@
   //     }
   //   }
   // }
+
+
+// random shape generation
+// const points = [
+//   new THREE.Vector3( 0, 0, 0 ),
+//   new THREE.Vector3( 0, 0, 0 ),
+//   new THREE.Vector3( 0, 0, 0 ),
+//   new THREE.Vector3( 0, 0, 0 ),
+//   new THREE.Vector3( 0, 0, 0 ),
+//   new THREE.Vector3( 0, 0, 0 )
+// ];
+
+// const randomPoints = (array) => {
+//   const length = array.length;
+//   for (let i = 0; i < length; i++) {
+//     array[i].x = Math.random() * 10;
+//     array[i].y = Math.random() * 10;
+//     array[i].z = Math.random() * 10;
+//   }
+//   return array;
+// }
