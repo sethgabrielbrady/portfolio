@@ -229,7 +229,7 @@ function animatePhoton(photon, direction, light) {
         setTimeout(() => {
           scene.remove(enemyCube);
           addEnemyCube();
-        }, 600);
+        }, 800);
       } else if (photon.position.z <= ground.position.z) {
           const photonPosition = photon.position;
           tweenSunScale(photonPosition, light);

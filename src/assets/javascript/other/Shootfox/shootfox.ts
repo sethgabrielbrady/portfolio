@@ -5,18 +5,22 @@ import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY
 import { createAxisHelper } from '@js/other/Shootfox/axisHelper.ts';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { ship, shipMeshFront, firePhoton } from '@js/other/Shootfox/ship.ts';
-import { EnemyCube, animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
+import { EnemyCube, animateEnemyCube, addCubes, animateEnemyCubes} from '@js/other/Shootfox/enemies.ts';
+import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
+
 
 
 let boostReady: Boolean = true;
 let showHelper: Boolean = false;
 let camera = new THREE.Camera();
 let renderer: THREE.WebGLRenderer
+
 let delta: Number = 0;
 let cockpitCamera: Boolean = false;
 let showEnemeies: Boolean = true;
 let enemyCubeCount = 0;
 let continuingFire: Boolean = false;
+let cubes = {};
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -55,7 +59,6 @@ function updateBoostTime() {
 }
 
 let enemyCube = new EnemyCube();
-
 function addEnemyCube() {
   enemyCube = new EnemyCube();
   scene.add(enemyCube);
@@ -66,7 +69,7 @@ function addEnemyCube() {
 // const backgroundColor: number = 0x555555;
 // const backgroundColor: number = 0xdddddd;
 const backgroundColor: number = 0x222222;
-
+let xrCamera = null;
 function init() {
   scene.background = new THREE.Color( backgroundColor );
 
@@ -83,6 +86,7 @@ function init() {
   // // cubeGroupContainer
   scene.add(cubeGroupContainer);
   scene.add(enemyCube);
+  cubes = addCubes(5);
   console.log('enemyCube', enemyCube);
   // const enemyHelper = createAxisHelper(enemyCube);
   // scene.add(enemyHelper);
@@ -97,6 +101,12 @@ function init() {
   camera = new THREE.PerspectiveCamera( 100, aspect, 1 );
   camera.position.set( 0, -12, 0 ); // all components equal
   camera.lookAt( scene.position ); // or the origin
+
+
+  // renderer.xr.updateCamera( camera );
+  //  xrCamera.position.x = camera.position.x ;
+  //  xrCamera.position.y = camera.position.y ;
+  //  xrCamera.position.z = camera.position.z;
 
   // scene.add( new THREE.HemisphereLight( 0xffffff, 0x000000, 1 ) );
   const ambientLight = new THREE.AmbientLight( 0xffffff, 0.025 );
@@ -119,16 +129,38 @@ function init() {
   scene.add( directionLight );
 
   renderer = new THREE.WebGLRenderer( {
-    antialias: true,
+    antialias: false,
     alpha: true,
     precision: "lowp",
-    powerPreference: "low-power",
+    powerPreference: "high-performance",
+    logarithmicDepthBuffer: true
   });
 
   renderer.setPixelRatio( window.devicePixelRatio/2);
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  renderer.xr.enabled = true;
+  renderer.xr.cameraAutoUpdate = true;
+
+  xrCamera = renderer.xr.getCamera();
+  xrCamera.position.copy( camera.position );
+  xrCamera.rotation.copy( camera.rotation );
+  xrCamera.rotateOnAxis( new THREE.Vector3( 0, 1, 0 ), Math.PI );
+  scene.add(xrCamera);
+  // xrCamera = new THREE.PerspectiveCamera( 100, aspect, 1 );
+  // xrCamera.position.set( -12, -12, 0 );
+  // xrCamera.lookAt( scene.position );
+
+
+
+  // xrCamera.position.x = camera.position.x ;
+  // xrCamera.position.y = camera.position.y ;
+  // xrCamera.position.z = camera.position.z;
+
+
+
 
   const orbitControls = new OrbitControls(camera, renderer.domElement)
   orbitControls.enabled = false;
@@ -138,6 +170,12 @@ function init() {
 
   const container: HTMLElement = document.getElementById("shootfox")!;
   container.appendChild(renderer.domElement);
+  const sessionInit = {
+    // requiredFeatures: [ 'hand-tracking' ]
+  };
+
+  // WebXr entry point
+  container.appendChild(VRButton.createButton(renderer, sessionInit ));
 
 
   //ship tween and controls
@@ -329,16 +367,36 @@ function animate() {
     }
 }
 
+
+
 function render() {
-  renderer.render( scene, camera );
-
-  animateModel(cubeGroupContainer, shipSpeed);
-  animateBuildingGroupY(shipSpeed);
-  animateEnemyCube();
+  // renderer.render( scene, camera );
 
 
-  TWEEN.update();
-  stats.update();
+  // setAnimationLoop is required for VR
+  renderer.setAnimationLoop( function () {
+    renderer.render( scene, camera, xrCamera );
+    animateModel(cubeGroupContainer, shipSpeed);
+    animateBuildingGroupY(shipSpeed);
+    animateEnemyCube();
+    animateEnemyCubes(cubes);
+
+
+    TWEEN.update();
+    stats.update();
+  } );
+
+  // animateModel(cubeGroupContainer, shipSpeed);
+  // animateBuildingGroupY(shipSpeed);
+  // animateEnemyCube();
+  // animateEnemyCubes(cubes);
+
+
+  // TWEEN.update();
+  // stats.update();
+
+
+
 }
 
 function shootfox() {
@@ -346,6 +404,6 @@ function shootfox() {
   animate();
 }
 
-export { shootfox, scene, enemyCube, addEnemyCube};
+export { shootfox, scene, enemyCube, addEnemyCube };
 
 
