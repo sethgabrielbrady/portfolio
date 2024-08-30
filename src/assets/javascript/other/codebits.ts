@@ -181,3 +181,6 @@
 //   }
 //   return array;
 // }
+
+ // this.geometry = new ConvexGeometry(randomPoints(points));
+// import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';

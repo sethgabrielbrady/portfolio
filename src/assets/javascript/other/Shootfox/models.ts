@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { scene } from './shootfox';
-import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { getRandomNumber, getRandomPosOrNeg } from '../generators';
 
 const buildingGroupY = new THREE.Group();
@@ -62,7 +61,7 @@ class BuildingGroup {
       const building = new Building (getRandomColor(), returnRandomXPos(), start);
       buildingGroup.add(building);
     }
-    console.log('buildingGroup');
+    // console.log('buildingGroup');
 
     return buildingGroup;
   }
@@ -130,27 +129,7 @@ ground.receiveShadow = true;
 
 landscapeGroup.add(ground);
 
-// const roadColor = 0x37013a;
-// const roadGeo = new THREE.PlaneGeometry( 17.5, 900 );
-// const roadMatr = new THREE.MeshLambertMaterial( { color: roadColor } );
-// const road = new THREE.Mesh( roadGeo, roadMatr );
-// road.position.z = ground.position.z + 0.1;
-// road.position.y = ground.position.y;
-// road.receiveShadow = true;
-// landscapeGroup.add(road);
 
-
-
-
-
-  // const segmentDirectionLight = new THREE.DirectionalLight( 0xffffff, 1 );
-  // segmentDirectionLight.position.set( 0, 0, 3 );
-  // segmentDirectionLight.rotateOnAxis( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2 );
-  // segmentDirectionLight.castShadow = true;
-
-  // const segmentDirectionLight2 = segmentDirectionLight.clone();
-  //const helper = new THREE.CameraHelper( segmentDirectionLight.shadow.camera );
-  //scene.add( helper );
 
 
 const sphereColor = 0xcccccc;
@@ -160,18 +139,6 @@ const largeSphere = new THREE.Mesh( largeSphereGeo, largeSphereMatr );
 largeSphere.position.z = -10;
 largeSphere.position.y = 600;
 largeSphere.receiveShadow = false;
-// landscapeGroup.add(largeSphere);
-
-// function sphereTween() {
-//   const sphereTween = new TWEEN.Tween(largeSphere.scale);
-//   sphereTween.to({ x: 0.5, y: 0.5, z: 0.5}, 5000).start().onComplete(() => {
-//     sphereTween.to({ x: 1, y: 1, z: 1}, 5000)
-//   });
-// }
-
-// sphereTween();
-
-
 
 // cubeGroupContainer
 const segmentColor: number = 0xa6fd29;
@@ -226,15 +193,6 @@ roadSegmentGroup4.position.x = -1 * roadSegmentGroup3.position.x
 
 const cubeGroupContainer = new THREE.Group();
 cubeGroupContainer.add(roadSegmentGroup, roadSegmentGroup2, roadSegmentGroup3, roadSegmentGroup4);
-
-
-
-
-// segmentDirectionLight.target = roadSegmentGroup;
-// segmentDirectionLight2.target = roadSegmentGroup2;
-// segmentDirectionLight.position.set( 60, 40, 0 );
-// segmentDirectionLight2.position.set( -60, 40, 0 );
-
 
 // skyline
 const texture = new THREE.TextureLoader().load( "skyline2.png" );

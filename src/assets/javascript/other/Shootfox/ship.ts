@@ -4,13 +4,9 @@ import { ground } from '@js/other/Shootfox/models.ts';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { enemyErrorAnimation } from '@js/other/Shootfox/enemies.ts';
 
-// const shipColor = 0xf000ff;
-// const photonColor = 0xff3b94;
-// const wingColor = 0x99007d;
 const shipColor = 0x00ffbc;
 const photonColor = 0xff3b94;
 const wingColor = 0x00ffbc;
-
 
 
 // Ship
@@ -109,10 +105,6 @@ const reticle = new THREE.Line( reticleGeometry, reticleMat );
 reticle.position.y = 8;
 
 const ship = new THREE.Group();
-
-
-// const shipPartTestGeo = new THREE.BoxGeometry( 0.5, 3, 0.5 );
-// const shipPartTestGeo = new THREE.CylinderGeometry( 0.5, 0.5, 3, 3 );
 const shipPartTestMatr = new THREE.MeshPhongMaterial( { color: 0xff00aa, emissive: 0xff00aa, emissiveIntensity: 10, transparent: true, opacity: 0.5} );
 const shipPartTest = new THREE.Mesh( shipGeo, shipPartTestMatr );
 shipPartTest.scale.set(0.5, 0.5, 0.5);
@@ -135,14 +127,12 @@ const photonSpeed = 2;
 const photonGeo = new THREE.ConeGeometry( 1, 1, 4 );
 const photonMatr = new THREE.MeshPhongMaterial( { color: photonColor, emissive: photonColor, emissiveIntensity: 2, transparent: true, opacity: 0.75  } );
 const photonParent = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
-
 const lightParent = new THREE.PointLight( photonColor, 1, 100 );
+
 lightParent.distance = 50;
 lightParent.intensity = 1;
 lightParent.decay = .5;
-// lightParent.castShadow = true;
-// lightParent.position.copy(photonParent.position);
-
+lightParent.castShadow = false;
 
 let photonCount: number = 0;
 
@@ -167,7 +157,6 @@ function firePhoton() {
 
   // Animate the photon
   animatePhoton(photon, direction, light);
-  // animatePhoton(light, direction);
 }
 
 const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
@@ -177,17 +166,15 @@ explosionParent.scale.set(0,0,0);
 
 
 function tweenSunScale(photonPosition, light) {
-  // this.light = light;
   explosionParent.material.opacity = 0.5;
   const explosion = explosionParent.clone();
+
   explosion.position.copy(photonPosition);
   scene.add(explosion);
   light.position.x = photonPosition.x;
 
-
   const explosionTween = new TWEEN.Tween(explosion.scale);
   const explostionOpacityTween = new TWEEN.Tween(explosion.material);
-
   const lightTween = new TWEEN.Tween(light);
 
   explosionTween.to({x: 3, y: 3, z: 3}, 350).start().onComplete(() => {
@@ -197,8 +184,6 @@ function tweenSunScale(photonPosition, light) {
 
   explostionOpacityTween.to({opacity: 0}, 350).start();
   lightTween.to({intensity: 2, decay: .25}, 350).start();
-
-
 }
 
 
@@ -224,10 +209,9 @@ function animatePhoton(photon, direction, light) {
         scene.remove(photon);
         photonCount -= 1;
         tweenSunScale(enemyCube.position, light);
-        enemyErrorAnimation();
+        enemyErrorAnimation(enemyCube);
 
         setTimeout(() => {
-          scene.remove(enemyCube);
           addEnemyCube();
         }, 800);
       } else if (photon.position.z <= ground.position.z) {

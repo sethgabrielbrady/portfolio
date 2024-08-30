@@ -2,25 +2,20 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY, largeSphere} from '@js/other/Shootfox/models.ts';
-import { createAxisHelper } from '@js/other/Shootfox/axisHelper.ts';
+// import { createAxisHelper } from '@js/other/Shootfox/axisHelper.ts';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { ship, shipMeshFront, firePhoton } from '@js/other/Shootfox/ship.ts';
-import { EnemyCube, animateEnemyCube, addCubes, animateEnemyCubes} from '@js/other/Shootfox/enemies.ts';
-import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
-
+import { EnemyCube, animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
 
 
 let boostReady: Boolean = true;
 let showHelper: Boolean = false;
 let camera = new THREE.Camera();
 let renderer: THREE.WebGLRenderer
-
 let delta: Number = 0;
 let cockpitCamera: Boolean = false;
 let showEnemeies: Boolean = true;
-let enemyCubeCount = 0;
 let continuingFire: Boolean = false;
-let cubes = {};
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -62,61 +57,33 @@ let enemyCube = new EnemyCube();
 function addEnemyCube() {
   enemyCube = new EnemyCube();
   scene.add(enemyCube);
-  enemyCubeCount += 1;
 }
 
 
 // const backgroundColor: number = 0x555555;
 // const backgroundColor: number = 0xdddddd;
 const backgroundColor: number = 0x222222;
-let xrCamera = null;
 function init() {
   scene.background = new THREE.Color( backgroundColor );
 
   // scene additions
-  // landscape
   scene.add(landscapeGroup);
-  // // ship
   scene.add(ship);
-  // const shipHelper = createAxisHelper(ship);
-  // scene.add(shipHelper);
-  // adds axis helper
-//  shipHelper.visible = showHelper;
-
-  // // cubeGroupContainer
   scene.add(cubeGroupContainer);
   scene.add(enemyCube);
-  cubes = addCubes(5);
-  console.log('enemyCube', enemyCube);
-  // const enemyHelper = createAxisHelper(enemyCube);
-  // scene.add(enemyHelper);
   scene.add(largeSphere);
 
-
-
-  enemyCubeCount += 1;
-
   const aspect: number = (window.innerWidth / window.innerHeight);
-
   camera = new THREE.PerspectiveCamera( 100, aspect, 1 );
   camera.position.set( 0, -12, 0 ); // all components equal
   camera.lookAt( scene.position ); // or the origin
 
-
-  // renderer.xr.updateCamera( camera );
-  //  xrCamera.position.x = camera.position.x ;
-  //  xrCamera.position.y = camera.position.y ;
-  //  xrCamera.position.z = camera.position.z;
-
-  // scene.add( new THREE.HemisphereLight( 0xffffff, 0x000000, 1 ) );
   const ambientLight = new THREE.AmbientLight( 0xffffff, 0.025 );
   scene.add( ambientLight );
 
   const directionLight = new THREE.DirectionalLight( 0xffffff, 1 );
   directionLight.position.set( 0, 0, 3 );
   directionLight.rotateOnAxis( new THREE.Vector3( 0, 1, -1 ), Math.PI/2  );
-  // directionLight.target.position.set( 0, 0, -1 );
-
   directionLight.castShadow = true;
   directionLight.shadow.mapSize.width = 1024;
   directionLight.shadow.mapSize.height = 1024;
@@ -141,26 +108,6 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  renderer.xr.enabled = true;
-  renderer.xr.cameraAutoUpdate = true;
-
-  xrCamera = renderer.xr.getCamera();
-  xrCamera.position.copy( camera.position );
-  xrCamera.rotation.copy( camera.rotation );
-  xrCamera.rotateOnAxis( new THREE.Vector3( 0, 1, 0 ), Math.PI );
-  scene.add(xrCamera);
-  // xrCamera = new THREE.PerspectiveCamera( 100, aspect, 1 );
-  // xrCamera.position.set( -12, -12, 0 );
-  // xrCamera.lookAt( scene.position );
-
-
-
-  // xrCamera.position.x = camera.position.x ;
-  // xrCamera.position.y = camera.position.y ;
-  // xrCamera.position.z = camera.position.z;
-
-
-
 
   const orbitControls = new OrbitControls(camera, renderer.domElement)
   orbitControls.enabled = false;
@@ -170,13 +117,6 @@ function init() {
 
   const container: HTMLElement = document.getElementById("shootfox")!;
   container.appendChild(renderer.domElement);
-  const sessionInit = {
-    // requiredFeatures: [ 'hand-tracking' ]
-  };
-
-  // WebXr entry point
-  container.appendChild(VRButton.createButton(renderer, sessionInit ));
-
 
   //ship tween and controls
   const tweenCameraRotation = new TWEEN.Tween(camera.rotation);
@@ -188,6 +128,10 @@ function init() {
   const tweenYposition = new TWEEN.Tween(ship.position);
   const tweenBoostPosition = new TWEEN.Tween(ship.position);
   const tweenBoostSpeed = new TWEEN.Tween(shipSpeed);
+  const brakeSpeed = shipSpeed/3;
+  const tweenBrakePosition = new TWEEN.Tween(ship.position);
+
+  const tweenBrakeSpeed = new TWEEN.Tween(brakeSpeed);
   const rotationYSpeed = 500;
   const rotationXSpeed = 300;
   const positionSpeed = 1200;
@@ -204,6 +148,111 @@ function init() {
       }, 400);
     }
   }
+
+  let gp: Gamepad | null = null;
+  window.addEventListener("gamepadconnected", (event) => {
+    gp = navigator.getGamepads()[event.gamepad.index];
+  });
+
+  let previousFireButtonState = false;
+  let previousBoostButtonState = false;
+  let previousBrakeButtonState = false;
+
+  function handleGamepad() {
+    if (gp) {
+      // Update the gamepad state
+      gp = navigator.getGamepads()[gp.index];
+
+
+    // Read axes for ship controls
+      const leftStickX = gp.axes[0]; // Horizontal movement
+      const leftStickY = gp.axes[1]; // Vertical movement
+
+      // Apply ship controls
+      const stickPosSpeed = positionSpeed/12;
+      const stickRotYSpeed = rotationYSpeed/12;
+      const stickRotSpeed = rotationXSpeed/12;
+      if (leftStickX < -0.5) {
+        tweenXRotation.stop();
+        tweenXposition.stop();
+        tweenXRotation.to({z: 0.25}, stickRotYSpeed).start();
+        tweenXposition.to({x: -20}, stickPosSpeed).start();
+      } else if (leftStickX > 0.5) {
+        tweenXRotation.stop();
+        tweenXposition.stop();
+        tweenXRotation.to({z: -0.25}, stickRotYSpeed).start();
+        tweenXposition.to({x: 20}, stickPosSpeed).start();
+      } else {
+        tweenXRotation.stop();
+        tweenXRotation.to({z: 0}, stickRotYSpeed).start();
+        tweenXposition.stop();
+        tweenXposition.to({x: 0}, stickPosSpeed).start();
+      }
+
+      if (leftStickY < -0.5) {
+        tweenYRotation.stop();
+        tweenYposition.stop();
+        tweenYRotation.to({x: -0.4}, stickRotSpeed).start();
+        tweenYposition.to({z: -15}, stickPosSpeed).start();
+      } else if (leftStickY > 0.5) {
+        tweenYRotation.stop();
+        tweenYposition.stop();
+        tweenYRotation.to({x: 0.7}, stickRotSpeed).start();
+        tweenYposition.to({z: 15}, stickPosSpeed).start();
+      } else {
+        tweenYRotation.stop();
+        tweenYRotation.to({x: 0}, stickRotSpeed).start();
+        tweenYposition.stop();
+        tweenYposition.to({z: 0}, stickPosSpeed).start();
+      }
+
+
+      const brakeButtonState = gp.buttons[0].pressed;
+      if (brakeButtonState && !previousBrakeButtonState) {
+        boostReady = false;
+        tweenBoostPosition.to({y: -4}, positionSpeed).start();
+        tweenBrakeSpeed.to({x: 6.0}, 3000).start();
+      } else if (!brakeButtonState && previousBrakeButtonState) {
+        tweenBrakePosition.stop();
+        tweenBrakePosition.to({y: 0}, positionSpeed).start();
+        tweenBrakeSpeed.stop();
+        tweenBrakeSpeed.to({x: .75}, 1000).start();
+      }
+      previousBrakeButtonState = brakeButtonState;
+
+
+
+
+      const boostButtonState = gp.buttons[1].pressed;
+      if (boostButtonState && !previousBoostButtonState && boostReady) {
+        boostReady = false;
+        tweenBoostPosition.to({y: 15}, positionSpeed).start();
+        tweenBoostSpeed.to({x: 6.0}, 3000).start();
+        updateBoostTime();
+      } else if (!boostButtonState && previousBoostButtonState) {
+        tweenBoostPosition.stop();
+        tweenBoostPosition.to({y: 0}, positionSpeed).start();
+        tweenBoostSpeed.stop();
+        tweenBoostSpeed.to({x: .75}, 1000).start();
+      }
+      previousBoostButtonState = boostButtonState;
+
+
+      const currentFireButtonState = gp.buttons[2].pressed;
+      if (currentFireButtonState && !previousFireButtonState) {
+        console.log('Button pressed');
+        firePhoton();
+      } else if (!currentFireButtonState && previousFireButtonState) {
+        console.log('Button released');
+      }
+      previousFireButtonState = currentFireButtonState;
+    } else {
+      // console.log('No gamepad detected');
+    }
+    requestAnimationFrame(handleGamepad);
+  }
+  requestAnimationFrame(handleGamepad);
+
 
   window.addEventListener( 'keydown', ( event ) => {
     if (event.key === 'p') {
@@ -348,9 +397,7 @@ function init() {
       showEnemeies = !showEnemeies;
       if (!showEnemeies) {
        scene.remove(enemyCube);
-       enemyCubeCount = 0;
       } else {
-        enemyCubeCount += 1;
         enemyCube = new EnemyCube();
         scene.add(enemyCube);
       }
@@ -370,33 +417,12 @@ function animate() {
 
 
 function render() {
-  // renderer.render( scene, camera );
-
-
-  // setAnimationLoop is required for VR
-  renderer.setAnimationLoop( function () {
-    renderer.render( scene, camera, xrCamera );
-    animateModel(cubeGroupContainer, shipSpeed);
-    animateBuildingGroupY(shipSpeed);
-    animateEnemyCube();
-    animateEnemyCubes(cubes);
-
-
-    TWEEN.update();
-    stats.update();
-  } );
-
-  // animateModel(cubeGroupContainer, shipSpeed);
-  // animateBuildingGroupY(shipSpeed);
-  // animateEnemyCube();
-  // animateEnemyCubes(cubes);
-
-
-  // TWEEN.update();
-  // stats.update();
-
-
-
+  renderer.render( scene, camera );
+  animateModel(cubeGroupContainer, shipSpeed);
+  animateBuildingGroupY(shipSpeed);
+  animateEnemyCube(enemyCube);
+  TWEEN.update();
+  stats.update();
 }
 
 function shootfox() {
