@@ -36,7 +36,6 @@ function animateBuildingGroupY(shipSpeed) {
   }
 }
 
-
 // new building constructor
 class Building extends THREE.Object3D {
   constructor(color, positionX, positionY) {

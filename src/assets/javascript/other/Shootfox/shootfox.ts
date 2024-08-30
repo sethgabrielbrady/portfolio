@@ -59,9 +59,6 @@ function addEnemyCube() {
   scene.add(enemyCube);
 }
 
-
-// const backgroundColor: number = 0x555555;
-// const backgroundColor: number = 0xdddddd;
 const backgroundColor: number = 0x222222;
 function init() {
   scene.background = new THREE.Color( backgroundColor );
@@ -130,15 +127,15 @@ function init() {
   const tweenBoostSpeed = new TWEEN.Tween(shipSpeed);
   const brakeSpeed = shipSpeed/3;
   const tweenBrakePosition = new TWEEN.Tween(ship.position);
+  const tweenBarrelRoll = new TWEEN.Tween(ship.rotation);
 
   const tweenBrakeSpeed = new TWEEN.Tween(brakeSpeed);
   const rotationYSpeed = 500;
   const rotationXSpeed = 300;
   const positionSpeed = 1200;
-
+  const barrelRollSpeed = 400
   const cockpitZ = 1.25;
   const cockpitY = -1.25;
-
 
   function continueFire() {
     if(continuingFire) {
@@ -157,14 +154,16 @@ function init() {
   let previousFireButtonState = false;
   let previousBoostButtonState = false;
   let previousBrakeButtonState = false;
+  let previousBarrelRollButtonStateL = false;
+  let previousBarrelRollButtonStateR = false;
+  let bRollCount = 0;
 
   function handleGamepad() {
     if (gp) {
       // Update the gamepad state
       gp = navigator.getGamepads()[gp.index];
 
-
-    // Read axes for ship controls
+      // Read axes for ship controls
       const leftStickX = gp.axes[0]; // Horizontal movement
       const leftStickY = gp.axes[1]; // Vertical movement
 
@@ -206,10 +205,51 @@ function init() {
         tweenYposition.to({z: 0}, stickPosSpeed).start();
       }
 
+      const barrelRollButtonStateL = gp.buttons[4].pressed;
+
+      if ( barrelRollButtonStateL && bRollCount <= 1) {
+        setTimeout(() => {
+          bRollCount += 1;
+        }, 100);
+      }
+      if (barrelRollButtonStateL && !previousBarrelRollButtonStateL) {
+        if (bRollCount > 1 ) {
+          tweenBarrelRoll.to({y: -6}, barrelRollSpeed).start();
+        } else {
+          bRollCount += 1;
+          tweenBarrelRoll.to({y: -1.2}, barrelRollSpeed).start();
+        }
+      } else if (!barrelRollButtonStateL && previousBarrelRollButtonStateL) {
+        tweenBarrelRoll.stop();
+        bRollCount = 0;
+        tweenBarrelRoll.to({y: 0}, barrelRollSpeed).start();
+      }
+      previousBarrelRollButtonStateL = barrelRollButtonStateL;
+
+      const barrelRollButtonStateR = gp.buttons[5].pressed;
+      if ( barrelRollButtonStateR && bRollCount <= 1) {
+        setTimeout(() => {
+          bRollCount += 1;
+          console.log('bRollCount', bRollCount);
+        }, 100);
+      }
+      if (barrelRollButtonStateR && !previousBarrelRollButtonStateR) {
+        if (bRollCount > 1 ) {
+          tweenBarrelRoll.to({y: 6.3}, barrelRollSpeed).start();
+        } else {
+          bRollCount += 1;
+          tweenBarrelRoll.to({y: 1.2}, barrelRollSpeed).start();
+        }
+      } else if (!barrelRollButtonStateR && previousBarrelRollButtonStateR) {
+        tweenBarrelRoll.stop();
+        bRollCount = 0;
+        tweenBarrelRoll.to({y: 0}, barrelRollSpeed).start();
+      }
+      previousBarrelRollButtonStateR = barrelRollButtonStateR;
+
 
       const brakeButtonState = gp.buttons[0].pressed;
       if (brakeButtonState && !previousBrakeButtonState) {
-        boostReady = false;
         tweenBoostPosition.to({y: -4}, positionSpeed).start();
         tweenBrakeSpeed.to({x: 6.0}, 3000).start();
       } else if (!brakeButtonState && previousBrakeButtonState) {
@@ -219,9 +259,6 @@ function init() {
         tweenBrakeSpeed.to({x: .75}, 1000).start();
       }
       previousBrakeButtonState = brakeButtonState;
-
-
-
 
       const boostButtonState = gp.buttons[1].pressed;
       if (boostButtonState && !previousBoostButtonState && boostReady) {
@@ -240,9 +277,9 @@ function init() {
 
       const currentFireButtonState = gp.buttons[2].pressed;
       if (currentFireButtonState && !previousFireButtonState) {
-        console.log('Button pressed');
         firePhoton();
       } else if (!currentFireButtonState && previousFireButtonState) {
+        continuingFire = false
         console.log('Button released');
       }
       previousFireButtonState = currentFireButtonState;
@@ -341,7 +378,6 @@ function init() {
   });
 
   window.addEventListener( 'keyup', ( event ) => {
-
     if (event.key === 'p') {
       continuingFire = false;
     }
@@ -419,7 +455,6 @@ function animate() {
 function render() {
   renderer.render( scene, camera );
   animateModel(cubeGroupContainer, shipSpeed);
-  animateBuildingGroupY(shipSpeed);
   animateEnemyCube(enemyCube);
   TWEEN.update();
   stats.update();

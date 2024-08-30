@@ -16,8 +16,6 @@ const shipGeo = new THREE.CylinderGeometry(0, radius/4, height, 3, 1)
 const shipMatr = new THREE.MeshPhongMaterial( { color: shipColor, flatShading: true, emissive: shipColor, emissiveIntensity: .6, transparent: true, opacity: 0.8 } );
 const shipMatr2 = new THREE.MeshPhongMaterial( { color: photonColor, flatShading: true, emissive: shipColor, emissiveIntensity: .6, transparent: true, opacity: 0.8 } );
 
-
-
 const cockpitWindowMatr = new THREE.MeshPhongMaterial( { color: 0x999999, flatShading: true, opacity: 0.5 } );
 const cockpitWindow = new THREE.Mesh( shipGeo, cockpitWindowMatr );
 cockpitWindow.scale.set(0.5, 0.5, 0.5);

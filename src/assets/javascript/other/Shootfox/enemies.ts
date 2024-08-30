@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-// import { enemyCube } from './shootfox';
 import {getRandomPosition, getRandomNumber } from './../generators';
 import { scene } from './shootfox';
 
@@ -48,7 +47,4 @@ function animateEnemyCube(enemyCube) {
   }
 }
 
-export { enemyCube , animateEnemyCube, enemyErrorAnimation, EnemyCube  };
-
-
-
+export { animateEnemyCube, enemyErrorAnimation, EnemyCube  };
