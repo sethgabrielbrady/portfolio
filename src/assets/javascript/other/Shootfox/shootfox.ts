@@ -157,6 +157,7 @@ function init() {
   let previousBarrelRollButtonStateL = false;
   let previousBarrelRollButtonStateR = false;
   let bRollCount = 0;
+  const holdingLButtonState = false;
 
   function handleGamepad() {
     if (gp) {
@@ -207,42 +208,45 @@ function init() {
 
       const barrelRollButtonStateL = gp.buttons[4].pressed;
 
-      if ( barrelRollButtonStateL && bRollCount <= 1) {
-        setTimeout(() => {
-          bRollCount += 1;
-        }, 100);
-      }
       if (barrelRollButtonStateL && !previousBarrelRollButtonStateL) {
-        if (bRollCount > 1 ) {
-          tweenBarrelRoll.to({y: -6}, barrelRollSpeed).start();
+        bRollCount +=1;
+        if (bRollCount === 2)  {
+          tweenBarrelRoll.to({y: -6.3}, barrelRollSpeed).start();
+          setTimeout(() => {
+            tweenBarrelRoll.stop();
+            ship.rotation.y = 0;
+            bRollCount = 0;
+          }, barrelRollSpeed);
         } else {
-          bRollCount += 1;
+          setTimeout(() => {
+            bRollCount = 0;
+          }, 300);
           tweenBarrelRoll.to({y: -1.2}, barrelRollSpeed).start();
         }
       } else if (!barrelRollButtonStateL && previousBarrelRollButtonStateL) {
         tweenBarrelRoll.stop();
-        bRollCount = 0;
-        tweenBarrelRoll.to({y: 0}, barrelRollSpeed).start();
+        tweenBarrelRoll.to({y: 0}, barrelRollSpeed).start()
       }
       previousBarrelRollButtonStateL = barrelRollButtonStateL;
 
       const barrelRollButtonStateR = gp.buttons[5].pressed;
-      if ( barrelRollButtonStateR && bRollCount <= 1) {
-        setTimeout(() => {
-          bRollCount += 1;
-          console.log('bRollCount', bRollCount);
-        }, 100);
-      }
       if (barrelRollButtonStateR && !previousBarrelRollButtonStateR) {
-        if (bRollCount > 1 ) {
+        bRollCount +=1;
+        if (bRollCount === 2 ) {
           tweenBarrelRoll.to({y: 6.3}, barrelRollSpeed).start();
+          setTimeout(() => {
+            tweenBarrelRoll.stop();
+            ship.rotation.y = 0;
+            bRollCount = 0;
+          }, barrelRollSpeed);
         } else {
-          bRollCount += 1;
+          setTimeout(() => {
+            bRollCount = 0;
+          }, 300);
           tweenBarrelRoll.to({y: 1.2}, barrelRollSpeed).start();
         }
       } else if (!barrelRollButtonStateR && previousBarrelRollButtonStateR) {
         tweenBarrelRoll.stop();
-        bRollCount = 0;
         tweenBarrelRoll.to({y: 0}, barrelRollSpeed).start();
       }
       previousBarrelRollButtonStateR = barrelRollButtonStateR;
