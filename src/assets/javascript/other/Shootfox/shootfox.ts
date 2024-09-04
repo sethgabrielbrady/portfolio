@@ -13,7 +13,6 @@ let showHelper: Boolean = false;
 let camera = new THREE.Camera();
 let renderer: THREE.WebGLRenderer
 let delta: Number = 0;
-let cockpitCamera: Boolean = false;
 let showEnemeies: Boolean = true;
 let continuingFire: Boolean = false;
 
@@ -116,9 +115,6 @@ function init() {
   container.appendChild(renderer.domElement);
 
   //ship tween and controls
-  const tweenCameraRotation = new TWEEN.Tween(camera.rotation);
-  const tweenCameraPositionX = new TWEEN.Tween(camera.position);
-  const tweenCameraPositionZ = new TWEEN.Tween(camera.position);
   const tweenXRotation = new TWEEN.Tween(ship.rotation);
   const tweenYRotation = new TWEEN.Tween(ship.rotation);
   const tweenXposition = new TWEEN.Tween(ship.position);
@@ -134,8 +130,7 @@ function init() {
   const rotationXSpeed = 300;
   const positionSpeed = 1200;
   const barrelRollSpeed = 400
-  const cockpitZ = 1.25;
-  const cockpitY = -1.25;
+
 
   function continueFire() {
     if(continuingFire) {
@@ -186,7 +181,6 @@ function init() {
         tweenXRotation.stop();
         tweenXRotation.to({z: 0}, stickRotYSpeed).start();
         tweenXposition.stop();
-        tweenXposition.to({x: 0}, stickPosSpeed).start();
       }
 
       if (leftStickY < -0.5) {
@@ -298,25 +292,9 @@ function init() {
   window.addEventListener( 'keydown', ( event ) => {
     if (event.key === 'p') {
       firePhoton();
-      // continuingFire = true;
-      // firePhoton();
-      // continueFire();
     }
 
-    if (event.key === 'l') {
-      cockpitCamera = !cockpitCamera;
-      if (cockpitCamera) {
-        camera.position.set( 0, cockpitY, cockpitZ );
-        shipMeshFront.scale.set(1.75, 2.25, 1.75);
-        shipMeshFront.position.z = 0 - 0.9;
-        shipMeshFront.position.y = 4;
-      } else {
-        camera.position.set( 0, -12, 0 );
-        shipMeshFront.scale.set(1, 1, 1);
-        shipMeshFront.position.z = 0;
-        shipMeshFront.position.y = -.65;
-      }
-    }
+
 
 
     if (event.key === 'm' && boostReady) {
@@ -331,13 +309,6 @@ function init() {
       tweenXposition.stop();
       tweenXRotation.to({z: 0.25}, rotationYSpeed).start();
       tweenXposition.to({x: -20}, positionSpeed).start();
-
-      if (cockpitCamera) {
-        tweenCameraPositionX.stop();
-        tweenCameraRotation.stop();
-        tweenCameraPositionX.to({x: -9.7}, positionSpeed).start();
-        tweenCameraRotation.to({z: -1.5}, rotationYSpeed*10).start();
-      }
     }
 
     if (event.key === 'd') {
@@ -346,13 +317,6 @@ function init() {
 
       tweenXRotation.to({z:-0.25}, rotationYSpeed).start();
       tweenXposition.to({x: 20}, positionSpeed).start();
-
-      if (cockpitCamera) {
-        tweenCameraPositionX.stop();
-        tweenCameraRotation.stop();
-        tweenCameraPositionX.to({x: 9.7}, positionSpeed).start();
-        tweenCameraRotation.to({z: 1.5}, rotationYSpeed*10).start();
-      }
     }
 
     if (event.key === 'w') {
@@ -360,12 +324,6 @@ function init() {
       tweenYposition.stop();
       tweenYRotation.to({x: -0.4}, rotationXSpeed).start();
       tweenYposition.to({z: -15}, positionSpeed).start();
-
-
-      if (cockpitCamera) {
-        tweenCameraPositionZ.stop();
-        tweenCameraPositionZ.to({z: -9.7}, positionSpeed).start();
-      }
     }
 
     if (event.key === 's') {
@@ -373,11 +331,6 @@ function init() {
       tweenYposition.stop();
       tweenYRotation.to({x: 0.7}, rotationXSpeed).start();
       tweenYposition.to({z: 15}, positionSpeed).start();
-
-      if (cockpitCamera) {
-        tweenCameraPositionZ.stop();
-        tweenCameraPositionZ.to({z: 5.7}, positionSpeed).start();
-      }
     }
   });
 
@@ -388,7 +341,7 @@ function init() {
 
     if (event.key === 'r') {
       showHelper = !showHelper;
-      shipHelper.visible = showHelper;
+      // shipHelper.visible = showHelper;
     }
 
     if (event.key === 'c') {
@@ -403,15 +356,6 @@ function init() {
       tweenXRotation.stop();
       tweenXRotation.to({z: 0}, rotationYSpeed).start();
       tweenXposition.stop();
-      tweenXposition.to({x: 0}, positionSpeed).start();
-
-
-      if (cockpitCamera) {
-        tweenCameraPositionX.stop();
-        tweenCameraRotation.stop();
-        tweenCameraPositionX.to({x: 0}, positionSpeed).start();
-        tweenCameraRotation.to({z: 0}, rotationYSpeed).start();
-      }
     }
 
     if (event.key === 'w' || event.key === 's') {
@@ -419,11 +363,6 @@ function init() {
       tweenYRotation.to({x: 0}, rotationXSpeed).start();
       tweenYposition.stop();
       tweenYposition.to({z: 0}, positionSpeed).start();
-
-      if (cockpitCamera) {
-      tweenCameraPositionZ.stop();
-      tweenCameraPositionZ.to({z: cockpitZ}, positionSpeed).start();
-      }
     }
 
     if (event.key === 'm') {
