@@ -9,27 +9,17 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 
 
-let boostReady: Boolean = true;
-let continuingFire: Boolean = false;
 let orbitControls: null;
 
-const shipSpeed: Object = { x:.9};
-const brakeSpeed = Number(shipSpeed)/3;
-const tweenBrakePosition = new TWEEN.Tween(ship.position);
-const tweenBarrelRoll = new TWEEN.Tween(ship.rotation);
+function setUpOrbitControls(camera: unknown, renderer: unknown) {
+  orbitControls = new OrbitControls(camera, renderer.domElement)
+  orbitControls.enabled = false;
+  orbitControls.enableRotate = true;
+  orbitControls.keyPanSpeed = 60.0 // magic number
+  orbitControls.enableZoom = true
+}
 
-const tweenXRotation = new TWEEN.Tween(ship.rotation);
-const tweenYRotation = new TWEEN.Tween(ship.rotation);
-const tweenXposition = new TWEEN.Tween(ship.position);
-const tweenYposition = new TWEEN.Tween(ship.position);
-const tweenBoostPosition = new TWEEN.Tween(ship.position);
-const tweenBoostSpeed = new TWEEN.Tween(shipSpeed);
-const tweenBrakeSpeed = new TWEEN.Tween(brakeSpeed);
-
-const rotationYSpeed = 500;
-const rotationXSpeed = 300;
-const positionSpeed = 1200;
-const barrelRollSpeed = 400
+let continuingFire: Boolean = false;
 
 function continueFire() {
   if(continuingFire) {
@@ -42,9 +32,17 @@ function continueFire() {
 
 
 
+let boostReady: Boolean = true;
+
+function updateBoostTime() {
+  if (!boostReady) {
+    setTimeout(() => {
+      boostReady = true;
+    }, 2000);
+  }
+}
+
 let gp: Gamepad | null = null;
-
-
 window.addEventListener("gamepadconnected", (event) => {
   gp = navigator.getGamepads()[event.gamepad.index];
 });
@@ -56,15 +54,22 @@ let previousBarrelRollButtonStateL = false;
 let previousBarrelRollButtonStateR = false;
 let bRollCount = 0;
 
+const rotationYSpeed = 500;
+const rotationXSpeed = 300;
+const positionSpeed = 1200;
+const barrelRollSpeed = 400
+const shipSpeed: Object = { x:.9};
+const brakeSpeed = Number(shipSpeed)/3;
 
-function updateBoostTime() {
-  if (!boostReady) {
-    setTimeout(() => {
-      boostReady = true;
-    }, 2000);
-  }
-}
-
+const tweenBrakePosition = new TWEEN.Tween(ship.position);
+const tweenBarrelRoll = new TWEEN.Tween(ship.rotation);
+const tweenXRotation = new TWEEN.Tween(ship.rotation);
+const tweenYRotation = new TWEEN.Tween(ship.rotation);
+const tweenXposition = new TWEEN.Tween(ship.position);
+const tweenYposition = new TWEEN.Tween(ship.position);
+const tweenBoostPosition = new TWEEN.Tween(ship.position);
+const tweenBoostSpeed = new TWEEN.Tween(shipSpeed);
+const tweenBrakeSpeed = new TWEEN.Tween(brakeSpeed);
 
 // gamepad controls
 function handleGamepad() {
@@ -298,12 +303,6 @@ window.addEventListener( 'keyup', ( event ) => {
   }
 });
 }
-function setUpOrbitControls(camera: unknown, renderer: unknown) {
-  orbitControls = new OrbitControls(camera, renderer.domElement)
-  orbitControls.enabled = false;
-  orbitControls.enableRotate = true;
-  orbitControls.keyPanSpeed = 60.0 // magic number
-  orbitControls.enableZoom = true
-}
+
 
 export { handleGamepad, handleKeyboardControls, setUpOrbitControls}
