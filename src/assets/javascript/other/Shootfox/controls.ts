@@ -5,12 +5,9 @@ import { ship } from './ship';
 import { enemyCube } from './shootfox';
 import { translateCamera } from './debug';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
-
-
+import { updateGameText } from './gameText';
 
 let orbitControls: null;
-
 function setUpOrbitControls(camera: unknown, renderer: unknown) {
   orbitControls = new OrbitControls(camera, renderer.domElement)
   orbitControls.enabled = false;
@@ -19,21 +16,8 @@ function setUpOrbitControls(camera: unknown, renderer: unknown) {
   orbitControls.enableZoom = true
 }
 
-let continuingFire: Boolean = false;
-
-function continueFire() {
-  if(continuingFire) {
-    firePhoton();
-    setTimeout(() => {
-      continueFire();
-    }, 400);
-  }
-}
-
-
 
 let boostReady: Boolean = true;
-
 function updateBoostTime() {
   if (!boostReady) {
     setTimeout(() => {
@@ -43,9 +27,15 @@ function updateBoostTime() {
 }
 
 let gp: Gamepad | null = null;
+let gamePadConnected: boolean = false;
+
 window.addEventListener("gamepadconnected", (event) => {
   gp = navigator.getGamepads()[event.gamepad.index];
+  gamePadConnected = true;
+  updateGameText('Gamepad connected');
 });
+
+
 
 let previousFireButtonState = false;
 let previousBoostButtonState = false;
@@ -60,7 +50,6 @@ const positionSpeed = 1200;
 const barrelRollSpeed = 400
 const shipSpeed: Object = { x:.9};
 const brakeSpeed = Number(shipSpeed)/3;
-
 const tweenBrakePosition = new TWEEN.Tween(ship.position);
 const tweenBarrelRoll = new TWEEN.Tween(ship.rotation);
 const tweenXRotation = new TWEEN.Tween(ship.rotation);
@@ -80,11 +69,10 @@ function handleGamepad() {
     // Read axes for ship controls
     const leftStickX = gp.axes[0]; // Horizontal movement
     const leftStickY = gp.axes[1]; // Vertical movement
-
-    // Apply ship controls
     const stickPosSpeed = positionSpeed/12;
     const stickRotYSpeed = rotationYSpeed/12;
     const stickRotSpeed = rotationXSpeed/12;
+
     if (leftStickX < -0.5) {
       tweenXRotation.stop();
       tweenXposition.stop();
@@ -119,7 +107,6 @@ function handleGamepad() {
     }
 
     const barrelRollButtonStateL = gp.buttons[4].pressed;
-
     if (barrelRollButtonStateL && !previousBarrelRollButtonStateL) {
       bRollCount +=1;
       if (bRollCount === 2)  {
@@ -163,7 +150,6 @@ function handleGamepad() {
     }
     previousBarrelRollButtonStateR = barrelRollButtonStateR;
 
-
     const brakeButtonState = gp.buttons[0].pressed;
     if (brakeButtonState && !previousBrakeButtonState) {
       tweenBoostPosition.to({y: -4}, positionSpeed).start();
@@ -190,17 +176,14 @@ function handleGamepad() {
     }
     previousBoostButtonState = boostButtonState;
 
-
     const currentFireButtonState = gp.buttons[2].pressed;
     if (currentFireButtonState && !previousFireButtonState) {
       firePhoton();
-    } else if (!currentFireButtonState && previousFireButtonState) {
-      continuingFire = false
-      console.log('Button released');
     }
     previousFireButtonState = currentFireButtonState;
   } else {
     // console.log('No gamepad detected');
+    gamePadConnected = false;
   }
   requestAnimationFrame(handleGamepad);
 }
@@ -210,7 +193,6 @@ requestAnimationFrame(handleGamepad);
 
 //keyboard controls
 function handleKeyboardControls() {
-
 
 window.addEventListener( 'keydown', ( event ) => {
   if (event.key === 'p') {
@@ -255,10 +237,6 @@ window.addEventListener( 'keydown', ( event ) => {
 });
 
 window.addEventListener( 'keyup', ( event ) => {
-  if (event.key === 'p') {
-    continuingFire = false;
-  }
-
   if (event.key === 'r') {
     showHelper = !showHelper;
     // shipHelper.visible = showHelper;
@@ -305,4 +283,4 @@ window.addEventListener( 'keyup', ( event ) => {
 }
 
 
-export { handleGamepad, handleKeyboardControls, setUpOrbitControls}
+export { handleGamepad, handleKeyboardControls, setUpOrbitControls, gamePadConnected }

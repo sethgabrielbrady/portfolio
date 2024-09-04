@@ -144,7 +144,7 @@ const segmentColor: number = 0xa6fd29;
 const segmentColor2: number = 0x37013a;
 const roadSegGeo = new THREE.PlaneGeometry(34, 4 );
 
-const roadSegMatr = new THREE.MeshLambertMaterial( { color: segmentColor, emissive: segmentColor, transparent: true, opacity: 0.5, emissiveIntensity: 0.8 } );
+const roadSegMatr = new THREE.MeshLambertMaterial( { color: segmentColor, emissive: segmentColor, transparent: false, opacity: 0.5, emissiveIntensity: 0.8 } );
 const roadSegMatr2 = new THREE.MeshLambertMaterial( { color: segmentColor2, emissive: segmentColor2, emissiveIntensity: 0.8 } );
 
 const roadSegment = new THREE.Mesh( roadSegGeo, roadSegMatr );

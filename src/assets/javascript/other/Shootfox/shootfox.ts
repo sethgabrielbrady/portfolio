@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY, largeSphere} from '@js/other/Shootfox/models.ts';
+import { landscapeGroup, cubeGroupContainer, animateModel, largeSphere} from '@js/other/Shootfox/models.ts';
 import { ship } from '@js/other/Shootfox/ship.ts';
 import { EnemyCube, animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
 import { handleGamepad, handleKeyboardControls, setUpOrbitControls } from './controls';
 import {stats} from './debug.ts'
+import { updateGameText } from './gameText.ts';
 
 
 let enemyCube = new EnemyCube();
@@ -13,18 +14,14 @@ function addEnemyCube() {
   scene.add(enemyCube);
 }
 
-
 // initializations
 let camera = new THREE.Camera();
 let renderer: THREE.WebGLRenderer
-
 const scene: THREE.Scene = new THREE.Scene();
 const backgroundColor: number = 0x222222;
-
 function init() {
+  // scene updates
   scene.background = new THREE.Color( backgroundColor );
-
-  // scene additions
   scene.add(landscapeGroup);
   scene.add(ship);
   scene.add(cubeGroupContainer);
@@ -60,14 +57,10 @@ function init() {
     powerPreference: "high-performance",
     logarithmicDepthBuffer: true
   });
-
   renderer.setPixelRatio( window.devicePixelRatio/2);
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-
-
 
   const container: HTMLElement = document.getElementById("shootfox")!;
   container.appendChild(renderer.domElement);
@@ -76,13 +69,15 @@ function init() {
   setUpOrbitControls(camera, renderer);
   requestAnimationFrame(handleGamepad);
   handleKeyboardControls();
+
+
+  updateGameText("//");
 }
 
 
 let delta: number = 0;
 const clock: THREE.Clock = new THREE.Clock();
 const interval: number = 1/60;
-
 function animate() {
   requestAnimationFrame(animate);
   delta += clock.getDelta();
@@ -107,6 +102,6 @@ function shootfox() {
   animate();
 }
 
-export { shootfox, scene, enemyCube, addEnemyCube, camera};
+export { shootfox, scene, enemyCube, addEnemyCube, camera, newText};
 
 
