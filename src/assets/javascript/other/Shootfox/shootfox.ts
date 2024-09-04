@@ -1,23 +1,10 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { landscapeGroup, cubeGroupContainer, animateModel, animateBuildingGroupY, largeSphere} from '@js/other/Shootfox/models.ts';
 import { ship } from '@js/other/Shootfox/ship.ts';
 import { EnemyCube, animateEnemyCube} from '@js/other/Shootfox/enemies.ts';
-import { handleGamepad, handleKeyboardControls } from './controls';
+import { handleGamepad, handleKeyboardControls, setUpOrbitControls } from './controls';
 import {stats} from './debug.ts'
-
-
-let camera = new THREE.Camera();
-let renderer: THREE.WebGLRenderer
-let delta: number = 0;
-
-const clock: THREE.Clock = new THREE.Clock();
-const scene: THREE.Scene = new THREE.Scene();
-const interval: number = 1/60;
-const shipSpeed: Object = { x:.9};
-
-
 
 
 let enemyCube = new EnemyCube();
@@ -26,7 +13,14 @@ function addEnemyCube() {
   scene.add(enemyCube);
 }
 
+
+// initializations
+let camera = new THREE.Camera();
+let renderer: THREE.WebGLRenderer
+
+const scene: THREE.Scene = new THREE.Scene();
 const backgroundColor: number = 0x222222;
+
 function init() {
   scene.background = new THREE.Color( backgroundColor );
 
@@ -72,19 +66,22 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  const orbitControls = new OrbitControls(camera, renderer.domElement)
-  orbitControls.enabled = false;
-  orbitControls.enableRotate = true;
-  orbitControls.keyPanSpeed = 60.0 // magic number
-  orbitControls.enableZoom = true
+
+
 
   const container: HTMLElement = document.getElementById("shootfox")!;
   container.appendChild(renderer.domElement);
 
   // adds gamepad and keyboard controls
+  setUpOrbitControls(camera, renderer);
   requestAnimationFrame(handleGamepad);
   handleKeyboardControls();
 }
+
+
+let delta: number = 0;
+const clock: THREE.Clock = new THREE.Clock();
+const interval: number = 1/60;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -95,6 +92,8 @@ function animate() {
   }
 }
 
+
+const shipSpeed: Object = { x:.9};
 function render() {
   renderer.render( scene, camera );
   animateModel(cubeGroupContainer, shipSpeed);
@@ -108,6 +107,6 @@ function shootfox() {
   animate();
 }
 
-export { shootfox, scene, enemyCube, addEnemyCube, camera , delta};
+export { shootfox, scene, enemyCube, addEnemyCube, camera};
 
 

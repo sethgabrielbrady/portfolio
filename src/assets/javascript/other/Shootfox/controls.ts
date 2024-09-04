@@ -4,10 +4,14 @@ import { firePhoton } from './ship';
 import { ship } from './ship';
 import { enemyCube } from './shootfox';
 import { translateCamera } from './debug';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+
 
 
 let boostReady: Boolean = true;
 let continuingFire: Boolean = false;
+let orbitControls: null;
 
 const shipSpeed: Object = { x:.9};
 const brakeSpeed = Number(shipSpeed)/3;
@@ -26,7 +30,6 @@ const rotationYSpeed = 500;
 const rotationXSpeed = 300;
 const positionSpeed = 1200;
 const barrelRollSpeed = 400
-
 
 function continueFire() {
   if(continuingFire) {
@@ -295,5 +298,12 @@ window.addEventListener( 'keyup', ( event ) => {
   }
 });
 }
+function setUpOrbitControls(camera: unknown, renderer: unknown) {
+  orbitControls = new OrbitControls(camera, renderer.domElement)
+  orbitControls.enabled = false;
+  orbitControls.enableRotate = true;
+  orbitControls.keyPanSpeed = 60.0 // magic number
+  orbitControls.enableZoom = true
+}
 
-export { handleGamepad, handleKeyboardControls}
+export { handleGamepad, handleKeyboardControls, setUpOrbitControls}
