@@ -7,7 +7,6 @@ import { handleGamepad, handleKeyboardControls, setUpOrbitControls } from './con
 import {stats} from './debug.ts'
 import { updateGameText } from './gameText.ts';
 
-
 let enemyCube = new EnemyCube();
 function addEnemyCube() {
   enemyCube = new EnemyCube();
@@ -69,11 +68,8 @@ function init() {
   setUpOrbitControls(camera, renderer);
   requestAnimationFrame(handleGamepad);
   handleKeyboardControls();
-
-
   updateGameText("//");
 }
-
 
 let delta: number = 0;
 const clock: THREE.Clock = new THREE.Clock();
@@ -86,7 +82,6 @@ function animate() {
     delta = delta % interval;
   }
 }
-
 
 const shipSpeed: Object = { x:.9};
 function render() {
@@ -102,6 +97,4 @@ function shootfox() {
   animate();
 }
 
-export { shootfox, scene, enemyCube, addEnemyCube, camera, newText};
-
-
+export { shootfox, scene, enemyCube, addEnemyCube, camera};

@@ -28,7 +28,6 @@ function updateBoostTime() {
 
 let gp: Gamepad | null = null;
 let gamePadConnected: boolean = false;
-
 window.addEventListener("gamepadconnected", (event) => {
   gp = navigator.getGamepads()[event.gamepad.index];
   gamePadConnected = true;
@@ -74,13 +73,13 @@ function handleGamepad() {
     const stickRotSpeed = rotationXSpeed/12;
 
     if (leftStickX < -0.5) {
-      tweenXRotation.stop();
-      tweenXposition.stop();
+      // tweenXRotation.stop();
+      // tweenXposition.stop();
       tweenXRotation.to({z: 0.25}, stickRotYSpeed).start();
       tweenXposition.to({x: -20}, stickPosSpeed).start();
     } else if (leftStickX > 0.5) {
-      tweenXRotation.stop();
-      tweenXposition.stop();
+      // tweenXRotation.stop();
+      // tweenXposition.stop();
       tweenXRotation.to({z: -0.25}, stickRotYSpeed).start();
       tweenXposition.to({x: 20}, stickPosSpeed).start();
     } else {
@@ -90,13 +89,13 @@ function handleGamepad() {
     }
 
     if (leftStickY < -0.5) {
-      tweenYRotation.stop();
-      tweenYposition.stop();
+      // tweenYRotation.stop();
+      // tweenYposition.stop();
       tweenYRotation.to({x: -0.4}, stickRotSpeed).start();
       tweenYposition.to({z: -15}, stickPosSpeed).start();
     } else if (leftStickY > 0.5) {
-      tweenYRotation.stop();
-      tweenYposition.stop();
+      // tweenYRotation.stop();
+      // tweenYposition.stop();
       tweenYRotation.to({x: 0.7}, stickRotSpeed).start();
       tweenYposition.to({z: 15}, stickPosSpeed).start();
     } else {
