@@ -68,9 +68,9 @@ function handleGamepad() {
     // Read axes for ship controls
     const leftStickX = gp.axes[0]; // Horizontal movement
     const leftStickY = gp.axes[1]; // Vertical movement
-    const stickPosSpeed = positionSpeed/12;
-    const stickRotYSpeed = rotationYSpeed/12;
-    const stickRotSpeed = rotationXSpeed/12;
+    const stickPosSpeed = positionSpeed/15;
+    const stickRotYSpeed = rotationYSpeed/15;
+    const stickRotSpeed = rotationXSpeed/15;
 
     if (leftStickX < -0.5) {
       // tweenXRotation.stop();

@@ -8,9 +8,14 @@ import {stats} from './debug.ts'
 import { updateGameText } from './gameText.ts';
 
 let enemyCube = new EnemyCube();
+// let eClone = enemyCube.clone();
 function addEnemyCube() {
   enemyCube = new EnemyCube();
+  // eClone = enemyCube.clone();
+  // const pos = enemyCube.position.z - 3.5;
+  // eClone.position.set( enemyCube.position.x, enemyCube.position.y, pos  );
   scene.add(enemyCube);
+  // scene.add(eClone);
 }
 
 // initializations
@@ -56,6 +61,7 @@ function init() {
     powerPreference: "high-performance",
     logarithmicDepthBuffer: true
   });
+
   renderer.setPixelRatio( window.devicePixelRatio/2);
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
@@ -83,11 +89,12 @@ function animate() {
   }
 }
 
-const shipSpeed: Object = { x:.9};
+const shipSpeed: Object = { x:0.9};
 function render() {
   renderer.render( scene, camera );
   animateModel(cubeGroupContainer, shipSpeed);
   animateEnemyCube(enemyCube);
+  // animateEnemyCube(eClone);
   TWEEN.update();
   stats.update();
 }

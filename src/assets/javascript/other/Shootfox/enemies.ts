@@ -22,13 +22,16 @@ function enemyErrorAnimation(enemyCube) {
   const epy = enemyCube.position.y;
   const enemyYTween = new TWEEN.Tween(enemyCube.position)
   const enemyZTween = new TWEEN.Tween(enemyCube.position)
+  const enemyXTween = new TWEEN.Tween(enemyCube.position)
   const scaleTween = new TWEEN.Tween(enemyCube.scale);
   const opacityTween = new TWEEN.Tween(enemyCube.material);
   const zDirection = -15;
+  const xDirection = getRandomNumber(-15, 15);
   const yDirection = epy + getRandomNumber(5, 10);
 
   enemyZTween.to({ z: zDirection}, 500).start();
   enemyYTween.to({ y: yDirection}, 500).start();
+  enemyXTween.to({ x: xDirection}, 500).start();
   scaleTween.to({ x:.75, y:.75, z:.75}, 500).start();
   opacityTween.to({ opacity: 1, emissiveIntensity: 0 }, 500).start().onComplete(() => {
     scene.remove(enemyCube);

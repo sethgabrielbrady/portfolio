@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { scene } from './shootfox';
-import { getRandomNumber, getRandomPosOrNeg } from '../generators';
+// import { scene } from './shootfox';
+import { getRandomNumber, getRandomPosOrNeg, getRandomColor } from '../generators';
 
 const buildingGroupY = new THREE.Group();
 const buildingGroup = new THREE.Group();
@@ -11,30 +11,30 @@ building.position.z = 0;
 
 let buildingGroupYStartPos = 100;
 
-const buildings: any[] = [];
-const startPos = 400;
-function createNewBuildingsXset() {
-  const newBuildings = new BuildingGroup(20, startPos);
-  buildings.push(newBuildings);
-  scene.add(newBuildings);
-}
+// const buildings: any[] = [];
+// const startPos = 400;
+// function createNewBuildingsXset() {
+//   const newBuildings = new BuildingGroup(20, startPos);
+//   buildings.push(newBuildings);
+//   scene.add(newBuildings);
+// }
 
 //createNewBuildingsXset
 
-function animateBuildingGroupY(shipSpeed) {
-  if (buildings.length > 0) {
-    buildings.forEach(building => {
-      building.position.y -= shipSpeed.x;
-      if (building.position.y === -200) {
-        scene.remove(buildings[0]);
-        buildings.shift();
-      }
-      if (building.length < 20) {
-        createNewBuildingsXset()
-      }
-    })
-  }
-}
+// function animateBuildingGroupY(shipSpeed) {
+//   if (buildings.length > 0) {
+//     buildings.forEach(building => {
+//       building.position.y -= shipSpeed.x;
+//       if (building.position.y === -200) {
+//         scene.remove(buildings[0]);
+//         buildings.shift();
+//       }
+//       if (building.length < 20) {
+//         createNewBuildingsXset()
+//       }
+//     })
+//   }
+// }
 
 // new building constructor
 class Building extends THREE.Object3D {
@@ -64,11 +64,6 @@ class BuildingGroup {
 
     return buildingGroup;
   }
-}
-
-
-function getRandomColor() {
-  return Math.random() * 0xffffff;
 }
 
 const buildingArray: THREE.Group<THREE.Object3DEventMap>[] = [];
@@ -116,6 +111,8 @@ function addBuildingGroupX() {
 }
 addBuildingGroupX();
 
+
+
 // landscape
 const landscapeGroup = new THREE.Group();
 const groundGeo = new THREE.PlaneGeometry( 60, 900 );
@@ -125,12 +122,9 @@ ground.position.z = -15;
 ground.rotation.z = ground.position.z * (Math.PI);
 ground.position.y = 400;
 ground.receiveShadow = true;
-
 landscapeGroup.add(ground);
 
-
-
-
+//background sphere
 const sphereColor = 0xcccccc;
 const largeSphereGeo = new THREE.SphereGeometry( 100, 320, 320 );
 const largeSphereMatr = new THREE.MeshLambertMaterial( { color: sphereColor} );
@@ -139,11 +133,11 @@ largeSphere.position.z = -10;
 largeSphere.position.y = 600;
 largeSphere.receiveShadow = false;
 
+
 // cubeGroupContainer
 const segmentColor: number = 0xa6fd29;
 const segmentColor2: number = 0x37013a;
 const roadSegGeo = new THREE.PlaneGeometry(34, 4 );
-
 const roadSegMatr = new THREE.MeshLambertMaterial( { color: segmentColor, emissive: segmentColor, transparent: false, opacity: 0.5, emissiveIntensity: 0.8 } );
 const roadSegMatr2 = new THREE.MeshLambertMaterial( { color: segmentColor2, emissive: segmentColor2, emissiveIntensity: 0.8 } );
 
@@ -191,23 +185,25 @@ roadSegmentGroup3.position.y = -4;
 roadSegmentGroup4.position.x = -1 * roadSegmentGroup3.position.x
 
 const cubeGroupContainer = new THREE.Group();
-cubeGroupContainer.add(roadSegmentGroup, roadSegmentGroup2, roadSegmentGroup3, roadSegmentGroup4);
+// cubeGroupContainer.add(roadSegmentGroup, roadSegmentGroup2, roadSegmentGroup3, roadSegmentGroup4);
+cubeGroupContainer.add(roadSegmentGroup3, roadSegmentGroup4);
+
 
 // skyline
-const texture = new THREE.TextureLoader().load( "skyline2.png" );
-const skylineGeo = new THREE.PlaneGeometry( 300, 150 );
-// const skylineGeo = new THREE.BoxGeometry( 744, 342, 1 );
-const skylineMatr = new THREE.MeshBasicMaterial( { color: 0xffffff, map: texture, transparent: true } );
-const skylineLightMatr = new THREE.MeshLambertMaterial( { color: 0xffffff, transparent: true } );
+// const texture = new THREE.TextureLoader().load( "skyline2.png" );
+// const skylineGeo = new THREE.PlaneGeometry( 300, 150 );
+// // const skylineGeo = new THREE.BoxGeometry( 744, 342, 1 );
+// const skylineMatr = new THREE.MeshBasicMaterial( { color: 0xffffff, map: texture, transparent: true } );
+// const skylineLightMatr = new THREE.MeshLambertMaterial( { color: 0xffffff, transparent: true } );
 
-const skyline = new THREE.Mesh( skylineGeo, skylineMatr );
-const skylineLight = new THREE.Mesh( skylineGeo, skylineLightMatr );
-const skylineGroup = new THREE.Group();
-skylineLight.position.y = skyline.position.y -1;
-skylineGroup.add(skyline, skylineLight);
-skylineGroup.rotation.x = Math.PI / 2;
-skylineGroup.position.y = 350;
-skylineGroup.position.z = -10;
+// const skyline = new THREE.Mesh( skylineGeo, skylineMatr );
+// const skylineLight = new THREE.Mesh( skylineGeo, skylineLightMatr );
+// const skylineGroup = new THREE.Group();
+// skylineLight.position.y = skyline.position.y -1;
+// skylineGroup.add(skyline, skylineLight);
+// skylineGroup.rotation.x = Math.PI / 2;
+// skylineGroup.position.y = 350;
+// skylineGroup.position.z = -10;
 
 
 // methods
@@ -219,4 +215,4 @@ function animateModel(model, speed) {
 }
 
 
-export  { BuildingGroup, landscapeGroup, ground, cubeGroupContainer, skylineGroup, animateModel, animateBuildingGroupY, createNewBuildingsXset, largeSphere }
+export  { landscapeGroup, cubeGroupContainer, animateModel, largeSphere, ground }
