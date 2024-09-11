@@ -33,6 +33,11 @@ const router = createRouter({
       name: 'sandbox',
       component: () => import('../views/VRSandboxView.vue')
     },
+    {
+      path: '/voidblank',
+      name: 'voidblank',
+      component: () => import('../views/VoidBlankView.vue')
+    },
   ]
 })
 
