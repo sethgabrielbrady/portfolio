@@ -3,6 +3,8 @@ import { scene, enemyCube, addEnemyCube } from '@/assets/javascript/other/Shootf
 import { ground } from '@js/other/Shootfox/models.ts';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { enemyErrorAnimation } from '@js/other/Shootfox/enemies.ts';
+import { updateGameText } from './gameText.ts';
+
 
 const shipColor = 0x00ffbc;
 const photonColor = 0xff3b94;
@@ -135,6 +137,7 @@ lightParent.castShadow = false;
 let photonCount: number = 0;
 
 function firePhoton() {
+  if (photonCount >= 3) return;
 
   photonCount += 1;
   const photon = photonParent.clone();
@@ -193,29 +196,42 @@ function photonOutofBounds(photon) {
   return yBounds || xBounds || zBounds;
 }
 
+let enemyCount = 1;
 function animatePhoton(photon, direction, light) {
   function updatePhotonPosition() {
     photon.position.addScaledVector(direction, photonSpeed);
     light.position.addScaledVector(direction, photonSpeed);
 
     // Continue the animation
+
     if (!photonOutofBounds(photon, light) ) {
       const photonBox = new THREE.Box3().setFromObject(photon);
       const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
 
-      if (photonBox.intersectsBox(enemyCubeBox)) {
+      if (photonBox.intersectsBox(enemyCubeBox) && !enemyCube.intersected) {
         scene.remove(photon);
         photonCount -= 1;
         tweenSunScale(enemyCube.position, light);
+        enemyCube.intersected = true;
         enemyErrorAnimation(enemyCube);
 
-        setTimeout(() => {
-          addEnemyCube();
-        }, 800);
+        if (enemyCount === 1) {
+          enemyCount -= 1;
+          updateGameText(enemyCount);
+        }
+
+        if (enemyCount === 0) {
+          setTimeout(() => {
+            addEnemyCube();
+            enemyCount += 1;
+            updateGameText(enemyCount);
+          }, 800);
+        }
       } else if (photon.position.z <= ground.position.z) {
           const photonPosition = photon.position;
           tweenSunScale(photonPosition, light);
           scene.remove(photon);
+          photonCount -= 1;
         } else {
         requestAnimationFrame(updatePhotonPosition);
       }

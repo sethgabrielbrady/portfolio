@@ -4,17 +4,19 @@ import {getRandomPosition, getRandomNumber } from './../generators';
 import { scene } from './shootfox';
 
 class EnemyCube extends THREE.Mesh {
+  intersected: boolean;
   constructor() {
     super();
     this.geometry = new THREE.BoxGeometry( 3, 3, 3 );
     // const color = getRandomColor();
     const color = 0xfe0000;
-    this.material = new THREE.MeshLambertMaterial( { color: color, flatShading: true, opacity: 0.5, transparent: true} );
+    this.material = new THREE.MeshLambertMaterial( { color: color, flatShading: true, opacity: 1, transparent: true} );
     this.material.emissive = new THREE.Color( color );
     this.material.emissiveIntensity = 0.7;
     this.position.set( getRandomPosition(), 12, getRandomPosition() );
     this.receiveShadow = false;
     this.castShadow = true;
+    this.intersected = false;
   }
 }
 
@@ -29,11 +31,11 @@ function enemyErrorAnimation(enemyCube) {
   const xDirection = getRandomNumber(-15, 15);
   const yDirection = epy + getRandomNumber(5, 10);
 
-  enemyZTween.to({ z: zDirection}, 500).start();
-  enemyYTween.to({ y: yDirection}, 500).start();
-  enemyXTween.to({ x: xDirection}, 500).start();
+  enemyZTween.to({ z: zDirection}, 600).start();
+  enemyYTween.to({ y: yDirection}, 600).start();
+  enemyXTween.to({ x: xDirection}, 600).start();
   scaleTween.to({ x:.75, y:.75, z:.75}, 500).start();
-  opacityTween.to({ opacity: 1, emissiveIntensity: 0 }, 500).start().onComplete(() => {
+  opacityTween.to({ opacity: 0, emissiveIntensity: 0 }, 500).start().onComplete(() => {
     scene.remove(enemyCube);
   });
 }
