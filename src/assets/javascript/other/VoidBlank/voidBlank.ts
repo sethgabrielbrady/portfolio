@@ -9,7 +9,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
 
-let camera, renderer, scene;
+let camera, renderer, scene, xrCamera;
 
 function voidblank() {
 
@@ -204,8 +204,11 @@ function voidblank() {
 
     const aspect = (window.innerWidth / window.innerHeight);
     const d = 7;
-    camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
-    camera.position.set( 20, 20, 20 ); // all components equal
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
+    // camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
+    camera.position.set( 0, 1, 3 );
+
+    // camera.position.set( 20, 20, 20 ); // all components equal
     camera.lookAt( scene.position ); // or the origin
 
 
@@ -237,6 +240,8 @@ function voidblank() {
 
     renderer.xr.enabled = true;
     renderer.xr.cameraAutoUpdate = false;
+    xrCamera = renderer.xr.getCamera();
+
 
     //  Grid
      const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
@@ -327,28 +332,42 @@ function voidblank() {
     // controllers
     const controller1 = renderer.xr.getController( 0 );
     const controller2 = renderer.xr.getController( 1 );
+
     controller1.addEventListener( 'connected',  ( event ) => {
-      this.add( buildController( event.data ) );
+      updateGameText(event.data);
+      controller1.add( buildController( event.data ) );
+      updateGameText(event.data.targetRayMode);
     } );
     controller1.addEventListener( 'disconnected',  () => {
-      this.remove( this.children[ 0 ] );
+      controller1.remove( controller1.children[ 0 ] );
     } );
+
     controller2.addEventListener( 'connected',  ( event ) => {
-      this.add( buildController( event.data ) );
+      controller2.add( buildController( event.data ) );
+      updateGameText(event.data.targetRayMode);
     } );
     controller2.addEventListener( 'disconnected', function () {
-      this.remove( this.children[ 0 ] );
+      controller2.remove( controller2.children[ 0 ] );
     } );
+
+
     scene.add( controller1, controller2 );
     updateGameText("Controllers are ready");
 
     const controllerModelFactory = new XRControllerModelFactory();
     const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
     controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+    // const gripGeometry = new THREE.BoxGeometry( 0.25,0.25,0.25);
+    // const wallMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
+
+    // const controllerGrip1 = new THREE.Mesh( gripGeometry, wallMaterial );
     scene.add( controllerGrip1 );
 
     const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
     controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+    // const gripGeometry = new THREE.BoxGeometry( 0.25,0.25,0.25);
+    // const wallMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
+    // const controllerGrip2 = new THREE.Mesh( gripGeometry, wallMaterial );
     scene.add( controllerGrip2 );
 
 
@@ -454,12 +473,23 @@ function voidblank() {
 
   function buildController( data ) {
     let geometry, material;
+    // const controllerGeo= new THREE.BoxGeometry( 0.125,0.125,0.125);
+    // const controllerMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
+    // const controllerMesh = new THREE.Mesh( controllerGeo, controllerMaterial );
+    const threeObject = new THREE.Object3D();
+    // threeObject.add( controllerMesh );
     switch ( data.targetRayMode ) {
       case 'tracked-pointer':
         geometry = new THREE.BufferGeometry();
         geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
         geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
         material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
+        // threeObject.add( new THREE.Line( geometry, material ) );
+        // threeObject.position.set( 0, 0, -0.125 );
+        // eslint-disable-next-line no-case-declarations
+        // const line = new THREE.Line( geometry, material );
+        // lineGroup.add( threeObject );
+        // return lineGroup;
         return new THREE.Line( geometry, material );
 
       case 'gaze':
@@ -467,6 +497,9 @@ function voidblank() {
         material = new THREE.MeshBasicMaterial( { opacity: 0.5, transparent: true } );
         return new THREE.Mesh( geometry, material );
     }
+    // Add a default return statement
+
+    return threeObject;
   }
 
   function onWindowResize() {
