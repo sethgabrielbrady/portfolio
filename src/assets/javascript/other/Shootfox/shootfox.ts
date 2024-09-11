@@ -83,7 +83,7 @@ const interval: number = 1/60;
 function animate() {
   requestAnimationFrame(animate);
   delta += clock.getDelta();
-  if (delta  > interval) {
+  if (delta > interval) {
     render();
     delta = delta % interval;
   }

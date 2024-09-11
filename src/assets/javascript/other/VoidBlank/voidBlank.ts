@@ -1,214 +1,32 @@
 import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
-
+import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { World, System, Component, TagComponent, Types } from 'three/examples/jsm//libs/ecsy.module.js';
-import { floor, menuMesh, exitButton, instructionText, exitText, dataScreenMesh, textureCube, heartMesh } from './worldMesh.js';
+import { floor, menuMesh, exitButton, instructionText, exitText, textureCube, heartMesh } from './worldMesh.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
-import { update } from 'three/examples/jsm/libs/tween.module.js';
+import { firePhoton } from './ship.js';
 
 let camera, renderer, scene, xrCamera;
-
-function voidblank() {
-
-  class Object3D extends Component {}
-  Object3D.schema = {
-    object: { type: Types.Ref }
-  };
-
-  class Button extends Component {}
-
-  Button.schema = {
-    currState: { type: Types.String, default: 'none' },
-    prevState: { type: Types.String, default: 'none' },
-    action: { type: Types.Ref, default: () => { } }
-  };
-
-  class ButtonSystem extends System {
-    execute( /*delta, time*/ ) {
-      this.queries.buttons.results.forEach( entity => {
-        const button = entity.getMutableComponent( Button );
-        const buttonMesh = entity.getComponent( Object3D ).object;
-
-        if ( button.currState == 'none' ) {
-          buttonMesh.scale.set( 1, 1, 1 );
-        } else {
-          buttonMesh.scale.set( 1.1, 1.1, 1.1 );
-        }
-
-        if ( button.currState == 'pressed' && button.prevState != 'pressed' ) {
-          button.action();
-        }
-
-        // preserve prevState, clear currState
-        // HandRaySystem will update currState
-        button.prevState = button.currState;
-        button.currState = 'none';
-      } );
-    }
-  }
-
-  ButtonSystem.queries = {
-    buttons: {
-      components: [ Button ]
-    }
-  };
-
-  class Draggable extends Component { }
-
-  Draggable.schema = {
-    // draggable states: [detached, hovered, to-be-attached, attached, to-be-detached]
-    state: { type: Types.String, default: 'none' },
-    originalParent: { type: Types.Ref, default: null },
-    attachedPointer: { type: Types.Ref, default: null }
-  };
-
-  class DraggableSystem extends System {
-    execute( /*delta, time*/ ) {
-      this.queries.draggable.results.forEach( entity => {
-        const draggable = entity.getMutableComponent( Draggable );
-        const object = entity.getComponent( Object3D ).object;
-        if ( draggable.originalParent == null ) {
-          draggable.originalParent = object.parent;
-        }
-
-        switch ( draggable.state ) {
-          case 'to-be-attached':
-            // this attaches the object to the hand pointer for dragging
-            draggable.attachedPointer.children[0].attach( object );
-            draggable.state = 'attached';
-            break;
-          case 'to-be-detached':
-            draggable.originalParent.attach( object );
-            draggable.state = 'detached';
-
-            //check if the object is in the scanner
-            // eslint-disable-next-line no-case-declarations
-            // let userDataGrouping = userDataGroupings[object.index];
-            //These values need
-            if (
-              // these values should be stated not magic and  checked and this should be put into a function
-              (object.position.x > - 0.125 && object.position.x < 0.125) &&
-              (object.position.z > -0.7 && object.position.z < - 0.5) &&
-              (object.position.y > 1.1 && object.position.y < 1.6) )
-              {
-              //   userDataGroupings.forEach((grouping) => {
-              //   grouping.visible = false;
-              // });
-              // userDataGrouping.visible = true;
-            } else {
-              // userDataGrouping.visible = false;
-            }
-            break;
-          default:
-            object.scale.set( 1, 1, 1 );
-        }
-      } );
-    }
-  }
-
-  DraggableSystem.queries = {
-    draggable: {
-      components: [ Draggable ]
-    }
-  };
-
-  class Intersectable extends TagComponent { }
+let clock: THREE.Clock;
+let world: World;
+let xrSession = false;
 
 
-
-  class HandsInstructionText extends TagComponent { }
-
-  class InstructionSystem extends System {
-    init( attributes ) {
-      this.controllers = attributes.controllers;
-    }
-
-    execute( /*delta, time*/ ) {
-      let visible = false;
-      this.controllers.forEach( controller => {
-        if ( controller.visible ) {
-          visible = true;
-        }
-      } );
-
-      this.queries.instructionTexts.results.forEach( entity => {
-        const object = entity.getComponent( Object3D ).object;
-        object.visible = visible;
-      } );
-    }
-  }
-
-  InstructionSystem.queries = {
-    instructionTexts: {
-      components: [ HandsInstructionText ]
-    }
-  };
-
-  class OffsetFromCamera extends Component { }
-
-  OffsetFromCamera.schema = {
-    x: { type: Types.Number, default: 0 },
-    y: { type: Types.Number, default: 0 },
-    z: { type: Types.Number, default: 0 },
-  };
-
-  class NeedCalibration extends TagComponent { }
-
-  class CalibrationSystem extends System {
-    init( attributes ) {
-      this.camera = attributes.camera;
-      this.renderer = attributes.renderer;
-    }
-
-    execute( /*delta, time*/ ) {
-      this.queries.needCalibration.results.forEach( entity => {
-        if ( this.renderer.xr.getSession() ) {
-          const offset = entity.getComponent( OffsetFromCamera );
-          const object = entity.getComponent( Object3D ).object;
-          const xrCamera = this.renderer.xr.getCamera();
-          object.position.x = xrCamera.position.x + offset.x;
-          object.position.y = xrCamera.position.y + offset.y;
-          object.position.z = xrCamera.position.z + offset.z;
-          entity.removeComponent( NeedCalibration );
-        }
-      });
-    }
-  }
-
-  CalibrationSystem.queries = {
-    needCalibration: {
-      components: [ NeedCalibration ]
-    }
-  };
-
-
-  const world = new World();
-  const clock = new THREE.Clock();
   const backgroundColor = 0x222222;
 
-  init();
-  animate();
-
   function init() {
+      // Initialize clock and world
+    clock = new THREE.Clock();
+    world = new World();
     scene = new THREE.Scene();
     scene.background = textureCube;
     scene.background = new THREE.Color( backgroundColor );
 
-    // const distance = 100;
-    // camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, distance );
-    // camera.position.set( 0, 1.2, 0.3 );
-
-
-    const aspect = (window.innerWidth / window.innerHeight);
-    const d = 7;
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
-    // camera = new THREE.OrthographicCamera(- d * aspect, d * aspect, d, - d, 1, 1000);
     camera.position.set( 0, 1, 3 );
-
-    // camera.position.set( 20, 20, 20 ); // all components equal
     camera.lookAt( scene.position ); // or the origin
 
 
@@ -239,8 +57,6 @@ function voidblank() {
     // document.body.appendChild( renderer.domElement );
 
     renderer.xr.enabled = true;
-    renderer.xr.cameraAutoUpdate = false;
-    xrCamera = renderer.xr.getCamera();
 
 
     //  Grid
@@ -253,8 +69,6 @@ function voidblank() {
         gridHelper.visible = !gridHelper.visible;
       }
      });
-
-
 
 
     // models
@@ -324,8 +138,6 @@ function voidblank() {
       if (event.key === 'o') {
         orbitEnabled = !orbitEnabled
         orbitControls.enableRotate = orbitEnabled;
-        console.log("orbit2", orbitControls)
-        console.log("camera", camera)
       }
      });
 
@@ -333,23 +145,52 @@ function voidblank() {
     const controller1 = renderer.xr.getController( 0 );
     const controller2 = renderer.xr.getController( 1 );
 
+    //left
     controller1.addEventListener( 'connected',  ( event ) => {
       updateGameText(event.data);
       controller1.add( buildController( event.data ) );
       updateGameText(event.data.targetRayMode);
     } );
+
     controller1.addEventListener( 'disconnected',  () => {
       controller1.remove( controller1.children[ 0 ] );
     } );
 
+
+    //right
     controller2.addEventListener( 'connected',  ( event ) => {
       controller2.add( buildController( event.data ) );
       updateGameText(event.data.targetRayMode);
+    } );
+
+    controller2.addEventListener('selectstart', () => {
+      updateGameText("Trigger pulled");
+      firePhoton(controller2);
+    });
+    controller2.addEventListener('selectend', () => {
+      // Optionally handle trigger release
+      updateGameText("Trigger released");
+    });
+
+    controller2.addEventListener( 'selectstart', function () {
+      // updateGameText(data);
+      firePhoton(controller2);
     } );
     controller2.addEventListener( 'disconnected', function () {
       controller2.remove( controller2.children[ 0 ] );
     } );
 
+    // Squeeze action button (grip)
+  controller2.addEventListener('squeezestart', () => {
+    updateGameText("Grip squeezed");
+    xrSession = true;
+    // Add any additional logic for when the grip is squeezed
+  });
+
+  controller2.addEventListener('squeezeend', () => {
+    updateGameText("Grip released");
+    // Add any additional logic for when the grip is released
+  });
 
     scene.add( controller1, controller2 );
     updateGameText("Controllers are ready");
@@ -357,42 +198,23 @@ function voidblank() {
     const controllerModelFactory = new XRControllerModelFactory();
     const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
     controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-    // const gripGeometry = new THREE.BoxGeometry( 0.25,0.25,0.25);
-    // const wallMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
-
-    // const controllerGrip1 = new THREE.Mesh( gripGeometry, wallMaterial );
     scene.add( controllerGrip1 );
 
     const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
     controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-    // const gripGeometry = new THREE.BoxGeometry( 0.25,0.25,0.25);
-    // const wallMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
-    // const controllerGrip2 = new THREE.Mesh( gripGeometry, wallMaterial );
     scene.add( controllerGrip2 );
-
-
-
-
-
 
 
     // setup objects in scene and entities
     // floor
     scene.add(floor);
     // wall
-    // scene.add(wall);
 
     // menu
     scene.add(menuMesh);
-    // menuMesh.add(exitButton);
 
     // exit text
     scene.add(exitText);
-
-    // data screen
-    // dataScreenMesh.position.set( 0, 1.5, - 0.6 );
-    // scene.add(dataScreenMesh);
-
 
     const sideGeometry = new THREE.BoxGeometry( 1, 2, 6);
     const sideMaterial = new THREE.MeshPhongMaterial({
@@ -402,74 +224,9 @@ function voidblank() {
     const sideMesh = new THREE.Mesh( sideGeometry, sideMaterial );
     sideMesh.position.set( -5 ,1, 1 );
     scene.add(sideMesh);
-    // world components and systems
-    world
-      .registerComponent( Object3D )
-      .registerComponent( Button )
-      .registerComponent( Intersectable )
-      .registerComponent( HandsInstructionText )
-      .registerComponent( OffsetFromCamera )
-      .registerComponent( NeedCalibration )
-      .registerComponent( Draggable )
-
-    world
-      .registerSystem( InstructionSystem, { controllers: [ controllerGrip1, controllerGrip2 ] } )
-      .registerSystem( CalibrationSystem, { renderer: renderer, camera: camera } )
-      .registerSystem( ButtonSystem )
-      .registerSystem( DraggableSystem )
-
-
-    // world functions
-    // menu
-    const menuEntity = world.createEntity();
-    menuEntity.addComponent( Intersectable );
-    menuEntity.addComponent( OffsetFromCamera, { x: 1, y: 0, z: - 1 } );
-    menuEntity.addComponent( NeedCalibration );
-    menuEntity.addComponent( Object3D, { object: menuMesh } );
-
-    // exit button
-    const exitButtonEntity = world.createEntity();
-    exitButtonEntity.addComponent( Intersectable );
-    exitButtonEntity.addComponent( Object3D, { object: exitButton } );
-
-    const exitButtonAction = function () {
-      exitText.visible = true;
-      setTimeout( function () {
-        exitText.visible = false; renderer.xr.getSession().end();
-      }, 2000 );
-    };
-    exitButtonEntity.addComponent( Button, { action: exitButtonAction } );
-
-    // instruction text
-    const itEntity = world.createEntity();
-    itEntity.addComponent( HandsInstructionText );
-    itEntity.addComponent( Object3D, { object: instructionText } );
 
     window.addEventListener( 'resize', onWindowResize );
   }
-
-  // function buildController( data: XRInputSource ): THREE.Object3D {
-  //   let geometry, material;
-
-  //   switch ( data.targetRayMode ) {
-
-  //     case 'tracked-pointer':
-  //       geometry = new THREE.BufferGeometry();
-  //       geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
-  //       geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
-  //       material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
-
-  //       return new THREE.Line( geometry, material );
-
-  //     case 'gaze':
-  //       geometry = new THREE.RingGeometry( 0.02, 0.04, 32 ).translate( 0, 0, - 1 );
-  //       material = new THREE.MeshBasicMaterial( { opacity: 0.5, transparent: true } );
-  //       return new THREE.Mesh( geometry, material );
-  //   }
-
-  //   // Add a default return statement
-  //   return new THREE.Object3D();
-  // }
 
   function buildController( data ) {
     let geometry, material;
@@ -484,12 +241,6 @@ function voidblank() {
         geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
         geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
         material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
-        // threeObject.add( new THREE.Line( geometry, material ) );
-        // threeObject.position.set( 0, 0, -0.125 );
-        // eslint-disable-next-line no-case-declarations
-        // const line = new THREE.Line( geometry, material );
-        // lineGroup.add( threeObject );
-        // return lineGroup;
         return new THREE.Line( geometry, material );
 
       case 'gaze':
@@ -508,19 +259,79 @@ function voidblank() {
     renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
-  function animate() {
+
+const delta: number = 0;
+const interval: number = 1/60;
+// function animate() {
+//   requestAnimationFrame(animate);
+//   delta += clock.getDelta();
+//   if (delta > interval) {
+//     render();
+//     delta = delta % interval;
+//   }
+//   render();
+// }
+
+// function render() {
+//   const delta = clock.getDelta();
+//   const elapsedTime = clock.elapsedTime;
+//   renderer.xr.updateCamera( camera );
+//   world.execute( delta, elapsedTime );
+//   renderer.render( scene, camera );
+//   // heartMesh.rotation.y += 0.1;
+//   // stats.update();
+//   TWEEN.update();
+// }
+
+
+  function animate(functionToCall) {
     renderer.setAnimationLoop( render );
+    // requestAnimationFrame(animate);
+    // render();
+    if (functionToCall) {
+      functionToCall();
+    }
 
   }
+
 
   function render() {
     const delta = clock.getDelta();
     const elapsedTime = clock.elapsedTime;
-    renderer.xr.updateCamera( camera );
-    world.execute( delta, elapsedTime );
-    renderer.render( scene, camera );
-    // heartMesh.rotation.y += 0.1;
+    renderer.xr.updateCamera(camera);
+    world.execute(delta, elapsedTime);
+    renderer.render(scene, camera);
+    TWEEN.update();
   }
-}
 
-export { voidblank, scene };
+  // async function animate() {
+  //   if (xrSession) {
+  //     try {
+  //       const session = await navigator.xr.requestSession('immersive-vr');
+  //       renderer.xr.setSession(session);
+  //       // eslint-disable-next-line no-inner-declarations
+  //       function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+  //         session.requestAnimationFrame(onXRFrame);
+  //         render();
+  //       }
+  //       session.requestAnimationFrame(onXRFrame);
+  //     } catch (e) {
+  //       console.error('Failed to start WebXR session:', e);
+  //     }
+  //   } else {
+  //     renderer.setAnimationLoop( render );
+  //     console.error('WebXR not supported');
+  //   }
+  // }
+
+  function voidblank() {
+    init();
+    animate();
+    // if (xrSession) {
+    //   animateVr();
+    // } else {
+    //   animate();
+    // }
+  }
+
+export { voidblank, scene, renderer, animate };
