@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { scene, animate } from './voidBlank';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { updateGameText } from './gameText';
+import { update } from 'three/examples/jsm/libs/tween.module.js';
 
 
 const photonColor = 0xff3b94;
-const groundPosition = 0;
 
 // reticle
 const reticlePoints = [];
@@ -35,31 +35,32 @@ lightParent.decay = .5;
 lightParent.castShadow = false;
 
 let photonCount: number = 0;
-
 function firePhoton(controller) {
-  updateGameText(controller.position.x)
   if (photonCount >= 3) return;
 
   photonCount += 1;
+  updateGameText(controller.position.x, controller.position.y, controller.position.z);
+
   const photon = photonParent.clone();
-  const light = lightParent.clone();
+  // const light = lightParent.clone();
   photon.scale.set(0.15,0.15,0.15);
   scene.add(photon);
-  scene.add(light);
+  // scene.add(light);
 
   // Capture the ship's rotation
   // const shipRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
 
   // Calculate the direction vector
-  const direction = new THREE.Vector3(0, 1, 0); // Assuming photon fires forward along the y-axis
+  // const direction = new THREE.Vector3(0, 1, 0); // Assuming photon fires forward along the y-axis
   // direction.applyEuler(shipRotation);
 
   // Set the initial position of the photon to the nose of the ship
   // will need to set photon position to the current controller position
   photon.position.copy(controller.position);
+  // light.position.copy(controller.position);
 
   // Animate the photon
-  animatePhoton(photon, direction, light);
+  animatePhoton(photon);
 }
 
 const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
@@ -98,56 +99,43 @@ function tweenSunScale(photonPosition, light) {
 //   return yBounds || xBounds || zBounds;
 // }
 
-function animatePhoton(photon, direction, light) {
-  function updatePhotonPosition() {
-    photon.position.addScaledVector(direction, photonSpeed);
-    light.position.addScaledVector(direction, photonSpeed);
 
-    // Continue the animation
-    animate(updatePhotonPosition());
-  //   if (!photonOutofBounds(photon) ) {
-  //     // const photonBox = new THREE.Box3().setFromObject(photon);
-  //     // const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
+// function updatePhotonPosition(photon, direction, light) {
+//   photon.position.addScaledVector(direction, photonSpeed);
+//   light.position.addScaledVector(direction, photonSpeed);
+//   animate(updatePhotonPosition(photon, direction, light));
+// }
 
-  //     // if (photonBox.intersectsBox(enemyCubeBox) && !enemyCube.intersected) {
-  //     //   scene.remove(photon);
-  //     //   photonCount -= 1;
-  //     //   tweenSunScale(enemyCube.position, light);
-  //     //   enemyCube.intersected = true;
-  //     //   enemyErrorAnimation(enemyCube);
+function animatePhoton(photon) {
+    // photon.position.addScaledVector(direction, photonSpeed);
+  // light.position.addScaledVector(direction, photonSpeed);
 
-  //     //   if (enemyCount === 1) {
-  //     //     enemyCount -= 1;
-  //     //     updateGameText(enemyCount);
-  //     //   }
+  const posX = photon.position.x;
+  const posY = photon.position.y;
+  const posZ = photon.position.Z;
 
-  //     //   if (enemyCount === 0) {
-  //     //     setTimeout(() => {
-  //     //       addEnemyCube();
-  //     //       enemyCount += 1;
-  //     //       updateGameText(enemyCount);
-  //     //     }, 800);
-  //     //   }
-  //     // } else
-  //     if (photon.position.z <= groundPosition) {
-  //         // const photonPosition = photon.position;
-  //         // tweenSunScale(photonPosition, light);
-  //         scene.remove(photon);
-  //         photonCount -= 1;
-  //       } else {
-  //       // how do I update the photon position without using requestAnimationFrame?
-  //       animate(updatePhotonPosition());
-  //     }
-  //   } else {
-  //     scene.remove(photon);
-  //     scene.remove(light);
-  //     photonCount -= 1;
-  //   }
+  //determin if x or y position is a negative number
+  const xNeg = posX < 0;
+  const yNeg = posY < 0;
+  const zNeg = posZ < 0;
 
-  // }
+  const posXTween = new TWEEN.Tween(photon.position);
+
+  const finalX = xNeg ? -100 : 100;
+  const finalY = yNeg ? -100 : 100;
+  const finalZ = zNeg ? -100 : 100;
+
+  posXTween.to({x: finalX, y: finalY, z: finalZ}, 1500).start()
+
+
+  if (photonCount > 0) {
+    setTimeout(() => {
+      scene.remove(photon);
+      photonCount -= 1;
+      updateGameText("photonCount", photonCount);
+
+    }, 1500);
   }
-  updatePhotonPosition();
-
 }
 
 

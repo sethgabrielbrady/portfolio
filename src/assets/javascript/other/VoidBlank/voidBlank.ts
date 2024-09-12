@@ -3,8 +3,8 @@ import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { World, System, Component, TagComponent, Types } from 'three/examples/jsm//libs/ecsy.module.js';
-import { floor, menuMesh, exitButton, instructionText, exitText, textureCube, heartMesh } from './worldMesh.js';
+import { World } from 'three/examples/jsm//libs/ecsy.module.js';
+import { floor, menuMesh, exitText, textureCube, heartMesh } from './worldMesh.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
 import { firePhoton } from './ship.js';
@@ -147,9 +147,7 @@ let xrSession = false;
 
     //left
     controller1.addEventListener( 'connected',  ( event ) => {
-      updateGameText(event.data);
       controller1.add( buildController( event.data ) );
-      updateGameText(event.data.targetRayMode);
     } );
 
     controller1.addEventListener( 'disconnected',  () => {
@@ -160,35 +158,29 @@ let xrSession = false;
     //right
     controller2.addEventListener( 'connected',  ( event ) => {
       controller2.add( buildController( event.data ) );
-      updateGameText(event.data.targetRayMode);
     } );
 
-    controller2.addEventListener('selectstart', () => {
-      updateGameText("Trigger pulled");
+    controller2.addEventListener('selectstart', ( ) => {
       firePhoton(controller2);
     });
     controller2.addEventListener('selectend', () => {
       // Optionally handle trigger release
-      updateGameText("Trigger released");
+      // updateGameText("Trigger released");
     });
 
-    controller2.addEventListener( 'selectstart', function () {
-      // updateGameText(data);
-      firePhoton(controller2);
-    } );
     controller2.addEventListener( 'disconnected', function () {
       controller2.remove( controller2.children[ 0 ] );
     } );
 
     // Squeeze action button (grip)
   controller2.addEventListener('squeezestart', () => {
-    updateGameText("Grip squeezed");
+    // updateGameText("Grip squeezed");
     xrSession = true;
     // Add any additional logic for when the grip is squeezed
   });
 
   controller2.addEventListener('squeezeend', () => {
-    updateGameText("Grip released");
+    // updateGameText("Grip released");
     // Add any additional logic for when the grip is released
   });
 
@@ -284,14 +276,10 @@ const interval: number = 1/60;
 // }
 
 
-  function animate(functionToCall) {
+  function animate() {
     renderer.setAnimationLoop( render );
     // requestAnimationFrame(animate);
     // render();
-    if (functionToCall) {
-      functionToCall();
-    }
-
   }
 
 
