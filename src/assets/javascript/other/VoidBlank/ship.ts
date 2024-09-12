@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { scene, animate } from './voidBlank';
+import { scene, render } from './voidBlank';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { updateGameText } from './gameText';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
@@ -35,32 +35,36 @@ lightParent.decay = .5;
 lightParent.castShadow = false;
 
 let photonCount: number = 0;
+const photons = [];
 function firePhoton(controller) {
   if (photonCount >= 3) return;
 
   photonCount += 1;
-  updateGameText(controller.position.x, controller.position.y, controller.position.z);
 
   const photon = photonParent.clone();
-  // const light = lightParent.clone();
-  photon.scale.set(0.15,0.15,0.15);
+  photon.scale.set(0.15, 0.15, 0.15);
   scene.add(photon);
-  // scene.add(light);
 
   // Capture the ship's rotation
-  // const shipRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
+  const shipRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
 
   // Calculate the direction vector
-  // const direction = new THREE.Vector3(0, 1, 0); // Assuming photon fires forward along the y-axis
-  // direction.applyEuler(shipRotation);
+  const direction = new THREE.Vector3(0, 0, -1); // Assuming photon fires forward along the y-axis
+  direction.applyEuler(shipRotation);
 
   // Set the initial position of the photon to the nose of the ship
-  // will need to set photon position to the current controller position
   photon.position.copy(controller.position);
-  // light.position.copy(controller.position);
+  photon.rotation.copy(controller.rotation);
 
-  // Animate the photon
-  animatePhoton(photon);
+  // Store the photon and its direction
+  photons.push({ photon, direction });
+
+  // Schedule removal of the photon
+  setTimeout(() => {
+    scene.remove(photon);
+    photonCount -= 1;
+    updateGameText("photonCount", photonCount);
+  }, 1500);
 }
 
 const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
@@ -106,37 +110,53 @@ function tweenSunScale(photonPosition, light) {
 //   animate(updatePhotonPosition(photon, direction, light));
 // }
 
-function animatePhoton(photon) {
-    // photon.position.addScaledVector(direction, photonSpeed);
-  // light.position.addScaledVector(direction, photonSpeed);
 
-  const posX = photon.position.x;
-  const posY = photon.position.y;
-  const posZ = photon.position.Z;
+function getIntersections(object, x, y, z) {
+  const origin = new THREE.Vector3;
+  origin.copy(object.position);
+  const direction = new THREE.Vector3(x, y, z);
+  direction.normalize();
 
-  //determin if x or y position is a negative number
-  const xNeg = posX < 0;
-  const yNeg = posY < 0;
-  const zNeg = posZ < 0;
+  const raycaster = new THREE.Raycaster(); // Declare raycaster variable
+  raycaster.set(origin, direction);
+  return raycaster.intersectObjects( objectsArray );
+}
 
-  const posXTween = new TWEEN.Tween(photon.position);
+// function animatePhoton(photon) {
+//   const posX = photon.position.x;
+//   const posY = photon.position.y;
+//   const posZ = photon.position.Z;
 
-  const finalX = xNeg ? -100 : 100;
-  const finalY = yNeg ? -100 : 100;
-  const finalZ = zNeg ? -100 : 100;
+//   //determin if x or y position is a negative number
+//   const xNeg = posX < 0;
+//   const yNeg = posY < 0;
+//   const zNeg = posZ < 0;
 
-  posXTween.to({x: finalX, y: finalY, z: finalZ}, 1500).start()
+//   const posXTween = new TWEEN.Tween(photon.position);
+
+//   const finalX = xNeg ? -100 : 100;
+//   const finalY = yNeg ? -100 : 100;
+//   const finalZ = zNeg ? -100 : 100;
+
+//   posXTween.to({x: finalX, y: finalY, z: finalZ}, 1500).start()
 
 
-  if (photonCount > 0) {
-    setTimeout(() => {
-      scene.remove(photon);
-      photonCount -= 1;
-      updateGameText("photonCount", photonCount);
+//   if (photonCount > 0) {
+//     setTimeout(() => {
+//       scene.remove(photon);
+//       photonCount -= 1;
+//       updateGameText("photonCount", photonCount);
 
-    }, 1500);
-  }
+//     }, 1500);
+//   }
+// }
+
+function animatePhotons() {
+  const speed = 0.1; // Adjust the speed as needed
+  photons.forEach(({ photon, direction }) => {
+    photon.position.add(direction.clone().multiplyScalar(speed));
+  });
 }
 
 
-export { firePhoton, animatePhoton };
+export { firePhoton, animatePhotons };

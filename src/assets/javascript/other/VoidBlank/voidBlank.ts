@@ -7,7 +7,7 @@ import { World } from 'three/examples/jsm//libs/ecsy.module.js';
 import { floor, menuMesh, exitText, textureCube, heartMesh } from './worldMesh.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
-import { firePhoton } from './ship.js';
+import { firePhoton, animatePhotons} from './ship.js';
 
 let camera, renderer, scene, xrCamera;
 let clock: THREE.Clock;
@@ -161,6 +161,7 @@ let xrSession = false;
     } );
 
     controller2.addEventListener('selectstart', ( ) => {
+
       firePhoton(controller2);
     });
     controller2.addEventListener('selectend', () => {
@@ -219,6 +220,17 @@ let xrSession = false;
 
     window.addEventListener( 'resize', onWindowResize );
   }
+
+  // function getIntersections(object, x, y, z) {
+  //   const origin = new THREE.Vector3;
+  //   origin.copy(object.position);
+  //   const direction = new THREE.Vector3(x, y, z);
+  //   direction.normalize();
+
+  //   const raycaster = new THREE.Raycaster(); // Declare raycaster variable
+  //   raycaster.set(origin, direction);
+  //   return raycaster.intersectObjects( objectsArray );
+  // }
 
   function buildController( data ) {
     let geometry, material;
@@ -289,6 +301,8 @@ const interval: number = 1/60;
     renderer.xr.updateCamera(camera);
     world.execute(delta, elapsedTime);
     renderer.render(scene, camera);
+    animatePhotons();
+
     TWEEN.update();
   }
 
@@ -322,4 +336,4 @@ const interval: number = 1/60;
     // }
   }
 
-export { voidblank, scene, renderer, animate };
+export { voidblank, scene, renderer, render };
