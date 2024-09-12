@@ -7,7 +7,7 @@ function updateGameText(newText) {
   if (currentText) {
     scene.remove(currentText);
   }
-  const text = createText( newText, 0.75 );
+  const text = createText( newText, 0.25 );
   text.color = 'green';
   text.rotation.x = Math.PI*2;
   text.position.z = -4;
