@@ -12,7 +12,7 @@ function updateGameText(newText) {
   text.rotation.x = Math.PI*2;
   text.position.z = -4;
   text.position.x = 0;
-  text.position.y = 1;
+  text.position.y = 3;
   scene.add(text);
   currentText = text;
 }
