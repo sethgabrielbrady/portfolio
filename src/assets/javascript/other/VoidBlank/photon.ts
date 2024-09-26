@@ -22,7 +22,7 @@ reticle.position.y = 8;
 
 // photon
 const photonSpeed = 0;
-const photonGeo = new THREE.BoxGeometry( .25, .25, .25 );
+const photonGeo = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
 const photonMatr = new THREE.MeshPhongMaterial( { color: photonColor, emissive: photonColor, emissiveIntensity: 2, transparent: true, opacity: 0.75  } );
 const photonParent = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
 const lightParent = new THREE.PointLight( photonColor, 1, 100 );
@@ -64,7 +64,7 @@ function firePhoton(controller) {
     scene.remove(photon);
     photonCount -= 1;
   }, 1500);
-  updateGameText(`photonCount ${photonCount}`, );
+  // updateGameText(`photonCount ${photonCount}`, );
 }
 
 const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
