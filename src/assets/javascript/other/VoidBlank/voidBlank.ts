@@ -4,17 +4,31 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // import { World } from 'three/examples/jsm//libs/ecsy.module.js';
-import { heartMesh } from './worldMesh.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
 import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
+import { EnemyCube, animateEnemyCube} from './enemies.js';
+
+
+let enemyCube = new EnemyCube();
+function addEnemyCube() {
+  enemyCube = new EnemyCube();
+  scene.add(enemyCube);
+}
+
+
+
+
+
 
 
 // 1 unit = 1 real world meter
 // average human height = 1.6m
 
 let camera, renderer, scene;
+let vrEnabled = false;
+
 let clock: THREE.Clock;
 // let world: World;
 const floorLevel = 0;
@@ -31,11 +45,9 @@ async function init() {
   scene.background = new THREE.Color( backgroundColor );
 
   camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.2, 200 );
-  camera.position.set( 0, 1.6, 3 );
+  camera.position.set( 0, 2, 4 );
   scene.add( camera );
-
   scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 3 ) );
-
   renderer = new THREE.WebGLRenderer( {
     antialias: false,
     alpha: true,
@@ -48,10 +60,7 @@ async function init() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
-
-
-
-
+  updateGameText("Renderer is ready");
 
 
   // initializing webxr renderer and controllers. Adding the vr button to the users element
@@ -78,60 +87,74 @@ async function init() {
   ball.position.y = floorLevel + 0.25;
   ball.position.z = 1;
   scene.add( ball );
+  updateGameText("Ball added");
 
 
-    //model loader
-  function loadModel (modelObj) {
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.load(modelObj.path,
-      (gltf) => {
-        const model = gltf.scene
-        model.scale.set(modelObj.scale, modelObj.scale, modelObj.scale); // Assuming uniform scaling
-        model.position.set(modelObj.position.x, modelObj.position.y, modelObj.position.z);
-        model.rotation.set(modelObj.rotation.x, modelObj.rotation.y, modelObj.rotation.z);
-        model.castShadow = false;
-        scene.add(model);
-      }
-    )
-  }
   const human = {
     scale: 0.0072,
     path: 'models/human.glb',
-    position: { x: -3.75, y: 1.6, z: -1 },
+    position: { x: -3.75, y: 2, z: -1 },
     rotation: { x: 0, y:Math.PI/2, z: 0 }
   }
   loadModel(human);
-  // heart
-  scene.add(heartMesh);
-
-
+  scene.add(enemyCube);
 
 
   // WebXr entry point
-  container.appendChild(VRButton.createButton( renderer ));
-  renderer.xr.enabled = true;
+  container.appendChild(VRButton.createButton(renderer));
+  vrEnabled = true;
 
-  // const sessionInit = { optionalFeatures: [ 'local-floor', 'bounded-floor', 'hand-tracking' ] };
+  const vrButton = document.getElementById("VRButton");
+  if (vrButton !== null) {
+    vrButton.addEventListener('click', async () => {
+      renderer.xr.enabled = true;
+      await updateSession();
+      // updateXRCameraHeight(3); // Update the height to 3 units after clicking the VR button
+    });
+  }
 
-  // if (navigator.xr) {
-  //   navigator.xr.requestSession( 'immersive-vr', sessionInit ).then( onSessionStarted );
-  //   const session = await navigator.xr.requestSession('immersive-vr', sessionInit);
-  //   await renderer.xr.setSession(session);
+  async function updateSession() {
+    if (navigator.xr && vrEnabled) {
+      updateGameText("WebXR is supported in this browser");
+      const sessionInit = { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] };
+      const session = await navigator.xr.requestSession('immersive-vr', sessionInit);
+      updateGameText("Getting sessioninit...");
+      await renderer.xr.setSession(session);
+      onSessionStarted(session);
+    } else {
+      updateGameText("WebXR is not supported in this browser.");
+    }
+  }
 
-  // } else {
-  //   console.error("WebXR is not supported in this browser.");
-  // }
+  async function onSessionStarted(session: XRSession) {
+    updateGameText("Getting session...");
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    await renderer.xr.setSession(session);
+    if (session) {
+      updateGameText(`Session started: ${session}`);
+      updateXRCamera();
+    }
+  }
 
-  // async function onSessionStarted( session ) {
-  //   renderer.setSize(window.innerWidth, window.innerHeight);
-  //   await renderer.xr.setSession( session );
-  //   scene.remove( camera );
-  //   camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.2, 200 );
-  //   camera.position.set( 0, 1.6, 3 );
-  //   const xrCamera = renderer.xr.getCamera( camera );
-  //   scene.add( xrCamera );
-  // }
+  function updateXRCamera() {
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.2, 200);
+    camera.position.set(4, 2.6, 6);
 
+    const xrCamera = renderer.xr.getCamera();
+    xrCamera.position.copy(camera.position);
+
+    scene.add(xrCamera);
+    updateXRCameraHeight(3);
+    updateGameText(`Camera added @ ${xrCamera.position.x}, ${xrCamera.position.y}, ${xrCamera.position.z}`);
+  }
+
+  function updateXRCameraHeight(newHeight: number) {
+    const xrCamera = renderer.xr.getCamera();
+    if (xrCamera) {
+      xrCamera.position.y = newHeight;
+      updateGameText(`Camera height updated to ${newHeight}`);
+    }
+  }
 
   //orbit controls
   let orbitEnabled = false;
@@ -149,17 +172,8 @@ async function init() {
   });
 
   // controllers
-  // const controller1 = renderer.xr.getController( 0 );
+
   const controller2 = renderer.xr.getController( 1 );
-
-  //left
-  // controller1.addEventListener( 'connected',  ( event ) => {
-  //   controller1.add( buildController( event.data ) );
-  // } );
-
-  // controller1.addEventListener( 'disconnected',  () => {
-  //   controller1.remove( controller1.children[ 0 ] );
-  // } );
 
 
   //right
@@ -194,15 +208,31 @@ controller2.addEventListener('squeezeend', () => {
   scene.add( controller2 );
   updateGameText("Controllers are ready");
 
-  const controllerModelFactory = new XRControllerModelFactory();
-  // const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
-  // controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-  // scene.add( controllerGrip1 );
+  // const controllerModelFactory = new XRControllerModelFactory();
+
+  scene.add(controller2);
+
+  const loader = new GLTFLoader();
+  let gunModel;
+  loader.load('/models/gun.glb', (gltf) => {
+    gunModel = gltf.scene;
+    gunModel.scale.set(.65, .65, .65); // Adjust the scale if necessary
+    gunModel.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+    gunModel.position.y = -0.09;
+    gunModel.position.z = 0.02;
+    controller2.add(gunModel);
+  }, undefined, (error) => {
+    console.error('An error happened while loading the gun model:', error);
+  });
 
   const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
-  controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-  scene.add( controllerGrip2 );
-
+  // const controllerModel = controllerModelFactory.createControllerModel( controllerGrip2 );
+  let controllerModel;
+  if (gunModel) {
+    controllerModel = gunModel.clone;
+    controllerGrip2.add( controllerModel );
+    scene.add( controllerGrip2 );
+  }
 
   // setup objects in scene and entities
 
@@ -218,19 +248,22 @@ controller2.addEventListener('squeezeend', () => {
   window.addEventListener( 'resize', onWindowResize );
 }
 
+
+
 function buildController( data ) {
   let geometry, material;
-  // const controllerGeo= new THREE.BoxGeometry( 0.125,0.125,0.125);
-  // const controllerMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
-  // const controllerMesh = new THREE.Mesh( controllerGeo, controllerMaterial );
+  const controllerGeo= new THREE.BoxGeometry( 0.065,0.2,0.065);
+  const controllerMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
   const threeObject = new THREE.Object3D();
-  // threeObject.add( controllerMesh );
+  threeObject.add( new THREE.Mesh( controllerGeo, controllerMaterial ) );
   switch ( data.targetRayMode ) {
     case 'tracked-pointer':
       geometry = new THREE.BufferGeometry();
       geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
       geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
       material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
+      // threeObject.add(new THREE.Line( geometry, material ));
+      // return threeObject;
       return new THREE.Line( geometry, material );
 
     case 'gaze':
@@ -243,10 +276,26 @@ function buildController( data ) {
   return threeObject;
 }
 
+//model loader
+function loadModel (modelObj) {
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(modelObj.path,
+    (gltf) => {
+      const model = gltf.scene
+      model.scale.set(modelObj.scale, modelObj.scale, modelObj.scale); // Assuming uniform scaling
+      model.position.set(modelObj.position.x, modelObj.position.y, modelObj.position.z);
+      model.rotation.set(modelObj.rotation.x, modelObj.rotation.y, modelObj.rotation.z);
+      model.castShadow = false;
+      scene.add(model);
+    }
+  )
+}
+
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
+  updateXRCameraHeight(3);
 }
 
 
@@ -256,12 +305,11 @@ function animate() {
 
 
 function render() {
-  const delta = clock.getDelta();
-  const elapsedTime = clock.elapsedTime;
-  renderer.xr.updateCamera(camera);
-  // world.execute(delta, elapsedTime);
   renderer.render(scene, camera);
+  // renderer.render(scene, camera, xrCamera);
   animatePhotons();
+  animateEnemyCube(enemyCube);
+
   TWEEN.update();
   stats.update();
 }
