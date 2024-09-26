@@ -149,17 +149,17 @@ async function init() {
   });
 
   // controllers
-  const controller1 = renderer.xr.getController( 0 );
+  // const controller1 = renderer.xr.getController( 0 );
   const controller2 = renderer.xr.getController( 1 );
 
   //left
-  controller1.addEventListener( 'connected',  ( event ) => {
-    controller1.add( buildController( event.data ) );
-  } );
+  // controller1.addEventListener( 'connected',  ( event ) => {
+  //   controller1.add( buildController( event.data ) );
+  // } );
 
-  controller1.addEventListener( 'disconnected',  () => {
-    controller1.remove( controller1.children[ 0 ] );
-  } );
+  // controller1.addEventListener( 'disconnected',  () => {
+  //   controller1.remove( controller1.children[ 0 ] );
+  // } );
 
 
   //right
@@ -191,13 +191,13 @@ controller2.addEventListener('squeezeend', () => {
   // Add any additional logic for when the grip is released
 });
 
-  scene.add( controller1, controller2 );
+  scene.add( controller2 );
   updateGameText("Controllers are ready");
 
   const controllerModelFactory = new XRControllerModelFactory();
-  const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
-  controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-  scene.add( controllerGrip1 );
+  // const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
+  // controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+  // scene.add( controllerGrip1 );
 
   const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
   controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
