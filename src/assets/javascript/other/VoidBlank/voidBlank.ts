@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { heartMesh } from './worldMesh.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
-import { firePhoton, animatePhotons} from './ship.js';
+import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 

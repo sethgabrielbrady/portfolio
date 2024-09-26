@@ -36,7 +36,7 @@ let photonCount: number = 0;
 const photons = [];
 
 function firePhoton(controller) {
-  if (photonCount >= 3) return;
+  if (photonCount >= 6) return;
 
   photonCount += 1;
 
