@@ -44,9 +44,11 @@ async function init() {
   // scene.background = textureCube;
   scene.background = new THREE.Color( backgroundColor );
 
+  const cameraGroup = new THREE.Group();
   camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.2, 200 );
-  camera.position.set( 0, 2, 4 );
-  scene.add( camera );
+  cameraGroup.add(camera);
+  cameraGroup.position.set( 0,2, 4 );
+  scene.add( cameraGroup );
   scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 3 ) );
   renderer = new THREE.WebGLRenderer( {
     antialias: false,
@@ -132,29 +134,9 @@ async function init() {
     await renderer.xr.setSession(session);
     if (session) {
       updateGameText(`Session started: ${session}`);
-      updateXRCamera();
     }
   }
 
-  function updateXRCamera() {
-    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.2, 200);
-    camera.position.set(4, 2.6, 6);
-
-    const xrCamera = renderer.xr.getCamera();
-    xrCamera.position.copy(camera.position);
-
-    scene.add(xrCamera);
-    updateXRCameraHeight(3);
-    updateGameText(`Camera added @ ${xrCamera.position.x}, ${xrCamera.position.y}, ${xrCamera.position.z}`);
-  }
-
-  function updateXRCameraHeight(newHeight: number) {
-    const xrCamera = renderer.xr.getCamera();
-    if (xrCamera) {
-      xrCamera.position.y = newHeight;
-      updateGameText(`Camera height updated to ${newHeight}`);
-    }
-  }
 
   //orbit controls
   let orbitEnabled = false;
@@ -295,7 +277,6 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
-  updateXRCameraHeight(3);
 }
 
 
@@ -306,7 +287,6 @@ function animate() {
 
 function render() {
   renderer.render(scene, camera);
-  // renderer.render(scene, camera, xrCamera);
   animatePhotons();
   animateEnemyCube(enemyCube);
 
