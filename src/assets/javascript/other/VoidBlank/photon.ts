@@ -49,6 +49,7 @@ function firePhoton(controller) {
 
   // Calculate the direction vector
   const direction = new THREE.Vector3(0, 0, -1); // Assuming photon fires forward along the y-axis
+
   direction.applyEuler(shipRotation);
 
   // Set the initial position of the photon to the nose of the ship
