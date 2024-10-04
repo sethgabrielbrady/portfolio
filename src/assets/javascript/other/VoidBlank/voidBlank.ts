@@ -18,11 +18,6 @@ function addEnemyCube() {
 }
 
 
-
-
-
-
-
 // 1 unit = 1 real world meter
 // average human height = 1.6m
 
@@ -163,10 +158,9 @@ async function init() {
     controller2.add( buildController( event.data ) );
   } );
 
-  controller2.addEventListener('selectstart', ( ) => {
-
-    firePhoton(controller2);
-  });
+  // controller2.addEventListener('selectstart', ( ) => {
+  //   firePhoton(controller2);
+  // });
   controller2.addEventListener('selectend', () => {
     // Optionally handle trigger release
     // updateGameText("Trigger released");
@@ -178,21 +172,33 @@ async function init() {
 
   // Squeeze action button (grip)
 controller2.addEventListener('squeezestart', () => {
-  // updateGameText("Grip squeezed");
+  // get the current position and rotation of the controller
+
+
+
+  const position = new THREE.Vector3();
+  const rotation = new THREE.Quaternion();
+  const scale = new THREE.Vector3();
+
+  controller2.matrixWorld.decompose(position, rotation, scale);
+  controller2.position.copy(position);
+
+  updateGameText(`Grip squeezed at position: ${position.x}, ${position.y}, ${position.z}`);
+  updateGameText(`Grip squeezed with rotation: ${rotation.x}, ${rotation.y}, ${rotation.z}, ${rotation.w}`);
   // Add any additional logic for when the grip is squeezed
 });
 
 controller2.addEventListener('squeezeend', () => {
-  // updateGameText("Grip released");
+
+  updateGameText(`Grip released ${ controller2.position.y, controller2.position.z, cameraGroup.position.y, cameraGroup.position.z}`);
   // Add any additional logic for when the grip is released
 });
 
-  scene.add( controller2 );
-  updateGameText("Controllers are ready");
+cameraGroup.add(controller2 );
+updateGameText("Controllers are ready");
 
   // const controllerModelFactory = new XRControllerModelFactory();
 
-  scene.add(controller2);
 
   const loader = new GLTFLoader();
   let gunModel;
@@ -207,14 +213,31 @@ controller2.addEventListener('squeezeend', () => {
     console.error('An error happened while loading the gun model:', error);
   });
 
-  const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+
+  //This isnt doing anything
+  // const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
   // const controllerModel = controllerModelFactory.createControllerModel( controllerGrip2 );
-  let controllerModel;
-  if (gunModel) {
-    controllerModel = gunModel.clone;
-    controllerGrip2.add( controllerModel );
-    scene.add( controllerGrip2 );
-  }
+  // let controllerModel;
+  // if (gunModel) {
+  //   controllerModel = gunModel.clone;
+  //   controllerGrip2.add( controllerModel );
+  //   scene.add( controllerGrip2 );
+  //   // cameraGroup.add( controllerModel );
+  // }
+
+
+  controller2.addEventListener('selectstart', ( ) => {
+    const position = new THREE.Vector3();
+    const rotation = new THREE.Quaternion();
+    const scale = new THREE.Vector3();
+
+  controller2.matrixWorld.decompose(position, rotation, scale);
+  controller2.position.copy(position);
+
+  firePhoton(controller2);
+  });
+
+
 
   // setup objects in scene and entities
 
@@ -234,7 +257,7 @@ controller2.addEventListener('squeezeend', () => {
 
 function buildController( data ) {
   let geometry, material;
-  const controllerGeo= new THREE.BoxGeometry( 0.065,0.2,0.065);
+  const controllerGeo = new THREE.BoxGeometry( 0.065,0.2,0.065);
   const controllerMaterial = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: false});
   const threeObject = new THREE.Object3D();
   threeObject.add( new THREE.Mesh( controllerGeo, controllerMaterial ) );
