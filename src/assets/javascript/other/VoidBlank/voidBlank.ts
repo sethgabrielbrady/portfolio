@@ -214,18 +214,6 @@ updateGameText("Controllers are ready");
   });
 
 
-  //This isnt doing anything
-  // const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
-  // const controllerModel = controllerModelFactory.createControllerModel( controllerGrip2 );
-  // let controllerModel;
-  // if (gunModel) {
-  //   controllerModel = gunModel.clone;
-  //   controllerGrip2.add( controllerModel );
-  //   scene.add( controllerGrip2 );
-  //   // cameraGroup.add( controllerModel );
-  // }
-
-
   controller2.addEventListener('selectstart', ( ) => {
     const position = new THREE.Vector3();
     const rotation = new THREE.Quaternion();

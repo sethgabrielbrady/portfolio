@@ -43,6 +43,7 @@ function firePhoton(controller) {
   const photon = photonParent.clone();
   photon.scale.set(0.15, 0.15, 0.15);
   scene.add(photon);
+  updateGameText(`photonCount ${photonCount}`);
 
   // Capture the ship's rotation
   const shipRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
@@ -60,11 +61,17 @@ function firePhoton(controller) {
   // Store the photon and its direction
   photons.push({ photon, direction });
 
+
+
+
+
+
   // Schedule removal of the photon
   setTimeout(() => {
     scene.remove(photon);
     photonCount -= 1;
   }, 1500);
+
   // updateGameText(`photonCount ${photonCount}`, );
 }
 
@@ -96,9 +103,24 @@ function tweenSunScale(photonPosition, light) {
 
 function animatePhotons() {
   const speed = 0.4; // Adjust the speed as needed
+
   photons.forEach(({ photon, direction }) => {
     photon.position.add(direction.clone().multiplyScalar(speed));
-  });
+    // updateGameText(`Photon Y Position: ${photon.position.y}`);
+
+    // need to think of a way to remove photons that are out of bounds
+
+    // if (Math.abs(photon.position.y) <= 0) {
+    //   // Call tweenSunScale function
+    //   updateGameText('hit');
+    //   const photonPosition = photon.position;
+    //   tweenSunScale(photonPosition, photon.light);
+    //   scene.remove(photon);
+
+    // } else if (Math.abs(photon.position.x) >= 100 || Math.abs(photon.position.z) >= 100) {
+    //   scene.remove(photon);
+    // }
+  })
 }
 
 export { firePhoton, animatePhotons };
