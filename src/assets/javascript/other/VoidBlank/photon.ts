@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { scene } from './voidBlank';
+import { scene, enemyCube } from './voidBlank';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { updateGameText } from './gameText';
 
@@ -46,12 +46,12 @@ function firePhoton(controller) {
   updateGameText(`photonCount ${photonCount}`);
 
   // Capture the ship's rotation
-  const shipRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
+  const controllerRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
 
   // Calculate the direction vector
   const direction = new THREE.Vector3(0, 0, -1); // Assuming photon fires forward along the y-axis
 
-  direction.applyEuler(shipRotation);
+  direction.applyEuler(controllerRotation);
 
   // Set the initial position of the photon to the nose of the ship
   photon.position.copy(controller.position);
@@ -99,6 +99,9 @@ function tweenSunScale(photonPosition, light) {
 
   explostionOpacityTween.to({opacity: 0}, 350).start();
   lightTween.to({intensity: 2, decay: .25}, 350).start();
+
+  // addEnemyCube();
+
 }
 
 function animatePhotons() {
@@ -106,21 +109,42 @@ function animatePhotons() {
 
   photons.forEach(({ photon, direction }) => {
     photon.position.add(direction.clone().multiplyScalar(speed));
+    checkPhotonBounds(photon);
     // updateGameText(`Photon Y Position: ${photon.position.y}`);
-
-    // need to think of a way to remove photons that are out of bounds
-
-    // if (Math.abs(photon.position.y) <= 0) {
-    //   // Call tweenSunScale function
-    //   updateGameText('hit');
-    //   const photonPosition = photon.position;
-    //   tweenSunScale(photonPosition, photon.light);
-    //   scene.remove(photon);
-
-    // } else if (Math.abs(photon.position.x) >= 100 || Math.abs(photon.position.z) >= 100) {
-    //   scene.remove(photon);
-    // }
   })
+}
+
+function checkPhotonBounds(photon) {
+  if (Math.abs(photon.position.y) <= 0) {
+    // Call tweenSunScale function
+    updateGameText('hit');
+    const photonPosition = photon.position;
+    tweenSunScale(photonPosition, lightParent);
+    scene.remove(photon);
+
+  } else if (Math.abs(photon.position.x) >= 100 || Math.abs(photon.position.z) >= 100) {
+    //  updateGameText(`Checking photon position: ${photon.position.x}, ${photon.position.y}, ${photon.position.z}`);
+    scene.remove(photon);
+  } else {
+    checkPhotonIntersection(photon);
+  }
+}
+
+function checkPhotonIntersection(photon) {
+  const photonBox = new THREE.Box3().setFromObject(photon);
+  // this is fine for testing but will need to be updated with an array of intersectable objects
+  const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
+
+  if (photonBox.intersectsBox(enemyCubeBox) && !enemyCube.intersected) {
+    scene.remove(photon);
+    scene.remove(enemyCube);
+    photonCount -= 1;
+    tweenSunScale(enemyCube.position, lightParent);
+    enemyCube.intersected = true;
+    // enemyErrorAnimation(enemyCube);
+
+  }
+
 }
 
 export { firePhoton, animatePhotons };

@@ -1,30 +1,15 @@
 import * as THREE from 'three';
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
-
 //neon pallette
-// const orange = 0xff8500;
 const red = 0xff3f3f;
+// const orange = 0xff8500;
 // #39ff14 green
 // #dfff00 chartreuse
-
-
-
-
-
-
-
 
 // instruction text
 const instructionText = createText( 'This is a WebXR Hands demo, please explore with hands.', 0.04 );
 instructionText.position.set( 0, 1.6, - 0.6 );
-
-// function makeButtonMesh( x, y, z, color ) {
-//   const geometry = new THREE.BoxGeometry( x, y, z );
-//   const material = new THREE.MeshPhongMaterial( { color: color } );
-//   const buttonMesh = new THREE.Mesh( geometry, material );
-//   return buttonMesh;
-// }
 
 //heart
 const heartShape = new THREE.Shape();

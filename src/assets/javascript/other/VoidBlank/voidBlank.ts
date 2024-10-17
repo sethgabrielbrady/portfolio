@@ -14,8 +14,14 @@ import { EnemyCube, animateEnemyCube} from './enemies.js';
 let enemyCube = new EnemyCube();
 function addEnemyCube() {
   enemyCube = new EnemyCube();
+  const randomPosition = getRandomPosition();
+  enemyCube.position.set(randomPosition.x, randomPosition.y, randomPosition.z);
   scene.add(enemyCube);
 }
+
+
+
+
 
 
 // 1 unit = 1 real world meter
@@ -86,7 +92,6 @@ async function init() {
   scene.add( ball );
   updateGameText("Ball added");
 
-
   const human = {
     scale: 0.0072,
     path: 'models/human.glb',
@@ -150,8 +155,7 @@ async function init() {
 
   // controllers
 
-  const controller2 = renderer.xr.getController( 1 );
-
+  const controller2 = renderer.xr.getController( 0 );
 
   //right
   controller2.addEventListener( 'connected',  ( event ) => {
@@ -171,31 +175,31 @@ async function init() {
   } );
 
   // Squeeze action button (grip)
-controller2.addEventListener('squeezestart', () => {
-  // get the current position and rotation of the controller
+  controller2.addEventListener('squeezestart', () => {
+    // get the current position and rotation of the controller
 
 
 
-  const position = new THREE.Vector3();
-  const rotation = new THREE.Quaternion();
-  const scale = new THREE.Vector3();
+    const position = new THREE.Vector3();
+    const rotation = new THREE.Quaternion();
+    const scale = new THREE.Vector3();
 
-  controller2.matrixWorld.decompose(position, rotation, scale);
-  controller2.position.copy(position);
+    controller2.matrixWorld.decompose(position, rotation, scale);
+    controller2.position.copy(position);
 
-  updateGameText(`Grip squeezed at position: ${position.x}, ${position.y}, ${position.z}`);
-  updateGameText(`Grip squeezed with rotation: ${rotation.x}, ${rotation.y}, ${rotation.z}, ${rotation.w}`);
-  // Add any additional logic for when the grip is squeezed
-});
+    updateGameText(`Grip squeezed at position: ${position.x}, ${position.y}, ${position.z}`);
+    updateGameText(`Grip squeezed with rotation: ${rotation.x}, ${rotation.y}, ${rotation.z}, ${rotation.w}`);
+    // Add any additional logic for when the grip is squeezed
+  });
 
-controller2.addEventListener('squeezeend', () => {
+  controller2.addEventListener('squeezeend', () => {
 
-  updateGameText(`Grip released ${ controller2.position.y, controller2.position.z, cameraGroup.position.y, cameraGroup.position.z}`);
-  // Add any additional logic for when the grip is released
-});
+    updateGameText(`Grip released ${ controller2.position.y, controller2.position.z, cameraGroup.position.y, cameraGroup.position.z}`);
+    // Add any additional logic for when the grip is released
+  });
 
-cameraGroup.add(controller2 );
-updateGameText("Controllers are ready");
+  cameraGroup.add(controller2 );
+  updateGameText("Controllers are ready");
 
   // const controllerModelFactory = new XRControllerModelFactory();
 
@@ -310,4 +314,4 @@ function voidblank() {
   animate();
 }
 
-export { voidblank, scene, renderer, render };
+export { voidblank, scene, renderer, render, enemyCube, addEnemyCube};
