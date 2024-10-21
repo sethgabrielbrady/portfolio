@@ -43,36 +43,27 @@ function firePhoton(controller) {
   const photon = photonParent.clone();
   photon.scale.set(0.15, 0.15, 0.15);
   scene.add(photon);
-  updateGameText(`photonCount ${photonCount}`);
 
   // Capture the ship's rotation
   const controllerRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
 
   // Calculate the direction vector
-  const direction = new THREE.Vector3(0, 0, -1); // Assuming photon fires forward along the y-axis
-
+  const direction = new THREE.Vector3(0, 0, -1);
   direction.applyEuler(controllerRotation);
 
-  // Set the initial position of the photon to the nose of the ship
+
+  // Set the initial position of the photon based on the controller
   photon.position.copy(controller.position);
   photon.rotation.copy(controller.rotation);
-
 
   // Store the photon and its direction
   photons.push({ photon, direction });
 
-
-
-
-
-
-  // Schedule removal of the photon
+  // Schedule removal of the photon past a certain distance
   setTimeout(() => {
     scene.remove(photon);
     photonCount -= 1;
   }, 1500);
-
-  // updateGameText(`photonCount ${photonCount}`, );
 }
 
 const sphereGeo = new THREE.SphereGeometry( 2, 32, 32 );
@@ -99,8 +90,6 @@ function tweenSunScale(photonPosition, light) {
 
   explostionOpacityTween.to({opacity: 0}, 350).start();
   lightTween.to({intensity: 2, decay: .25}, 350).start();
-
-  // addEnemyCube();
 
 }
 
@@ -142,7 +131,6 @@ function checkPhotonIntersection(photon) {
     tweenSunScale(enemyCube.position, lightParent);
     enemyCube.intersected = true;
     // enemyErrorAnimation(enemyCube);
-
   }
 
 }

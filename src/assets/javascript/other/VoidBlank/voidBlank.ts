@@ -3,12 +3,15 @@ import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-// import { World } from 'three/examples/jsm//libs/ecsy.module.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
 import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { EnemyCube, animateEnemyCube} from './enemies.js';
+import { humanModel, loadModel, ball, tableMesh } from './worldMesh.js';
+
+// 1 unit = 1 real world meter
+// average human height = 1.6m
 
 
 let enemyCube = new EnemyCube();
@@ -20,29 +23,18 @@ function addEnemyCube() {
 }
 
 
-
-
-
-
-// 1 unit = 1 real world meter
-// average human height = 1.6m
-
 let camera, renderer, scene;
 let vrEnabled = false;
-
 let clock: THREE.Clock;
-// let world: World;
-const floorLevel = 0;
-const stats = new Stats();
-document.body.appendChild(stats.dom);
 
 const backgroundColor = 0x222222;
+const stats = new Stats();
+
+document.body.appendChild(stats.dom);
 
 async function init() {
   clock = new THREE.Clock();
-  // world = new World();
   scene = new THREE.Scene();
-  // scene.background = textureCube;
   scene.background = new THREE.Color( backgroundColor );
 
   const cameraGroup = new THREE.Group();
@@ -59,12 +51,10 @@ async function init() {
     logarithmicDepthBuffer: true
   });
 
-
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   renderer.shadowMap.enabled = true;
   updateGameText("Renderer is ready");
-
 
   // initializing webxr renderer and controllers. Adding the vr button to the users element
   const container = document.getElementById("voidblank");
@@ -83,23 +73,13 @@ async function init() {
     }
   });
 
-  const ballGeo = new THREE.SphereGeometry( 0.25 );
-  const ballMatr = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-  const ball = new THREE.Mesh( ballGeo, ballMatr );
-  ball.position.x = -1;
-  ball.position.y = floorLevel + 0.25;
-  ball.position.z = 1;
-  scene.add( ball );
-  updateGameText("Ball added");
 
-  const human = {
-    scale: 0.0072,
-    path: 'models/human.glb',
-    position: { x: -3.75, y: 2, z: -1 },
-    rotation: { x: 0, y:Math.PI/2, z: 0 }
-  }
-  loadModel(human);
+  //add mesh objects from other files
+  // should also move the controller to the other file
+  loadModel(humanModel);
   scene.add(enemyCube);
+  scene.add(tableMesh);
+  scene.add( ball );
 
 
   // WebXr entry point
@@ -153,54 +133,34 @@ async function init() {
     }
   });
 
+
   // controllers
-
-  const controller2 = renderer.xr.getController( 0 );
-
+  const controller2 = renderer.xr.getController( 1 );
   //right
   controller2.addEventListener( 'connected',  ( event ) => {
     controller2.add( buildController( event.data ) );
   } );
 
-  // controller2.addEventListener('selectstart', ( ) => {
-  //   firePhoton(controller2);
-  // });
-  controller2.addEventListener('selectend', () => {
-    // Optionally handle trigger release
-    // updateGameText("Trigger released");
-  });
 
   controller2.addEventListener( 'disconnected', function () {
     controller2.remove( controller2.children[ 0 ] );
   } );
 
-  // Squeeze action button (grip)
   controller2.addEventListener('squeezestart', () => {
     // get the current position and rotation of the controller
-
-
-
     const position = new THREE.Vector3();
     const rotation = new THREE.Quaternion();
     const scale = new THREE.Vector3();
-
     controller2.matrixWorld.decompose(position, rotation, scale);
     controller2.position.copy(position);
-
-    updateGameText(`Grip squeezed at position: ${position.x}, ${position.y}, ${position.z}`);
-    updateGameText(`Grip squeezed with rotation: ${rotation.x}, ${rotation.y}, ${rotation.z}, ${rotation.w}`);
     // Add any additional logic for when the grip is squeezed
   });
 
   controller2.addEventListener('squeezeend', () => {
-
-    updateGameText(`Grip released ${ controller2.position.y, controller2.position.z, cameraGroup.position.y, cameraGroup.position.z}`);
     // Add any additional logic for when the grip is released
   });
 
   cameraGroup.add(controller2 );
-  updateGameText("Controllers are ready");
-
   // const controllerModelFactory = new XRControllerModelFactory();
 
 
@@ -223,29 +183,15 @@ async function init() {
     const rotation = new THREE.Quaternion();
     const scale = new THREE.Vector3();
 
-  controller2.matrixWorld.decompose(position, rotation, scale);
-  controller2.position.copy(position);
+    controller2.matrixWorld.decompose(position, rotation, scale);
+    controller2.position.copy(position);
 
-  firePhoton(controller2);
+    firePhoton(controller2);
   });
 
 
-
-  // setup objects in scene and entities
-
-  const sideGeometry = new THREE.BoxGeometry( 1, 4, 12);
-  const sideMaterial = new THREE.MeshPhongMaterial({
-                                                  color: 0x00ffff,
-                                                  transparent: false,
-                                                });
-  const sideMesh = new THREE.Mesh( sideGeometry, sideMaterial );
-  sideMesh.position.set( -5 ,2, 1 );
-  scene.add(sideMesh);
-
   window.addEventListener( 'resize', onWindowResize );
 }
-
-
 
 function buildController( data ) {
   let geometry, material;
@@ -259,8 +205,6 @@ function buildController( data ) {
       geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
       geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
       material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
-      // threeObject.add(new THREE.Line( geometry, material ));
-      // return threeObject;
       return new THREE.Line( geometry, material );
 
     case 'gaze':
@@ -273,38 +217,20 @@ function buildController( data ) {
   return threeObject;
 }
 
-//model loader
-function loadModel (modelObj) {
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelObj.path,
-    (gltf) => {
-      const model = gltf.scene
-      model.scale.set(modelObj.scale, modelObj.scale, modelObj.scale); // Assuming uniform scaling
-      model.position.set(modelObj.position.x, modelObj.position.y, modelObj.position.z);
-      model.rotation.set(modelObj.rotation.x, modelObj.rotation.y, modelObj.rotation.z);
-      model.castShadow = false;
-      scene.add(model);
-    }
-  )
-}
-
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-
 function animate() {
   renderer.setAnimationLoop( render );
 }
-
 
 function render() {
   renderer.render(scene, camera);
   animatePhotons();
   animateEnemyCube(enemyCube);
-
   TWEEN.update();
   stats.update();
 }
