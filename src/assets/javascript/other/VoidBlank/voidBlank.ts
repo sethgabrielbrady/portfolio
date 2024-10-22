@@ -7,26 +7,17 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
 import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { EnemyCube, animateEnemyCube} from './enemies.js';
+import { addEnemyCubes, enemyTargetGroup} from './enemies.js';
 import { humanModel, loadModel, ball, tableMesh } from './worldMesh.js';
 
 // 1 unit = 1 real world meter
 // average human height = 1.6m
 
-
-let enemyCube = new EnemyCube();
-function addEnemyCube() {
-  enemyCube = new EnemyCube();
-  const randomPosition = getRandomPosition();
-  enemyCube.position.set(randomPosition.x, randomPosition.y, randomPosition.z);
-  scene.add(enemyCube);
-}
-
-
 let camera, renderer, scene;
 let vrEnabled = false;
 let clock: THREE.Clock;
 
+const targetCount = 10;
 const backgroundColor = 0x222222;
 const stats = new Stats();
 
@@ -76,10 +67,13 @@ async function init() {
 
   //add mesh objects from other files
   // should also move the controller to the other file
-  loadModel(humanModel);
-  scene.add(enemyCube);
-  scene.add(tableMesh);
-  scene.add( ball );
+  // loadModel(humanModel);
+  // scene.add(enemyCube);
+  // scene.add(tableMesh);
+  // scene.add( ball );
+  addEnemyCubes(targetCount);
+  scene.add(enemyTargetGroup);
+
 
 
   // WebXr entry point
@@ -121,21 +115,23 @@ async function init() {
   //orbit controls
   let orbitEnabled = false;
   const orbitControls = new OrbitControls(camera, renderer.domElement)
-  orbitControls.enabled = true;
+  orbitControls.enabled = orbitEnabled;
   orbitControls.enableRotate = orbitEnabled
   orbitControls.keyPanSpeed = 60.0 // magic number
   orbitControls.enableZoom = true
 
-  window.addEventListener( 'keydown', ( event ) => {
-    if (event.key === 'o') {
-      orbitEnabled = !orbitEnabled
+  window.addEventListener('keydown', ( event ) => {
+    const key = event.key;
+    if (key === 'o') {
+      orbitEnabled = !orbitEnabled;
       orbitControls.enableRotate = orbitEnabled;
+      alert(`Orbit controls are ${orbitEnabled ? 'enabled' : 'disabled'}`);
     }
   });
 
 
   // controllers
-  const controller2 = renderer.xr.getController( 1 );
+  const controller2 = renderer.xr.getController( 1);
   //right
   controller2.addEventListener( 'connected',  ( event ) => {
     controller2.add( buildController( event.data ) );
@@ -230,7 +226,7 @@ function animate() {
 function render() {
   renderer.render(scene, camera);
   animatePhotons();
-  animateEnemyCube(enemyCube);
+  // animateEnemyCube(enemyCube);
   TWEEN.update();
   stats.update();
 }
@@ -240,4 +236,4 @@ function voidblank() {
   animate();
 }
 
-export { voidblank, scene, renderer, render, enemyCube, addEnemyCube};
+export { voidblank, scene, renderer, render, enemyTargetGroup};

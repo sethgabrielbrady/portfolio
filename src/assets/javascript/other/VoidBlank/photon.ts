@@ -1,10 +1,19 @@
 import * as THREE from 'three';
-import { scene, enemyCube } from './voidBlank';
+
+interface IntersectableObject extends THREE.Object3D {
+  intersected?: boolean;
+}
+import { scene, enemyTargetGroup } from './voidBlank';
+import type { Scene } from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { updateGameText } from './gameText';
+import { addEnemyCubes } from './enemies';
+// import { enemyErrorAnimation } from './enemies';
 
 const photonColor = 0xff3b94;
 
+const newLocal = 10;
+let currentTargetCount = newLocal;
 // reticle
 const reticlePoints = [];
 reticlePoints.push( new THREE.Vector3( -1, 0, 0 ) );
@@ -122,17 +131,33 @@ function checkPhotonBounds(photon) {
 function checkPhotonIntersection(photon) {
   const photonBox = new THREE.Box3().setFromObject(photon);
   // this is fine for testing but will need to be updated with an array of intersectable objects
-  const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
 
-  if (photonBox.intersectsBox(enemyCubeBox) && !enemyCube.intersected) {
-    scene.remove(photon);
-    scene.remove(enemyCube);
-    photonCount -= 1;
-    tweenSunScale(enemyCube.position, lightParent);
-    enemyCube.intersected = true;
-    // enemyErrorAnimation(enemyCube);
+  const enemyCubes = enemyTargetGroup.children;
+  enemyCubes.forEach((enemyCube) => {
+
+    const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
+
+    if (photonBox.intersectsBox(enemyCubeBox) && !(enemyCube as IntersectableObject).intersected) {
+      scene.remove(photon);
+      scene.remove(enemyCube);
+      updateGameText('enemycube intersected');
+      enemyCubes.splice(enemyCubes.indexOf(enemyCube), 1);
+      currentTargetCount -= 1;
+      photonCount -= 1;
+      tweenSunScale(enemyCube.position, lightParent);
+      (enemyCube as IntersectableObject).intersected = true;
+      // enemyErrorAnimation(enemyCube);
+      checkTargetCount(currentTargetCount);
+    }
+  });
+}
+
+function checkTargetCount(count) {
+  if (count === 0) {
+    updateGameText('You win!');
+    currentTargetCount = newLocal;
+    addEnemyCubes(newLocal);
   }
-
 }
 
 export { firePhoton, animatePhotons };

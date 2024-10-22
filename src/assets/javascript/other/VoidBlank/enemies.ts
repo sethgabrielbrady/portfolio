@@ -52,4 +52,14 @@ function animateEnemyCube(enemyCube) {
   }
 }
 
-export { animateEnemyCube, enemyErrorAnimation, EnemyCube  };
+const enemyTargetGroup = new THREE.Group();
+function addEnemyCubes(count) {
+  for (let i = 0; i < count; i++) {
+    const enemyCube = new EnemyCube();
+    enemyCube.position.set(getRandomPosition(-15, 15), getRandomPosition(0, 10), getRandomPosition(-15, 15));
+    enemyTargetGroup.add(enemyCube);
+  }
+}
+
+
+export { animateEnemyCube, enemyErrorAnimation, EnemyCube, addEnemyCubes, enemyTargetGroup  };
