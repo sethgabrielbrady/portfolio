@@ -7,8 +7,7 @@ import { scene, enemyTargetGroup } from './voidBlank';
 import type { Scene } from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { updateGameText } from './gameText';
-import { addEnemyCubes } from './enemies';
-// import { enemyErrorAnimation } from './enemies';
+import { addEnemyCubes, enemyErrorAnimation } from './enemies';
 
 const photonColor = 0xff3b94;
 
@@ -30,7 +29,7 @@ reticle.position.y = 8;
 
 
 // photon
-const photonSpeed = 0;
+const photonSpeed = -5;
 const photonGeo = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
 const photonMatr = new THREE.MeshPhongMaterial( { color: photonColor, emissive: photonColor, emissiveIntensity: 2, transparent: true, opacity: 0.75  } );
 const photonParent = new THREE.Mesh(photonGeo, photonMatr); // Create a new photon
@@ -57,7 +56,7 @@ function firePhoton(controller) {
   const controllerRotation = new THREE.Euler(controller.rotation.x, controller.rotation.y, controller.rotation.z);
 
   // Calculate the direction vector
-  const direction = new THREE.Vector3(0, 0, -1);
+  const direction = new THREE.Vector3(0, 0, photonSpeed);
   direction.applyEuler(controllerRotation);
 
 
@@ -116,10 +115,10 @@ function checkPhotonBounds(photon) {
   if (Math.abs(photon.position.y) <= 0) {
     // Call tweenSunScale function
     updateGameText('hit');
-    const photonPosition = photon.position;
-    tweenSunScale(photonPosition, lightParent);
+    // const photonPosition = photon.position;
+    // explosion animation
+    // tweenSunScale(photonPosition, lightParent);
     scene.remove(photon);
-
   } else if (Math.abs(photon.position.x) >= 100 || Math.abs(photon.position.z) >= 100) {
     //  updateGameText(`Checking photon position: ${photon.position.x}, ${photon.position.y}, ${photon.position.z}`);
     scene.remove(photon);
@@ -134,19 +133,16 @@ function checkPhotonIntersection(photon) {
 
   const enemyCubes = enemyTargetGroup.children;
   enemyCubes.forEach((enemyCube) => {
-
     const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
 
     if (photonBox.intersectsBox(enemyCubeBox) && !(enemyCube as IntersectableObject).intersected) {
       scene.remove(photon);
-      scene.remove(enemyCube);
-      updateGameText('enemycube intersected');
-      enemyCubes.splice(enemyCubes.indexOf(enemyCube), 1);
       currentTargetCount -= 1;
       photonCount -= 1;
-      tweenSunScale(enemyCube.position, lightParent);
+      updateGameText(`Target count =  ${currentTargetCount}`);
+      // tweenSunScale(enemyCube.position, lightParent);
+      enemyErrorAnimation(enemyCubes, enemyCube);
       (enemyCube as IntersectableObject).intersected = true;
-      // enemyErrorAnimation(enemyCube);
       checkTargetCount(currentTargetCount);
     }
   });

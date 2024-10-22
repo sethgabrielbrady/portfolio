@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import {getRandomPosition, getRandomNumber } from './../generators';
 import { scene } from './voidBlank';
+import { updateGameText } from './gameText';
 
 class EnemyCube extends THREE.Mesh {
   intersected: boolean;
@@ -20,13 +21,15 @@ class EnemyCube extends THREE.Mesh {
   }
 }
 
-function enemyErrorAnimation(enemyCube) {
-  const epy = enemyCube.position.y;
-  const enemyYTween = new TWEEN.Tween(enemyCube.position)
-  const enemyZTween = new TWEEN.Tween(enemyCube.position)
-  const enemyXTween = new TWEEN.Tween(enemyCube.position)
-  const scaleTween = new TWEEN.Tween(enemyCube.scale);
-  const opacityTween = new TWEEN.Tween(enemyCube.material);
+function enemyErrorAnimation(targets, target) {
+  const epy = target.position.y;
+  updateGameText(`Enemy error animation ${epy}`);
+
+  const enemyYTween = new TWEEN.Tween(target.position)
+  const enemyZTween = new TWEEN.Tween(target.position)
+  const enemyXTween = new TWEEN.Tween(target.position)
+  const scaleTween = new TWEEN.Tween(target.scale);
+  const opacityTween = new TWEEN.Tween(target.material);
   const zDirection = -15;
   const xDirection = getRandomNumber(-15, 15);
   const yDirection = epy + getRandomNumber(5, 10);
@@ -36,7 +39,8 @@ function enemyErrorAnimation(enemyCube) {
   enemyXTween.to({ x: xDirection}, 600).start();
   scaleTween.to({ x:.75, y:.75, z:.75}, 500).start();
   opacityTween.to({ opacity: 0, emissiveIntensity: 0 }, 500).start().onComplete(() => {
-    scene.remove(enemyCube);
+    targets.splice(targets.indexOf(target), 1);
+    scene.remove(target);
   });
 }
 
@@ -70,9 +74,13 @@ const enemyTargetGroup = new THREE.Group();
 function addEnemyCubes(count) {
   for (let i = 0; i < count; i++) {
     const enemyCube = new EnemyCube();
-    enemyCube.position.set(getRandomPosition(-15, 15), getRandomPosition(0, 10), getRandomPosition(-15, 15));
+    enemyCube.position.set(randomizeTargetPosition(-15, 15), randomizeTargetPosition(5, 10), -10);
     enemyTargetGroup.add(enemyCube);
   }
+}
+
+function randomizeTargetPosition(min, max) {
+  return getRandomNumber(min, max);
 }
 
 
