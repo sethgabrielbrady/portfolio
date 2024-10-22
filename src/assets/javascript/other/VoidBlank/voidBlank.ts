@@ -7,8 +7,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import  { updateGameText } from './gameText.js';
 import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { addEnemyCubes, enemyTargetGroup} from './enemies.js';
-import { humanModel, loadModel, ball, tableMesh } from './worldMesh.js';
+import { addEnemyCubes, enemyTargetGroup, animateEnemyCubes} from './enemies.js';
+// import { humanModel, loadModel, ball, tableMesh } from './worldMesh.js';
 
 // 1 unit = 1 real world meter
 // average human height = 1.6m
@@ -224,9 +224,10 @@ function animate() {
 }
 
 function render() {
+  const enemyCubes = enemyTargetGroup.children;
   renderer.render(scene, camera);
   animatePhotons();
-  // animateEnemyCube(enemyCube);
+  animateEnemyCubes(enemyCubes);
   TWEEN.update();
   stats.update();
 }

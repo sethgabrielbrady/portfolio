@@ -52,6 +52,20 @@ function animateEnemyCube(enemyCube) {
   }
 }
 
+function animateEnemyCubes(children) {
+  children.forEach((targetChild) => {
+  const speed = 0.05;
+  targetChild.rotation.y -= speed;
+  targetChild.rotation.x -= speed;
+  targetChild.rotation.z -= speed;
+  if (targetChild.rotation.y < -10) {
+    targetChild.rotation.y = 10;
+    targetChild.rotation.x = (Math.random() * 20) - 10;
+    targetChild.rotation.z = (Math.random() * 20) - 10;
+  }
+})
+}
+
 const enemyTargetGroup = new THREE.Group();
 function addEnemyCubes(count) {
   for (let i = 0; i < count; i++) {
@@ -62,4 +76,4 @@ function addEnemyCubes(count) {
 }
 
 
-export { animateEnemyCube, enemyErrorAnimation, EnemyCube, addEnemyCubes, enemyTargetGroup  };
+export { animateEnemyCubes, enemyErrorAnimation, EnemyCube, addEnemyCubes, enemyTargetGroup  };
