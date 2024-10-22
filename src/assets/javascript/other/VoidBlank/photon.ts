@@ -11,7 +11,7 @@ import { addEnemyCubes, enemyErrorAnimation } from './enemies';
 
 const photonColor = 0xff3b94;
 
-const newLocal = 10;
+const newLocal = 1;
 let currentTargetCount = newLocal;
 // reticle
 const reticlePoints = [];
@@ -114,7 +114,6 @@ function animatePhotons() {
 function checkPhotonBounds(photon) {
   if (Math.abs(photon.position.y) <= 0) {
     // Call tweenSunScale function
-    updateGameText('hit');
     // const photonPosition = photon.position;
     // explosion animation
     // tweenSunScale(photonPosition, lightParent);
@@ -136,6 +135,8 @@ function checkPhotonIntersection(photon) {
     const enemyCubeBox = new THREE.Box3().setFromObject(enemyCube);
 
     if (photonBox.intersectsBox(enemyCubeBox) && !(enemyCube as IntersectableObject).intersected) {
+      updateGameText('hit');
+
       scene.remove(photon);
       currentTargetCount -= 1;
       photonCount -= 1;

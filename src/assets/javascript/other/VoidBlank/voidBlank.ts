@@ -17,7 +17,7 @@ let camera, renderer, scene;
 let vrEnabled = false;
 let clock: THREE.Clock;
 
-const targetCount = 10;
+const targetCount = 1;
 const backgroundColor = 0x222222;
 const stats = new Stats();
 
@@ -131,7 +131,7 @@ async function init() {
 
 
   // controllers
-  const controller2 = renderer.xr.getController( 1);
+  const controller2 = renderer.xr.getController(0);
   //right
   controller2.addEventListener( 'connected',  ( event ) => {
     controller2.add( buildController( event.data ) );
