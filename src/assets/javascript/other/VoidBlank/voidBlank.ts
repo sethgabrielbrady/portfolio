@@ -16,9 +16,10 @@ import { addEnemyCubes, enemyTargetGroup, animateEnemyCubes} from './enemies.js'
 let camera, renderer, scene;
 let vrEnabled = false;
 let clock: THREE.Clock;
+const controllerNumber = 0;
 
 const targetCount = 1;
-const backgroundColor = 0x222222;
+const backgroundColor = 0x000000;
 const stats = new Stats();
 
 document.body.appendChild(stats.dom);
@@ -29,9 +30,9 @@ async function init() {
   scene.background = new THREE.Color( backgroundColor );
 
   const cameraGroup = new THREE.Group();
-  camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.2, 200 );
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.2, 200 );
   cameraGroup.add(camera);
-  cameraGroup.position.set( 0,2, 4 );
+  cameraGroup.position.set(0, 2, 4);
   scene.add( cameraGroup );
   scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 3 ) );
   renderer = new THREE.WebGLRenderer( {
@@ -44,7 +45,7 @@ async function init() {
 
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = false;
   updateGameText("Renderer is ready");
 
   // initializing webxr renderer and controllers. Adding the vr button to the users element
@@ -55,6 +56,8 @@ async function init() {
 
   //  Grid
   const gridHelper = new THREE.GridHelper(100, 100, 0x18fbe3,0x18fbe3);
+  // const gridHelper = new THREE.GridHelper(100, 100, 0x000000,0x000000);
+
   gridHelper.visible = true;
   scene.add( gridHelper );
 
@@ -131,7 +134,15 @@ async function init() {
 
 
   // controllers
-  const controller2 = renderer.xr.getController(0);
+  const controller2 = renderer.xr.getController(controllerNumber);
+  //This needs to be done with some sort of in game menu
+  // window.addEventListener( 'keydown', ( event ) => {
+  //   if (event.key === 'q') {
+  //     controllerNumber = controllerNumber === 0 ? 1 : 0;
+  //     controller2 = renderer.xr.getController(controllerNumber);
+  //     cameraGroup.add(controller2);
+  //   }
+  // });
   //right
   controller2.addEventListener( 'connected',  ( event ) => {
     controller2.add( buildController( event.data ) );

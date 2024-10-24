@@ -8,14 +8,14 @@ class EnemyCube extends THREE.Mesh {
   intersected: boolean;
   constructor() {
     super();
-    this.geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    this.geometry = new THREE.BoxGeometry( 1,1,1 );
     // const color = getRandomColor();
     const color = 0xfe0000;
-    this.material = new THREE.MeshLambertMaterial( { color: color, flatShading: false, opacity: .5, transparent: true} );
+    this.material = new THREE.MeshLambertMaterial( { color: color, flatShading: false, opacity: 1, transparent: true} );
     (this.material as THREE.MeshLambertMaterial).emissive = new THREE.Color( color );
-    (this.material as THREE.MeshLambertMaterial).emissiveIntensity = 0.7;
+    (this.material as THREE.MeshLambertMaterial).emissiveIntensity = .7;
     this.position.set( 4, 3, 2 );
-    this.receiveShadow = false;
+    this.receiveShadow = true;
     this.castShadow = true;
     this.intersected = false;
   }
