@@ -8,15 +8,18 @@ import  { updateGameText } from './gameText.js';
 import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { addEnemyCubes, enemyTargetGroup, animateEnemyCubes} from './enemies.js';
+import { update } from 'three/examples/jsm/libs/tween.module.js';
 // import { humanModel, loadModel, ball, tableMesh } from './worldMesh.js';
 
 // 1 unit = 1 real world meter
 // average human height = 1.6m
 
+let controller1 = null;
+
 let camera, renderer, scene;
 let vrEnabled = false;
 let clock: THREE.Clock;
-const controllerNumber = 0;
+const controllerNumber = 1;
 
 const targetCount = 1;
 const backgroundColor = 0x000000;
@@ -136,13 +139,6 @@ async function init() {
   // controllers
   const controller2 = renderer.xr.getController(controllerNumber);
   //This needs to be done with some sort of in game menu
-  // window.addEventListener( 'keydown', ( event ) => {
-  //   if (event.key === 'q') {
-  //     controllerNumber = controllerNumber === 0 ? 1 : 0;
-  //     controller2 = renderer.xr.getController(controllerNumber);
-  //     cameraGroup.add(controller2);
-  //   }
-  // });
   //right
   controller2.addEventListener( 'connected',  ( event ) => {
     controller2.add( buildController( event.data ) );
@@ -167,8 +163,18 @@ async function init() {
     // Add any additional logic for when the grip is released
   });
 
-  cameraGroup.add(controller2 );
+  cameraGroup.add(controller2);
   // const controllerModelFactory = new XRControllerModelFactory();
+
+  controller1 = renderer.xr.getController(0);
+  controller1.addEventListener( 'connected',  ( event ) => {
+    controller1.add( buildController( event.data ) );
+  } );
+  // move player using the controller joystick
+  controller1.addEventListener('selectstart', ( ) => {
+    updateGameText(`Controller  postion: ${controller1.position.x}`);
+    // cameraGroup.position.x += 0.1;
+  });
 
 
   const loader = new GLTFLoader();
@@ -189,9 +195,9 @@ async function init() {
     const position = new THREE.Vector3();
     const rotation = new THREE.Quaternion();
     const scale = new THREE.Vector3();
-
     controller2.matrixWorld.decompose(position, rotation, scale);
     controller2.position.copy(position);
+    updateGameText(`Controllerm 2  postion: ${controller2.position.x}`);
 
     firePhoton(controller2);
   });
@@ -223,6 +229,23 @@ function buildController( data ) {
 
   return threeObject;
 }
+
+function handleJoystickMovement(controller, cameraGroup) {
+  const gamepad = controller.gamepad;
+  if (gamepad) {
+    updateGameText(`Gamepad connected: ${gamepad.id}`);
+    const xAxis = gamepad.axes[2]; // Horizontal movement
+    const yAxis = gamepad.axes[3]; // Vertical movement
+
+    // Adjust the movement speed as needed
+    const movementSpeed = 0.1;
+
+    // Update the cameraGroup position based on joystick input
+    cameraGroup.position.x += xAxis * movementSpeed;
+    cameraGroup.position.y += yAxis * movementSpeed;
+  }
+}
+
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;

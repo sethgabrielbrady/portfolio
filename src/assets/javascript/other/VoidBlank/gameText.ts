@@ -15,13 +15,20 @@ function updateGameText(newText) {
   currentText.push(text);
   const height = (currentText.length * 0.25) + 3;
   text.color = 'green';
-  text.rotation.x = Math.PI*2;
-  text.position.z = -4;
+  // rotate the text so that it is on the z axis
+  text.rotation.y = -Math.PI * 2;
+  text.rotation.x = -Math.PI / 2;
+
+
+  // text.rotation.x = Math.PI*2;
+  // text.rotation.z = -Math.PI*2;
+  // text.rotation.x = 4;
   text.position.x = 0;
-  // text.position.y = height;
+  text.position.y = -5;
+  text.position.z = -40;
   // scene.add(text);
   currentText.forEach( (t, i) => {
-    t.position.y = height - (i * 0.25);
+    t.position.z= height - (i * 0.25);
     scene.add(t);
   })
 }
