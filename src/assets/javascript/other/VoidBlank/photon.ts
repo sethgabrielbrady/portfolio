@@ -13,6 +13,7 @@ const photonColor = 0xff3b94;
 
 const newLocal = 1;
 let currentTargetCount = newLocal;
+
 // reticle
 const reticlePoints = [];
 reticlePoints.push( new THREE.Vector3( -1, 0, 0 ) );
@@ -113,13 +114,8 @@ function animatePhotons() {
 
 function checkPhotonBounds(photon) {
   if (Math.abs(photon.position.y) <= 0) {
-    // Call tweenSunScale function
-    // const photonPosition = photon.position;
-    // explosion animation
-    // tweenSunScale(photonPosition, lightParent);
     scene.remove(photon);
   } else if (Math.abs(photon.position.x) >= 100 || Math.abs(photon.position.z) >= 100) {
-    //  updateGameText(`Checking photon position: ${photon.position.x}, ${photon.position.y}, ${photon.position.z}`);
     scene.remove(photon);
   } else {
     checkPhotonIntersection(photon);
@@ -136,7 +132,6 @@ function checkPhotonIntersection(photon) {
 
     if (photonBox.intersectsBox(enemyCubeBox) && !(enemyCube as IntersectableObject).intersected) {
       updateGameText('hit');
-
       scene.remove(photon);
       currentTargetCount -= 1;
       photonCount -= 1;

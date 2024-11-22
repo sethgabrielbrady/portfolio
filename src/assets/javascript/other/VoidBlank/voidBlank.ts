@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm//webxr/VRButton.js';
-import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -8,8 +7,6 @@ import  { updateGameText } from './gameText.js';
 import { firePhoton, animatePhotons} from './photon.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { addEnemyCubes, enemyTargetGroup, animateEnemyCubes} from './enemies.js';
-import { update } from 'three/examples/jsm/libs/tween.module.js';
-// import { humanModel, loadModel, ball, tableMesh } from './worldMesh.js';
 
 // 1 unit = 1 real world meter
 // average human height = 1.6m
@@ -73,14 +70,8 @@ async function init() {
 
   //add mesh objects from other files
   // should also move the controller to the other file
-  // loadModel(humanModel);
-  // scene.add(enemyCube);
-  // scene.add(tableMesh);
-  // scene.add( ball );
   addEnemyCubes(targetCount);
   scene.add(enemyTargetGroup);
-
-
 
   // WebXr entry point
   container.appendChild(VRButton.createButton(renderer));
@@ -91,7 +82,6 @@ async function init() {
     vrButton.addEventListener('click', async () => {
       renderer.xr.enabled = true;
       await updateSession();
-      // updateXRCameraHeight(3); // Update the height to 3 units after clicking the VR button
     });
   }
 
@@ -198,10 +188,8 @@ async function init() {
     controller2.matrixWorld.decompose(position, rotation, scale);
     controller2.position.copy(position);
     updateGameText(`Controllerm 2  postion: ${controller2.position.x}`);
-
     firePhoton(controller2);
   });
-
 
   window.addEventListener( 'resize', onWindowResize );
 }
@@ -225,8 +213,8 @@ function buildController( data ) {
       material = new THREE.MeshBasicMaterial( { opacity: 0.5, transparent: true } );
       return new THREE.Mesh( geometry, material );
   }
-  // Add a default return statement
 
+  // Add a default return statement
   return threeObject;
 }
 
@@ -239,7 +227,6 @@ function handleJoystickMovement(controller, cameraGroup) {
 
     // Adjust the movement speed as needed
     const movementSpeed = 0.1;
-
     // Update the cameraGroup position based on joystick input
     cameraGroup.position.x += xAxis * movementSpeed;
     cameraGroup.position.y += yAxis * movementSpeed;

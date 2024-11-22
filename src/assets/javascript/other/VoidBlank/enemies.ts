@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
-import {getRandomPosition, getRandomNumber } from './../generators';
+import {getRandomNumber } from './../generators';
 import { scene } from './voidBlank';
 import { updateGameText } from './gameText';
 
