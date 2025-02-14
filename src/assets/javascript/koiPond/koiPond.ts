@@ -4,13 +4,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 
-
-
   // const speed: number = 2;
   const clock: THREE.Clock = new THREE.Clock();
-
   // const raycaster = new THREE.Raycaster();
   const scene: THREE.Scene = new THREE.Scene();
+
 
   const interval = 1/60;
 
@@ -20,25 +18,43 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   // let xAxis = speed * delta;
   // let yAxis = -1 + (speed * delta);
 
+  //animation
+  let mixer: THREE.AnimationMixer;
+
+
 
    // models
-   function loadModel (modelObj: { path: string; scale: number; position: { x: number; y: number; z: number; }; }) {
+  function loadModel (modelObj: { path: string; scale: number; animation: boolean; timeScale: number; position: { x: number; y: number; z: number; }; }) {
     const gltfLoader = new GLTFLoader();
-
+    let model;
+    const timeScale = modelObj.timeScale;
     gltfLoader.load(modelObj.path,
       (gltf) => {
-       const model = gltf.scene
+        model = gltf.scene
         model.scale.x = modelObj.scale;
         model.scale.y = modelObj.scale;
         model.scale.z = modelObj.scale;
-        model.position.x = modelObj.position.x;
-        model.position.y = modelObj.position.y;
-        model.position.z = modelObj.position.z;
+        // model.position.x = modelObj.position.x;
+        // model.position.y = modelObj.position.y;
+        // model.position.z = modelObj.position.z;
+        model.position.copy(modelObj.position);
         model.castShadow = true;
         scene.add(model);
+        if (modelObj.animation) {
+          model.animations;
+          mixer = new THREE.AnimationMixer( model );
+          const clips = gltf.animations;
+          if (clips.length > 0) {
+              // Play first animation
+              const action = mixer.clipAction(clips[0]);
+              action.setEffectiveTimeScale(timeScale); // 2x speed
+              action.play();
+          }
+        }
       }
-      );
-    }
+    );
+    return model;
+  }
 
 
   function init() {
@@ -82,29 +98,56 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 
 
-
-
     // Models
+    // create super
+    // update scaling to vector3
     const pond = {
       scale: 1.0,
-      path: 'models/jpond.glb',
+      animation: false,
+      timeScale: 1.0,
+      path: 'models/pond.glb',
       position: { x: 0, y: 0, z: 0 }
     }
 
+    const koi = {
+      scale: 1.0,
+      animation: true,
+      timeScale: 20.0,
+      path: 'models/koi.glb',
+      position: { x: 1, y: -0.06, z: 1 }
+    }
+
+    // need to create animation path for koi
+    // will probaly do something like the ball physics in breakout - when the koi hits the edge of the pond, it will change direction
+    // randomly add stops for the koi to stay still
+
+
     loadModel(pond);
+    loadModel(koi);
 
 
-    const floorColor = 0x00FFFF;
-    const floorGeometry = new THREE.PlaneGeometry( 4.75, 4.85);
-    const floorMaterial = new THREE.MeshPhongMaterial({
-                                                    color: floorColor,
+    const waterColor = 0x00FFFF;
+    const waterGeometry = new THREE.PlaneGeometry( 4.75, 4.85);
+    const waterMaterial = new THREE.MeshPhongMaterial({
+                                                    color: waterColor,
                                                     transparent: true,
                                                     opacity: 0.5,
                                                   });
-    const floor = new THREE.Mesh( floorGeometry, floorMaterial );
-    floor.rotation.x = - Math.PI / 2;
-    floor.position.y = -0.009;
-    scene.add( floor );
+    const water = new THREE.Mesh( waterGeometry, waterMaterial );
+    water.rotation.x = - Math.PI / 2;
+    water.position.y = -0.0009;
+    scene.add( water );
+
+    const bottomColor = 0x4C4E27;
+    const bottomGeometry = new THREE.PlaneGeometry( 4, 4);
+    const bottomMaterial = new THREE.MeshPhongMaterial({
+                                                    color: bottomColor,
+                                                    transparent: false,
+                                                  });
+    const bottom = new THREE.Mesh( bottomGeometry, bottomMaterial );
+    bottom.rotation.x = - Math.PI / 2;
+    bottom.position.y = -0.509;
+    scene.add( bottom );
 
 
 
@@ -127,6 +170,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
       render();
       delta = delta % interval;
      }
+    if (mixer) {
+      mixer.update(clock.getDelta());
+    }
+
   }
 
   function render() {
