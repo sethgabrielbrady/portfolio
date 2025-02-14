@@ -19,30 +19,30 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   // let yAxis = -1 + (speed * delta);
 
   //animation
-  let mixer: THREE.AnimationMixer;
+  const mixerAnimations: Array<THREE.AnimationMixer> = [];
 
 
 
    // models
   function loadModel (modelObj: { path: string; scale: number; animation: boolean; timeScale: number; position: { x: number; y: number; z: number; }; }) {
-    const gltfLoader = new GLTFLoader();
     let model;
+    let mixer: THREE.AnimationMixer;
     const timeScale = modelObj.timeScale;
+    const gltfLoader = new GLTFLoader();
     gltfLoader.load(modelObj.path,
       (gltf) => {
         model = gltf.scene
         model.scale.x = modelObj.scale;
         model.scale.y = modelObj.scale;
         model.scale.z = modelObj.scale;
-        // model.position.x = modelObj.position.x;
-        // model.position.y = modelObj.position.y;
-        // model.position.z = modelObj.position.z;
+
         model.position.copy(modelObj.position);
         model.castShadow = true;
         scene.add(model);
         if (modelObj.animation) {
           model.animations;
           mixer = new THREE.AnimationMixer( model );
+          mixerAnimations.push(mixer);
           const clips = gltf.animations;
           if (clips.length > 0) {
               // Play first animation
@@ -84,7 +84,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
       antialias: false,
       alpha: true,
       precision: "lowp",
-      powerPreference: "low-power",
+      //precision: "medium",
+      powerPreference: "high-performance",
     });
 
     renderer.setClearColor
@@ -112,9 +113,17 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     const koi = {
       scale: 1.0,
       animation: true,
-      timeScale: 20.0,
+      timeScale: 1.0,
       path: 'models/koi.glb',
       position: { x: 1, y: -0.06, z: 1 }
+    }
+
+    const fox = {
+      scale: 0.0065,
+      animation: true,
+      timeScale: 1.0,
+      path: 'models/fox.glb',
+      position: { x: -1, y: 0.1, z: 2 }
     }
 
     // need to create animation path for koi
@@ -124,6 +133,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
     loadModel(pond);
     loadModel(koi);
+    loadModel(fox);
 
 
     const waterColor = 0x00FFFF;
@@ -170,8 +180,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
       render();
       delta = delta % interval;
      }
-    if (mixer) {
-      mixer.update(clock.getDelta());
+    // if (mixer) {
+    //   mixer.update(clock.getDelta());
+    // }
+    if (mixerAnimations.length > 0) {
+      for (let i = 0; i < mixerAnimations.length; i++) {
+        console.log("mixwe", mixerAnimations[i]);
+        mixerAnimations[i].update(delta);
+      }
     }
 
   }
