@@ -38,6 +38,11 @@ const router = createRouter({
       name: 'voidblank',
       component: () => import('../views/VoidBlankView.vue')
     },
+    {
+      path: '/koiPond',
+      name: 'koiPond',
+      component: () => import('../views/KoiPond.vue')
+    },
   ]
 })
 
