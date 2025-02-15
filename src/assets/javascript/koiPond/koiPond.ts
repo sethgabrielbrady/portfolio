@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-//import { createText } from 'three/examples/jsm/webxr/Text2D.js';
+import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
+import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -15,37 +16,54 @@ let delta: number = 0;
 // let xAxis = speed * delta;
 // let yAxis = -1 + (speed * delta);
 
+const koiGroup = new THREE.Group();
+const showHelper = false;
 
-function loadModel (modelObj: { path: string; scale: number; animation: boolean; timeScale: number; position: { x: number; y: number; z: number; }; }) {
-  let model;
-  let mixer: THREE.AnimationMixer;
-  const timeScale = modelObj.timeScale;
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(modelObj.path,
-    (gltf) => {
-      model = gltf.scene
-      model.scale.x = modelObj.scale;
-      model.scale.y = modelObj.scale;
-      model.scale.z = modelObj.scale;
 
-      model.position.copy(modelObj.position);
-      model.castShadow = true;
-      scene.add(model);
-      if (modelObj.animation) {
-        model.animations;
-        mixer = new THREE.AnimationMixer( model );
-        mixerAnimations.push(mixer);
-        const clips = gltf.animations;
-        if (clips.length > 0) {
+
+
+function loadModel(modelObj: { path: string; scale: number; animation: boolean; timeScale: number; position: { x: number; y: number; z: number; }; rotation: { x: number; y: number; z: number; };  }): Promise<THREE.Object3D | undefined> {
+  return new Promise((resolve, reject) => {
+    let model;
+    let mixer: THREE.AnimationMixer;
+    const timeScale = modelObj.timeScale;
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load(modelObj.path,
+      (gltf) => {
+        model = gltf.scene;
+        model.scale.x = modelObj.scale;
+        model.scale.y = modelObj.scale;
+        model.scale.z = modelObj.scale;
+        model.rotateX(modelObj.rotation.x);
+        model.rotateY(modelObj.rotation.y);
+        model.rotateZ(modelObj.rotation.z);
+
+
+
+        model.position.copy(modelObj.position);
+        model.castShadow = true;
+        //scene.add(model);
+        if (modelObj.animation) {
+          model.animations;
+          mixer = new THREE.AnimationMixer(model);
+          mixerAnimations.push(mixer);
+          const clips = gltf.animations;
+          if (clips.length > 0) {
             // Play first animation
             const action = mixer.clipAction(clips[0]);
             action.setEffectiveTimeScale(timeScale); // 2x speed
             action.play();
+          }
         }
+        resolve(model);
+      },
+      undefined,
+      (error) => {
+        console.error('An error happened while loading the model:', error);
+        reject(error);
       }
-    }
-  );
-  return model;
+    );
+  });
 }
 
 
@@ -102,38 +120,124 @@ function init() {
   // Models
   // create super
   // update scaling to vector3
+
+
+  // const koiGroup = new THREE.Group();
+  koiGroup.position.set(0.5, -0.03, 0.5);
+  const koi = {
+      scale: 1.0,
+      animation: true,
+      timeScale: 1.0,
+      path: 'models/koi.glb',
+      position: koiGroup.position,
+      rotation: { x: 0, y: 0, z: 0 }
+    }
+  loadModel(koi).then(model => {
+    if (model) {
+      koiGroup.add(model);
+    }
+  });
+  scene.add(koiGroup);
+
+  // const koiTween = new TWEEN.Tween(koiGroup.position)
+  // console.log(koiUp, koiGroup.position.y);
+  // if (koiUp && koiGroup.position.y < -0.03) {
+  //   koiTween.to({ y: -0.03}, 3000).start();
+  // }
+  // if(!koiUp && koiGroup.position.y > -0.1) {
+  //   koiTween.to({ y: -0.1}, 3000).start();
+  // }
+
+
+
+
+  const raccoon = {
+    scale: .9,
+    animation: true,
+    timeScale: 1.0,
+    path: 'models/raccoon.glb',
+    position: { x: 2.2, y: 0.1, z: -2.6 },
+    rotation: { x: 0, y: 1.5, z: 0 }
+  }
+  loadModel(raccoon).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
+
+
   const pond = {
     scale: 1.0,
     animation: false,
     timeScale: 1.0,
     path: 'models/pond.glb',
-    position: { x: 0, y: 0, z: 0 }
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 }
   }
+  loadModel(pond).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
 
-  const koi = {
-    scale: 1.0,
-    animation: true,
+  const tree = {
+    scale: 0.50,
+    animation: false,
     timeScale: 1.0,
-    path: 'models/koi.glb',
-    position: { x: 1, y: -0.06, z: 1 }
+    path: 'models/tree.glb',
+    position: { x: 0, y: 0, z: -2.0 },
+    rotation: { x: 0, y: 0, z: 0 }
+
   }
+  loadModel(tree).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
 
-  const fox = {
-    scale: 0.0065,
-    animation: true,
-    timeScale: 1.0,
-    path: 'models/fox.glb',
-    position: { x: -1, y: 0.1, z: 2 }
+  const dragonfly = {
+      scale: 2,
+      animation: true,
+      timeScale: 1.0,
+      path: 'models/dragonfly.glb',
+      position: { x: -0.0, y:.25, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 }
+    }
+  loadModel(dragonfly).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
+
+  const pads = {
+    scale: 3,
+    animation: false,
+    timeScale: 1,
+    path: 'models/pads.glb',
+    position: { x: -1, y: 0, z: 1 },
+    rotation: { x: 0, y: -.5, z: 0 }
   }
+  loadModel(pads).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
+  const cattail = {
+    scale: .5,
+    animation: false,
+    timeScale: 1,
+    path: 'models/cattail.glb',
+    position: { x: .65, y: -.3, z: -1 },
+    rotation: { x: 0, y: 0, z: 0 }
+  }
+  loadModel(cattail).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
 
-  // need to create animation path for koi
-  // will probaly do something like the ball physics in breakout - when the koi hits the edge of the pond, it will change direction
-  // randomly add stops for the koi to stay still
 
 
-  loadModel(pond);
-  loadModel(koi);
-  loadModel(fox);
 
   const waterColor = 0x00FFFF;
   const waterGeometry = new THREE.PlaneGeometry( 4.75, 4.85);
@@ -168,33 +272,77 @@ function init() {
   orbitControls.keyPanSpeed = 60.0 // magic number
   orbitControls.enableZoom = true
 
-  // container.addEventListener( 'click', ( event ) => {
+ //axes helper
+    // axis helper
+    const axesHelper = new THREE.AxesHelper( 5 );
+    const xText = createText( 'x5', 0.5);
+    const xText2 = createText( '-x5', 0.5 );
+    const xText3 = createText( 'x2.5', 0.5 );
+    const xText4 = createText( '-x2.5', 0.5 );
+    const zText = createText( "z5", 0.5 );
+    const zText2 = createText( "-z5", 0.5 );
+    const zText3 = createText( "z2.5", 0.5 );
+    const zText4 = createText( "-z2.5", 0.5 );
+    const axisGroup = new THREE.Group();
 
-  // });
+    // update axis text position
+    xText.position.set( 5, 1, 0 );
+    xText2.position.set( -5, 1, 0 );
+    xText3.position.set( 2.5, 1, 0 );
+    xText4.position.set( -2.5, 1, 0 );
+    zText.position.set( 0, 1, 5 );
+    zText2.position.set( 0, 1, -5 );
+    zText3.position.set( 0, 1, 2.5 );
+    zText4.position.set( 0, 1, -2.5 )
+
+    // update axis text rotation
+    xText.rotation.x = Math.PI * 2;
+    xText2.rotation.x = Math.PI * 2;
+    xText3.rotation.x = Math.PI * 2;
+    xText4.rotation.x = Math.PI * 2;
+    zText.rotation.x = Math.PI * 2;
+    zText2.rotation.x = Math.PI * 2;
+    zText3.rotation.x = Math.PI * 2;
+    zText4.rotation.x = Math.PI * 2;
+
+    axisGroup.add(xText, zText, xText2, zText2, xText3, zText3, xText4, zText4);
+
+    if (showHelper) {
+      scene.add(axisGroup);
+      scene.add(axesHelper);
+    }else {
+      scene.remove(axisGroup);
+      scene.remove( axesHelper );
+    }
+
 }
 
 function animate() {
   requestAnimationFrame(animate);
   delta += clock.getDelta();
-
   if (delta  > interval) {
     render();
     delta = delta % interval;
   }
 
-  // updates model animations
-  if (mixerAnimations.length > 0) {
-    for (let i = 0; i < mixerAnimations.length; i++) {
-      console.log("mixwe", mixerAnimations[i]);
-      mixerAnimations[i].update(delta);
-    }
-  }
+
+  TWEEN.update()
 
 }
 
+
+
 function render() {
   renderer.render( scene, camera );
-  // window.addEventListener( 'pointermove', onPaddleIntersect );
+   // updates model animations
+   if (mixerAnimations.length > 0) {
+    for (let i = 0; i < mixerAnimations.length; i++) {
+      mixerAnimations[i].update(delta);
+
+    }
+  }
+
+
 }
 
 function koiPond() {
