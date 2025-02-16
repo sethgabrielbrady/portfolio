@@ -6,7 +6,7 @@ import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
 
 
-const showHelper = true;
+const showHelper = false;
 
 
 
@@ -139,21 +139,20 @@ function init() {
   const container: HTMLElement = document.getElementById("koiPond")!;
   container.appendChild(renderer.domElement);
 
+  //koiGroup.position.set(0.0, -0.07, 0.0);
 
-  koiGroup.position.set(0.0, -0.07, 0.0);
+  koiGroup.position.set(0.0, -0.1, 0.0);
   const koiCount = 10;
   const koiArray: THREE.Object3D<THREE.Object3DEventMap>[] = [];
   for (let i = 0; i < koiCount; i++) {
     const koi = {
       //scale: 1.0,
-      scale: rngNum(0.5, 1.15),
+      scale: rngNum(0.4, 1),
       animation: true,
       timeScale: rngNum(0.09, 0.24),
       //timeScale: 0.2,
       path: 'models/koi.glb',
       position: { x:koiGroup.position.x, y: koiGroup.position.y, z: koiGroup.position.z },
-
-      //position: { x: rngNum(-1.8,1.8), y: rngNum(-0.001,-0.07), z: rngNum(-1.8,1.8) },
       rotation: { x: 0, y: 0, z: 0 }
     }
     loadModel(koi).then(model => {
@@ -165,8 +164,6 @@ function init() {
       }
     });
   }
-
-
   scene.add(koiGroup);
 
   let koiMovingArray: Array<THREE.Object3D<THREE.Object3DEventMap>> = [];
@@ -175,6 +172,7 @@ function init() {
     const startX = koi.position.x;
     const startZ = koi.position.z;
     const targetX = rngNum(-1.8, 1.8);
+    const targetY = rngNum(-0.1, -0.07 );
     const targetZ = rngNum(-1.8, 1.8);
 
     // Calculate the direction angle
@@ -182,25 +180,22 @@ function init() {
 
     // Create position tween
     const koiTweenPos = new TWEEN.Tween(koi.position)
-      .to({ x: targetX, z: targetZ }, 20000)
+      .to({ x: targetX, y: targetY, z: targetZ }, 20000)
       .onComplete(() => {
         // Set new start position for the next movement cycle
-        koi.position.set(targetX, koi.position.y, targetZ);
+        koi.position.set(targetX, targetY, targetZ);
         // Remove the koi from the moving array
         koiMovingArray = koiMovingArray.filter((item) => item !== koi);
       })
       .start();
 
-    // Create rotation tween (smoothly rotate towards the new direction)
-    const koiTweenRot = new TWEEN.Tween(koi.rotation)
+
+    const koiTweenRot = new TWEEN.Tween(koi.rotation) // Create rotation tween (smoothly rotate towards the new direction)
       .to({ y: angle }, 3000) // Rotate over 3 seconds for smooth transition
       .start();
   }
 
-
-
-  // adjust the koi deployment interval after the initial deployment
-  let upodateKoiDeplymentInterval = false;
+  let upodateKoiDeplymentInterval = false; // adjust the koi deployment interval after the initial deployment
   setTimeout(() => {
     upodateKoiDeplymentInterval = true;
   }, 10000);
@@ -211,11 +206,9 @@ function init() {
       koiDeploymentInterval = rngNum(10000, 20000);
     }
 
-
     const rngKoiIndex = Math.floor(rngNum(0, koiArray.length));
     const rngKoi = koiArray[rngKoiIndex];
-    //if koiMovingArray does not contian the koi, add it to the array
-    if (!koiMovingArray.includes(rngKoi)) {
+    if (!koiMovingArray.includes(rngKoi)) {  //if koiMovingArray does not contian the koi, add it to the array
       koiMovingArray.push(rngKoi);
       randomizeKoiMovement(rngKoi);
     }
@@ -231,6 +224,7 @@ function init() {
       position: dragonflyGroup.position,
       rotation: { x: 0, y: 0, z: 0 }
     }
+
   loadModel(dragonfly).then(model => {
     if (model) {
       dragonflyGroup.add(model);
@@ -238,24 +232,112 @@ function init() {
   });
   scene.add(dragonflyGroup);
 
-let rngTimer = rngNum(2000, 4000);
-function randomizeDragonflyPosition() {
-  const dragonflyTween = new TWEEN.Tween(dragonflyGroup.position);
-  const startX = rngNum(-3,3);
-  const startZ = rngNum(-3,3);
-  const startY = rngNum(0.06,0.3);
-  dragonflyTween.to({ x: startX, y:startY, z: startZ }, rngTimer)
-    .yoyo(false)
-    .start().onComplete(() => {
-      rngTimer = rngNum(1000, 3000);
-    });
-  dragonflyGroup.position.set(startX, startY, startZ);
-}
-randomizeDragonflyPosition();
-
-setInterval(() => {
+  let rngTimer = rngNum(2000, 4000);
+  function randomizeDragonflyPosition() {
+    const dragonflyTween = new TWEEN.Tween(dragonflyGroup.position);
+    const startX = rngNum(-2.5,2.5);
+    const startZ = rngNum(-2.5,2.5);
+    const startY = rngNum(0.06,0.3);
+    dragonflyTween.to({ x: startX, y:startY, z: startZ }, rngTimer)
+      .yoyo(false)
+      .start().onComplete(() => {
+        rngTimer = rngNum(1000, 3000);
+      });
+    dragonflyGroup.position.set(startX, startY, startZ);
+  }
   randomizeDragonflyPosition();
-}, rngTimer + rngNum(200, 1000));
+
+  setInterval(() => {
+    randomizeDragonflyPosition();
+  }, rngTimer + rngNum(200, 10000));
+
+
+  const grassGroup = new THREE.Group();
+  grassGroup.position.set(0.0, -0.260, 0.0);
+  const grassCount = 80;
+  for (let i = 0; i < grassCount; i++) {
+    const grass = {
+      scale: rngNum(.09, .4),
+      animation: false,
+      timeScale: 1.0,
+      path: 'models/greengrass.glb',
+      position: { x:rngNum(-2,2), y: grassGroup.position.y, z: rngNum(-2,2) },
+      rotation: { x: 0, y: 0, z: 0 }
+    }
+    loadModel(grass).then(model => {
+      if (model) {
+        // const grassThreeObj = new THREE.Object3D();
+        grassGroup.add(model);
+      }
+    });
+  }
+  scene.add(grassGroup);
+
+
+  const weedsGroup = new THREE.Group();
+  weedsGroup.position.set(0.0, -0.270, 0.0);
+  const weedsCount = 10;
+  for (let i = 0; i <= weedsCount; i++) {
+    const weeds = {
+      scale: rngNum(.09, 0.46),
+      animation: false,
+      timeScale: 1.0,
+      path: 'models/cattail2.glb',
+      position: { x:rngNum(-1.25,1.25), y: grassGroup.position.y, z: rngNum(-1.25,1.25) },
+
+      rotation: { x: 0, y: 0, z: 0 }
+    }
+    loadModel(weeds).then(model => {
+      if (model) {
+        // const weedsThreeObj = new THREE.Object3D();
+        weedsGroup.add(model);
+      }
+    });
+  }
+  scene.add(weedsGroup);
+
+  const lilipadsGroup = new THREE.Group();
+  lilipadsGroup.position.set(0.0, -0.002, 0.0);
+  const lilipadsCount = 6;
+  for (let i = 0; i <= lilipadsCount; i++) {
+    const lilipads = {
+      scale: rngNum(.09, 0.36),
+      animation: false,
+      timeScale: 1.0,
+      path: 'models/lilypad.glb',
+      position: { x:rngNum(-1.25,1.25), y: lilipadsGroup.position.y, z: rngNum(-1.25,1.25) },
+      rotation: { x: 0, y: rngNum(-1,1), z: 0 }
+    }
+    loadModel(lilipads).then(model => {
+      if (model) {
+        // const lilipadsThreeObj = new THREE.Object3D();
+        lilipadsGroup.add(model);
+      }
+    });
+  }
+  scene.add(lilipadsGroup);
+
+
+  const lilipadsGroup2 = new THREE.Group();
+  lilipadsGroup2.position.set(0.0, -0.002, 0.0);
+  const lilipadsCount2 = 4;
+  for (let i = 0; i <= lilipadsCount2; i++) {
+    const lilipads = {
+      scale: rngNum(.09, 0.36),
+      animation: false,
+      timeScale: 1.0,
+      path: 'models/lilypad2.glb',
+      position: { x:rngNum(-1.25,1.25), y: lilipadsGroup2.position.y, z: rngNum(-1.25,1.25) },
+      rotation: { x: 0, y: rngNum(-1,1), z: 0 }
+    }
+    loadModel(lilipads).then(model => {
+      if (model) {
+        // const lilipadsThreeObj = new THREE.Object3D();
+        lilipadsGroup2.add(model);
+      }
+    });
+  }
+  scene.add(lilipadsGroup2);
 
 
 
@@ -295,7 +377,6 @@ setInterval(() => {
     path: 'models/tree.glb',
     position: { x: 0, y: 0, z: -2.0 },
     rotation: { x: 0, y: 0, z: 0 }
-
   }
   loadModel(tree).then(model => {
     if (model) {
@@ -303,19 +384,15 @@ setInterval(() => {
     }
   });
 
-
-
-
-
-  const pads = {
-    scale: 3,
+  const frogPad = {
+    scale: 0.5,
     animation: false,
     timeScale: 1,
-    path: 'models/pads.glb',
-    position: { x: .5, y: 0, z: -1.45 },
-    rotation: { x: 0, y: -.5, z: 0 }
+    path: 'models/lilypad.glb',
+    position: { x: 0, y: -0.01, z: 0 },
+    rotation: { x: 0, y: -0.6, z: 0 }
   }
-  loadModel(pads).then(model => {
+  loadModel(frogPad).then(model => {
     if (model) {
       scene.add(model);
     }
@@ -334,6 +411,7 @@ setInterval(() => {
       scene.add(model);
     }
   });
+
   const cattail2 = {
     scale: .5,
     animation: false,
@@ -347,13 +425,14 @@ setInterval(() => {
       scene.add(model);
     }
   });
+
   const log = {
     scale: .5,
     animation: false,
     timeScale: 1,
     path: 'models/log.glb',
-    position: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 }
+    position: { x: .5, y: 0, z: -1.45 },
+    rotation: { x: 0, y: 0.5, z: 0 }
   }
   loadModel(log).then(model => {
     if (model) {
@@ -361,29 +440,30 @@ setInterval(() => {
     }
   });
 
-  const toad = {
+  const logToad = {
     scale: .20,
     animation: true,
     timeScale: 1,
     path: 'models/toad.glb',
-    position: { x: 0, y: .07, z: -.05 },
-    rotation: { x: 0, y: 0, z: 0 }
+    position: { x: .5, y: .07, z: -1.5 },
+    rotation: { x: 0, y: .5, z: 0 }
   }
-  loadModel(toad).then(model => {
+  loadModel(logToad).then(model => {
     if (model) {
       scene.add(model);
     }
   });
 
-  const toad2 = {
+  const lilyToad = {
     scale: .30,
     animation: true,
     timeScale: 1,
     path: 'models/toad.glb',
-    position: { x: .5, y: 0.03, z: -1.45 },
-    rotation: { x: 0, y: .5, z: 0 }
+
+    position: { x: 0, y: -0.001, z: -.02},
+    rotation: { x: 0, y: 0, z: 0 }
   }
-  loadModel(toad2).then(model => {
+  loadModel(lilyToad).then(model => {
     if (model) {
       scene.add(model);
     }
