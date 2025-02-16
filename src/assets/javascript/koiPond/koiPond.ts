@@ -232,24 +232,37 @@ function init() {
   });
   scene.add(dragonflyGroup);
 
-  let rngTimer = rngNum(2000, 4000);
-  function randomizeDragonflyPosition() {
-    const dragonflyTween = new TWEEN.Tween(dragonflyGroup.position);
-    const startX = rngNum(-2.5,2.5);
-    const startZ = rngNum(-2.5,2.5);
-    const startY = rngNum(0.06,0.3);
-    dragonflyTween.to({ x: startX, y:startY, z: startZ }, rngTimer)
-      .yoyo(false)
-      .start().onComplete(() => {
-        rngTimer = rngNum(1000, 3000);
-      });
-    dragonflyGroup.position.set(startX, startY, startZ);
+  const dragonflyInterval = rngNum(2000, 4000);
+
+  function randomizeDragonflyMovement(dragonfly: THREE.Object3D<THREE.Object3DEventMap>) {
+    const startX = dragonfly.position.x;
+    const startZ = dragonfly.position.z;
+    const targetX = rngNum(-2.5,2.5);
+    const targetZ = rngNum(-2.5,2.5);
+
+    // Calculate the direction angle
+    const angle = Math.atan2(targetX - startX, targetZ - startZ);
+
+    // Create position tween
+    const dragonflyTweenPos = new TWEEN.Tween(dragonfly.position)
+      .to({ x: targetX, y: dragonflyGroup.position.y, z: targetZ }, 1500)
+      .onComplete(() => {
+        // Set new start position for the next movement cycle
+        dragonfly.position.set(targetX, dragonflyGroup.position.y, targetZ);
+      })
+      .start();
+
+
+    const dragonflyTweenRot = new TWEEN.Tween(dragonfly.rotation) // Create rotation tween (smoothly rotate towards the new direction)
+      .to({ y: angle }, 200) // Rotate over 3 seconds for smooth transition
+      .start();
   }
-  randomizeDragonflyPosition();
+  // randomizeDragonflyMovement(dragonflyGroup);
 
   setInterval(() => {
-    randomizeDragonflyPosition();
-  }, rngTimer + rngNum(200, 10000));
+    // randomizeDragonflyPosition();
+    randomizeDragonflyMovement(dragonflyGroup);
+  }, dragonflyInterval + rngNum(200, 10000));
 
 
   const grassGroup = new THREE.Group();
@@ -443,7 +456,7 @@ function init() {
   const logToad = {
     scale: .20,
     animation: true,
-    timeScale: 1,
+    timeScale: 0.5,
     path: 'models/toad.glb',
     position: { x: .5, y: .07, z: -1.5 },
     rotation: { x: 0, y: .5, z: 0 }
@@ -457,7 +470,7 @@ function init() {
   const lilyToad = {
     scale: .30,
     animation: true,
-    timeScale: 1,
+    timeScale: 0.5,
     path: 'models/toad.glb',
 
     position: { x: 0, y: -0.001, z: -.02},
