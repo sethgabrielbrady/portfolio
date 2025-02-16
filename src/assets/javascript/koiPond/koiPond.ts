@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { TWEEN } from 'https://unpkg.com/three@0.139.0/examples/jsm/libs/tween.module.min.js';
+import * as TWEEN from '@tweenjs/tween.js';
+
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
 
 const clock: THREE.Clock = new THREE.Clock();
@@ -17,7 +18,17 @@ let delta: number = 0;
 // let yAxis = -1 + (speed * delta);
 
 const koiGroup = new THREE.Group();
+const dragonflyGroup = new THREE.Group();
 const showHelper = false;
+const dragonflyStart = true;
+
+
+// function randomPositiveNegative(): number {
+//   return Math.random() < 0.5 ? -1 : 1;
+// }
+function rngNum(min: number, max: number): number {
+  return (Math.random() * (max - min) + min);
+}
 
 
 
@@ -53,6 +64,7 @@ function loadModel(modelObj: { path: string; scale: number; animation: boolean; 
             const action = mixer.clipAction(clips[0]);
             action.setEffectiveTimeScale(timeScale); // 2x speed
             action.play();
+
           }
         }
         resolve(model);
@@ -98,8 +110,8 @@ function init() {
     // directionLight.shadow.camera.top = 20;
     // directionLight.shadow.camera.bottom = -5;
     scene.add( directionLight );
-    // scene.add( new THREE.AmbientLight( 0xffffff, 1 ) );
-    // scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 3 ) );
+    scene.add( new THREE.AmbientLight( 0xffffff, 0.5 ) );
+    //scene.add( new THREE.HemisphereLight( 0xffffff, 0x999999, 1 ) );
 
   renderer = new THREE.WebGLRenderer( {
     antialias: false,
@@ -121,13 +133,11 @@ function init() {
   // create super
   // update scaling to vector3
 
-
-  // const koiGroup = new THREE.Group();
-  koiGroup.position.set(0.5, -0.03, 0.5);
+  koiGroup.position.set(0.5, -0.07, 0.15);
   const koi = {
       scale: 1.0,
       animation: true,
-      timeScale: 1.0,
+      timeScale: 0.2,
       path: 'models/koi.glb',
       position: koiGroup.position,
       rotation: { x: 0, y: 0, z: 0 }
@@ -139,15 +149,76 @@ function init() {
   });
   scene.add(koiGroup);
 
-  // const koiTween = new TWEEN.Tween(koiGroup.position)
-  // console.log(koiUp, koiGroup.position.y);
-  // if (koiUp && koiGroup.position.y < -0.03) {
-  //   koiTween.to({ y: -0.03}, 3000).start();
-  // }
-  // if(!koiUp && koiGroup.position.y > -0.1) {
-  //   koiTween.to({ y: -0.1}, 3000).start();
-  // }
+  // const koiTweenPos = new TWEEN.Tween(koiGroup.position);
+  // koiTweenPos.to({ x: -1, z: 1}, 100000)
+  // .repeat(Infinity)
+  // .yoyo(false)
+  // .start();
 
+  // const koiTweenRot = new TWEEN.Tween(koiGroup.rotation);
+  // koiTweenRot.to({x:0, y: -7, z:-0.03}, 100000)
+  // .repeat(Infinity)
+  // .yoyo(true)
+  // .start();
+
+
+function randomizeKoiMovement() {
+  const koiTweenPos = new TWEEN.Tween(koiGroup.position);
+  const koiTweenRot = new TWEEN.Tween(koiGroup.rotation);
+  const startX = rngNum(-1,1);
+  const startZ = rngNum(-1,1);
+  const rotY = rngNum(-5,-7);
+  koiTweenPos.to({ x: -1, z: 1}, 400000)
+  .repeat(Infinity)
+  .yoyo(false)
+  .start();
+  koiTweenRot.to({x:0, y: rotY, z:-0.03}, 100000)
+  .repeat(Infinity)
+  .yoyo(true)
+  .start();
+
+ koiGroup.position.set(startX, koiGroup.position.y, startZ);
+}
+randomizeKoiMovement();
+setInterval(() => {
+  randomizeKoiMovement();
+}, rngNum(1000, 100000));
+
+
+  dragonflyGroup.position.set(0, 0.25, 0);
+  const dragonfly = {
+      scale: 1.5,
+      animation: true,
+      timeScale: 1.0,
+      path: 'models/dragonfly.glb',
+      position: dragonflyGroup.position,
+      rotation: { x: 0, y: 0, z: 0 }
+    }
+  loadModel(dragonfly).then(model => {
+    if (model) {
+      dragonflyGroup.add(model);
+    }
+  });
+  scene.add(dragonflyGroup);
+
+let rngTimer = rngNum(2000, 4000);
+function randomizeDragonflyPosition() {
+  const dragonflyTween = new TWEEN.Tween(dragonflyGroup.position);
+  const startX = rngNum(-3,3);
+  const startZ = rngNum(-3,3);
+  const startY = rngNum(0.23,0.3);
+  dragonflyTween.to({ x: startX, y:startY, z: startZ }, rngTimer)
+    .yoyo(false)
+    .start().onComplete(() => {
+      rngTimer = rngNum(1000, 3000);
+    });
+  dragonflyGroup.position.set(startX, startY, startZ);
+}
+randomizeDragonflyPosition();
+
+setInterval(() => {
+  randomizeDragonflyPosition();
+}, rngTimer + rngNum(200, 1000));
 
 
 
@@ -195,26 +266,16 @@ function init() {
     }
   });
 
-  const dragonfly = {
-      scale: 2,
-      animation: true,
-      timeScale: 1.0,
-      path: 'models/dragonfly.glb',
-      position: { x: -0.0, y:.25, z: 0 },
-      rotation: { x: 0, y: 0, z: 0 }
-    }
-  loadModel(dragonfly).then(model => {
-    if (model) {
-      scene.add(model);
-    }
-  });
+
+
+
 
   const pads = {
     scale: 3,
     animation: false,
     timeScale: 1,
     path: 'models/pads.glb',
-    position: { x: -1, y: 0, z: 1 },
+    position: { x: .5, y: 0, z: -1.45 },
     rotation: { x: 0, y: -.5, z: 0 }
   }
   loadModel(pads).then(model => {
@@ -222,12 +283,13 @@ function init() {
       scene.add(model);
     }
   });
+
   const cattail = {
     scale: .5,
     animation: false,
     timeScale: 1,
     path: 'models/cattail.glb',
-    position: { x: .65, y: -.3, z: -1 },
+    position: { x: .65, y: -.2, z: -1.1 },
     rotation: { x: 0, y: 0, z: 0 }
   }
   loadModel(cattail).then(model => {
@@ -235,8 +297,60 @@ function init() {
       scene.add(model);
     }
   });
+  const cattail2 = {
+    scale: .5,
+    animation: false,
+    timeScale: 1,
+    path: 'models/cattail2.glb',
+    position: { x: 0, y: -.2, z: -1.05 },
+    rotation: { x: 0, y: 0, z: 0 }
+  }
+  loadModel(cattail2).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
+  const log = {
+    scale: .5,
+    animation: false,
+    timeScale: 1,
+    path: 'models/log.glb',
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 }
+  }
+  loadModel(log).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
 
+  const toad = {
+    scale: .20,
+    animation: true,
+    timeScale: 1,
+    path: 'models/toad.glb',
+    position: { x: 0, y: .07, z: -.05 },
+    rotation: { x: 0, y: 0, z: 0 }
+  }
+  loadModel(toad).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
 
+  const toad2 = {
+    scale: .30,
+    animation: true,
+    timeScale: 1,
+    path: 'models/toad.glb',
+    position: { x: .5, y: 0.03, z: -1.45 },
+    rotation: { x: 0, y: .5, z: 0 }
+  }
+  loadModel(toad2).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
 
 
   const waterColor = 0x00FFFF;
@@ -317,6 +431,8 @@ function init() {
 
 }
 
+
+
 function animate() {
   requestAnimationFrame(animate);
   delta += clock.getDelta();
@@ -324,25 +440,18 @@ function animate() {
     render();
     delta = delta % interval;
   }
-
-
-  TWEEN.update()
-
 }
-
-
 
 function render() {
   renderer.render( scene, camera );
-   // updates model animations
-   if (mixerAnimations.length > 0) {
+  // updates model animations
+  if (mixerAnimations.length > 0) {
     for (let i = 0; i < mixerAnimations.length; i++) {
       mixerAnimations[i].update(delta);
-
     }
+    TWEEN.update();
+    console.log('dragonflyStart', dragonflyStart);
   }
-
-
 }
 
 function koiPond() {
