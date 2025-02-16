@@ -2,8 +2,15 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import * as TWEEN from '@tweenjs/tween.js';
-
 import { createText } from 'three/examples/jsm/webxr/Text2D.js';
+
+
+
+const showHelper = true;
+
+
+
+
 
 const clock: THREE.Clock = new THREE.Clock();
 const scene: THREE.Scene = new THREE.Scene();
@@ -19,7 +26,6 @@ let delta: number = 0;
 
 const koiGroup = new THREE.Group();
 const dragonflyGroup = new THREE.Group();
-const showHelper = false;
 const dragonflyStart = true;
 
 
@@ -28,6 +34,10 @@ const dragonflyStart = true;
 // }
 function rngNum(min: number, max: number): number {
   return (Math.random() * (max - min) + min);
+}
+
+function randomBoolean(): boolean {
+  return Math.random() < 0.5;
 }
 
 
@@ -129,60 +139,87 @@ function init() {
   const container: HTMLElement = document.getElementById("koiPond")!;
   container.appendChild(renderer.domElement);
 
-  // Models
-  // create super
-  // update scaling to vector3
 
-  koiGroup.position.set(0.5, -0.07, 0.15);
-  const koi = {
-      scale: 1.0,
+  koiGroup.position.set(0.0, -0.07, 0.0);
+  const koiCount = 10;
+  const koiArray: THREE.Object3D<THREE.Object3DEventMap>[] = [];
+  for (let i = 0; i < koiCount; i++) {
+    const koi = {
+      //scale: 1.0,
+      scale: rngNum(0.5, 1.15),
       animation: true,
-      timeScale: 0.2,
+      timeScale: rngNum(0.09, 0.24),
+      //timeScale: 0.2,
       path: 'models/koi.glb',
-      position: koiGroup.position,
+      position: { x:koiGroup.position.x, y: koiGroup.position.y, z: koiGroup.position.z },
+
+      //position: { x: rngNum(-1.8,1.8), y: rngNum(-0.001,-0.07), z: rngNum(-1.8,1.8) },
       rotation: { x: 0, y: 0, z: 0 }
     }
-  loadModel(koi).then(model => {
-    if (model) {
-      koiGroup.add(model);
-    }
-  });
+    loadModel(koi).then(model => {
+      if (model) {
+        const koiThreeObj = new THREE.Object3D();
+        koiThreeObj.add(model);
+        koiGroup.add(koiThreeObj);
+        koiArray.push(koiThreeObj);
+      }
+    });
+  }
+
+
   scene.add(koiGroup);
 
-  // const koiTweenPos = new TWEEN.Tween(koiGroup.position);
-  // koiTweenPos.to({ x: -1, z: 1}, 100000)
-  // .repeat(Infinity)
-  // .yoyo(false)
-  // .start();
+  let koiMovingArray: Array<THREE.Object3D<THREE.Object3DEventMap>> = [];
 
-  // const koiTweenRot = new TWEEN.Tween(koiGroup.rotation);
-  // koiTweenRot.to({x:0, y: -7, z:-0.03}, 100000)
-  // .repeat(Infinity)
-  // .yoyo(true)
-  // .start();
+  function randomizeKoiMovement(koi: THREE.Object3D<THREE.Object3DEventMap>) {
+    const startX = koi.position.x;
+    const startZ = koi.position.z;
+    const targetX = rngNum(-1.8, 1.8);
+    const targetZ = rngNum(-1.8, 1.8);
+
+    // Calculate the direction angle
+    const angle = Math.atan2(targetX - startX, targetZ - startZ);
+
+    // Create position tween
+    const koiTweenPos = new TWEEN.Tween(koi.position)
+      .to({ x: targetX, z: targetZ }, 20000)
+      .onComplete(() => {
+        // Set new start position for the next movement cycle
+        koi.position.set(targetX, koi.position.y, targetZ);
+        // Remove the koi from the moving array
+        koiMovingArray = koiMovingArray.filter((item) => item !== koi);
+      })
+      .start();
+
+    // Create rotation tween (smoothly rotate towards the new direction)
+    const koiTweenRot = new TWEEN.Tween(koi.rotation)
+      .to({ y: angle }, 3000) // Rotate over 3 seconds for smooth transition
+      .start();
+  }
 
 
-function randomizeKoiMovement() {
-  const koiTweenPos = new TWEEN.Tween(koiGroup.position);
-  const koiTweenRot = new TWEEN.Tween(koiGroup.rotation);
-  const startX = rngNum(-1,1);
-  const startZ = rngNum(-1,1);
-  const rotY = rngNum(-5,-7);
-  koiTweenPos.to({ x: -1, z: 1}, 400000)
-  .repeat(Infinity)
-  .yoyo(false)
-  .start();
-  koiTweenRot.to({x:0, y: rotY, z:-0.03}, 100000)
-  .repeat(Infinity)
-  .yoyo(true)
-  .start();
 
- koiGroup.position.set(startX, koiGroup.position.y, startZ);
-}
-randomizeKoiMovement();
-setInterval(() => {
-  randomizeKoiMovement();
-}, rngNum(1000, 100000));
+  // adjust the koi deployment interval after the initial deployment
+  let upodateKoiDeplymentInterval = false;
+  setTimeout(() => {
+    upodateKoiDeplymentInterval = true;
+  }, 10000);
+
+  let koiDeploymentInterval = rngNum(500, 1000);
+  setInterval(() => {
+    if (upodateKoiDeplymentInterval) {
+      koiDeploymentInterval = rngNum(10000, 20000);
+    }
+
+
+    const rngKoiIndex = Math.floor(rngNum(0, koiArray.length));
+    const rngKoi = koiArray[rngKoiIndex];
+    //if koiMovingArray does not contian the koi, add it to the array
+    if (!koiMovingArray.includes(rngKoi)) {
+      koiMovingArray.push(rngKoi);
+      randomizeKoiMovement(rngKoi);
+    }
+  }, koiDeploymentInterval);
 
 
   dragonflyGroup.position.set(0, 0.25, 0);
@@ -206,7 +243,7 @@ function randomizeDragonflyPosition() {
   const dragonflyTween = new TWEEN.Tween(dragonflyGroup.position);
   const startX = rngNum(-3,3);
   const startZ = rngNum(-3,3);
-  const startY = rngNum(0.23,0.3);
+  const startY = rngNum(0.06,0.3);
   dragonflyTween.to({ x: startX, y:startY, z: startZ }, rngTimer)
     .yoyo(false)
     .start().onComplete(() => {
@@ -461,3 +498,7 @@ function koiPond() {
 
 
 export { koiPond };
+
+function forEach(koiArray: THREE.Object3D<THREE.Object3DEventMap>[], arg1: (koi: any) => void) {
+  throw new Error('Function not implemented.');
+}
