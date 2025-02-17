@@ -416,7 +416,7 @@ function init() {
     animation: false,
     timeScale: 1,
     path: 'models/cattail.glb',
-    position: { x: .65, y: -.2, z: -1.1 },
+    position: { x: .65, y: -.1, z: -1.2 },
     rotation: { x: 0, y: 0, z: 0 }
   }
   loadModel(cattail).then(model => {
@@ -430,7 +430,7 @@ function init() {
     animation: false,
     timeScale: 1,
     path: 'models/cattail2.glb',
-    position: { x: 0, y: -.2, z: -1.05 },
+    position: { x: 0, y: -.1, z: -1.15 },
     rotation: { x: 0, y: 0, z: 0 }
   }
   loadModel(cattail2).then(model => {
@@ -473,7 +473,7 @@ function init() {
     timeScale: 0.5,
     path: 'models/toad.glb',
 
-    position: { x: 0, y: -0.001, z: -.02},
+    position: { x: 0, y: -0.00001, z: -.02},
     rotation: { x: 0, y: 0, z: 0 }
   }
   loadModel(lilyToad).then(model => {
