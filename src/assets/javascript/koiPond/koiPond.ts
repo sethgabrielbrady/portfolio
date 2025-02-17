@@ -355,7 +355,7 @@ function init() {
 
 
   const raccoon = {
-    scale: .9,
+    scale: .5,
     animation: true,
     timeScale: 1.0,
     path: 'models/raccoon.glb',
@@ -384,11 +384,11 @@ function init() {
   });
 
   const tree = {
-    scale: 0.50,
+    scale: 0.60,
     animation: false,
     timeScale: 1.0,
     path: 'models/tree.glb',
-    position: { x: 0, y: 0, z: -2.0 },
+    position: { x: -0.7, y: 0, z: -2.0 },
     rotation: { x: 0, y: 0, z: 0 }
   }
   loadModel(tree).then(model => {
@@ -412,7 +412,7 @@ function init() {
   });
 
   const cattail = {
-    scale: .5,
+    scale: .4,
     animation: false,
     timeScale: 1,
     path: 'models/cattail.glb',
@@ -426,7 +426,7 @@ function init() {
   });
 
   const cattail2 = {
-    scale: .5,
+    scale: .4,
     animation: false,
     timeScale: 1,
     path: 'models/cattail2.glb',
@@ -477,6 +477,20 @@ function init() {
     rotation: { x: 0, y: 0, z: 0 }
   }
   loadModel(lilyToad).then(model => {
+    if (model) {
+      scene.add(model);
+    }
+  });
+
+  const bench = {
+    scale: .125,
+    animation: true,
+    timeScale: 0.5,
+    path: 'models/bench.glb',
+    position: { x:-1.2, y: .07, z: 2.2 },
+    rotation: { x: 0, y: 2.5, z: 0 }
+  }
+  loadModel(bench).then(model => {
     if (model) {
       scene.add(model);
     }
