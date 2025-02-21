@@ -116,11 +116,14 @@ function sandbox() {
   const cubeCount: number = 100;
   const cubeSize: number = .125;
   // const cubeSize: number = .125;
-  const cubeGeometry: THREE.BoxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
+  const cubeGeometry: THREE.BoxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize , cubeSize);
+
+
+  // const cubeGeometry: THREE.BoxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
   const cubeMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial({ color: newCubeColor, transparent: true, opacity: 0.15, emissive: 0x00ffff });
   const cube: THREE.InstancedMesh = new THREE.InstancedMesh( cubeGeometry, cubeMaterial, 1 );
   // const cubes: THREE.InstancedMesh = new THREE.InstancedMesh( cubeGeometry, cubeMaterial, cubeCount );
-
+  cube.rotateOnAxis( new THREE.Vector3( 1, 0, 0 ), - Math.PI / 2 );
   // console.log(cubes);
   const cubeFloor = 0 + cubeSize;
   let xPos: number = 5;
@@ -202,7 +205,7 @@ function sandbox() {
     renderer.render( scene, camera );
     TWEEN.update();
     floorCubeAnimator();
-    // getMouseCubeIntersection();
+    //getMouseCubeIntersection();
   }
 }
 
