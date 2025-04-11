@@ -244,7 +244,6 @@ function init() {
   randomizeDragonflyMovement(dragonflyGroup);
 
   setInterval(() => {
-    // randomizeDragonflyPosition();
     randomizeDragonflyMovement(dragonflyGroup);
   }, dragonflyInterval + rngNum(200, 10000));
 
@@ -263,13 +262,11 @@ function init() {
     }
     loadModel(grass).then(model => {
       if (model) {
-        // const grassThreeObj = new THREE.Object3D();
         grassGroup.add(model);
       }
     });
   }
   scene.add(grassGroup);
-
 
   const weedsGroup = new THREE.Group();
   weedsGroup.position.set(0.0, -0.270, 0.0);
@@ -314,7 +311,6 @@ function init() {
   }
   scene.add(lilipadsGroup);
 
-
   const lilipadsGroup2 = new THREE.Group();
   lilipadsGroup2.position.set(0.0, -0.002, 0.0);
   const lilipadsCount2 = 4;
@@ -336,8 +332,6 @@ function init() {
   }
   scene.add(lilipadsGroup2);
 
-
-
   const raccoon = {
     scale: .5,
     animation: true,
@@ -351,7 +345,6 @@ function init() {
       scene.add(model);
     }
   });
-
 
   const pond = {
     scale: 1.0,
