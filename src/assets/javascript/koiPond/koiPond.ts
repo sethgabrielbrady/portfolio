@@ -248,6 +248,8 @@ function init() {
   }, dragonflyInterval + rngNum(200, 10000));
 
 
+
+// test for grass and weeds
   const grassGroup = new THREE.Group();
   grassGroup.position.set(0.0, -0.260, 0.0);
   const grassCount = 80;
